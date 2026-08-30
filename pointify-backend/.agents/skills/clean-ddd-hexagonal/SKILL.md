@@ -11,27 +11,27 @@ This skill is an **opinionated synthesis** of several related architecture tradi
 
 ## When to Use (and When NOT to)
 
-| Use When | Skip When |
-|----------|-----------|
-| Complex business domain with many rules | Simple CRUD, few business rules |
-| Long-lived system (years of maintenance) | Prototype, MVP, throwaway code |
-| Team of 5+ developers | Solo developer or small team (1-2) |
-| Multiple entry points (API, CLI, events) | Single entry point, simple API |
+| Use When                                 | Skip When                                |
+| ---------------------------------------- | ---------------------------------------- |
+| Complex business domain with many rules  | Simple CRUD, few business rules          |
+| Long-lived system (years of maintenance) | Prototype, MVP, throwaway code           |
+| Team of 5+ developers                    | Solo developer or small team (1-2)       |
+| Multiple entry points (API, CLI, events) | Single entry point, simple API           |
 | Need to swap infrastructure (DB, broker) | Fixed infrastructure, unlikely to change |
-| High test coverage required | Quick scripts, internal tools |
+| High test coverage required              | Quick scripts, internal tools            |
 
 **Start simple. Evolve complexity only when needed.** Most systems don't need full CQRS or Event Sourcing.
 
 ## Pattern Boundaries
 
-| Pattern | Primary Question | Use It For | Do Not Treat As |
-|---------|------------------|------------|-----------------|
-| **DDD** | How do we model a complex business domain? | Ubiquitous language, bounded contexts, aggregates, value objects | A folder structure by itself |
-| **Hexagonal Architecture** | How does the application interact with the outside world? | Ports, driver adapters, driven adapters, testable application core | A mandate for six sides or one exact package layout |
-| **Clean Architecture** | Which direction should dependencies point? | Inward dependency rule, use case boundaries, framework independence | A universal four-folder template |
-| **Onion Architecture** | How do we keep the domain model central? | Domain-centered layers and dependency inversion | A separate requirement when Clean/Hexagonal already solve the local problem |
-| **CQRS** | Do reads and writes need different models? | Bounded contexts with divergent read/write workloads | A default application architecture |
-| **Event Sourcing** | Do we need state from a complete event history? | Audit, temporal queries, replayable workflows | A persistence default for CRUD systems |
+| Pattern                    | Primary Question                                          | Use It For                                                          | Do Not Treat As                                                             |
+| -------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **DDD**                    | How do we model a complex business domain?                | Ubiquitous language, bounded contexts, aggregates, value objects    | A folder structure by itself                                                |
+| **Hexagonal Architecture** | How does the application interact with the outside world? | Ports, driver adapters, driven adapters, testable application core  | A mandate for six sides or one exact package layout                         |
+| **Clean Architecture**     | Which direction should dependencies point?                | Inward dependency rule, use case boundaries, framework independence | A universal four-folder template                                            |
+| **Onion Architecture**     | How do we keep the domain model central?                  | Domain-centered layers and dependency inversion                     | A separate requirement when Clean/Hexagonal already solve the local problem |
+| **CQRS**                   | Do reads and writes need different models?                | Bounded contexts with divergent read/write workloads                | A default application architecture                                          |
+| **Event Sourcing**         | Do we need state from a complete event history?           | Audit, temporal queries, replayable workflows                       | A persistence default for CRUD systems                                      |
 
 ## CRITICAL: The Dependency Rule
 
@@ -43,6 +43,7 @@ Infrastructure → Application → Domain
 ```
 
 **Violations to catch:**
+
 - Domain importing database/HTTP libraries
 - In this architecture style, controllers calling repositories directly instead of application use cases
 - Entities depending on application services
@@ -64,17 +65,17 @@ Where does it go?
 
 **Sharp edges** — the placements LLMs most often get wrong:
 
-| Code | Layer | Why |
-|------|-------|-----|
-| Business invariant ("order needs items to confirm") | Domain (entity method) | It's a rule, not orchestration |
-| Input format validation (JSON shape, required fields) | Adapter (controller/DTO) | Protocol concern, not business rule |
-| Transaction begin/commit | Application | Use case = transaction boundary |
-| ORM entity / table model | Infrastructure | Map to domain objects; never let ORM entities BE domain entities |
-| Domain ↔ DB mapping | Infrastructure (mapper) | Persistence detail |
-| Authorization ("is user allowed?") | Application (policy) or adapter middleware | Domain stays auth-agnostic; encode role RULES in domain only if they're business rules |
-| Clock, UUID generation | Port in domain/application; adapter in infrastructure | Keeps domain deterministic and testable |
-| Reacting to a domain event | Application (event handler) | Side effects = orchestration |
-| Query joining many tables for a screen | Read model (application interface, infrastructure impl) | Don't force it through aggregates |
+| Code                                                  | Layer                                                   | Why                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Business invariant ("order needs items to confirm")   | Domain (entity method)                                  | It's a rule, not orchestration                                                         |
+| Input format validation (JSON shape, required fields) | Adapter (controller/DTO)                                | Protocol concern, not business rule                                                    |
+| Transaction begin/commit                              | Application                                             | Use case = transaction boundary                                                        |
+| ORM entity / table model                              | Infrastructure                                          | Map to domain objects; never let ORM entities BE domain entities                       |
+| Domain ↔ DB mapping                                   | Infrastructure (mapper)                                 | Persistence detail                                                                     |
+| Authorization ("is user allowed?")                    | Application (policy) or adapter middleware              | Domain stays auth-agnostic; encode role RULES in domain only if they're business rules |
+| Clock, UUID generation                                | Port in domain/application; adapter in infrastructure   | Keeps domain deterministic and testable                                                |
+| Reacting to a domain event                            | Application (event handler)                             | Side effects = orchestration                                                           |
+| Query joining many tables for a screen                | Read model (application interface, infrastructure impl) | Don't force it through aggregates                                                      |
 
 **Litmus test for anemic domain models:** if an application service reads state out of an entity, decides, then writes state back (`if (order.status === 'draft') order.status = 'confirmed'`), move that logic into the entity as `order.confirm()`. Handlers should read like a script: load aggregate → call one behavior method → save → publish.
 
@@ -137,28 +138,28 @@ src/
 
 ## DDD Building Blocks
 
-| Pattern | Purpose | Layer | Key Rule |
-|---------|---------|-------|----------|
-| **Entity** | Identity + behavior | Domain | Equality by ID |
-| **Value Object** | Immutable data | Domain | Equality by value, no setters |
-| **Aggregate** | Consistency boundary | Domain | Only root is referenced externally |
-| **Domain Event** | Record of change | Domain | Past tense naming (`OrderPlaced`) |
-| **Repository** | Persistence abstraction | Domain (port) | Per aggregate, not per table |
-| **Domain Service** | Stateless logic | Domain | When logic doesn't fit an entity |
-| **Application Service** | Orchestration | Application | Coordinates domain + infra |
+| Pattern                 | Purpose                 | Layer         | Key Rule                           |
+| ----------------------- | ----------------------- | ------------- | ---------------------------------- |
+| **Entity**              | Identity + behavior     | Domain        | Equality by ID                     |
+| **Value Object**        | Immutable data          | Domain        | Equality by value, no setters      |
+| **Aggregate**           | Consistency boundary    | Domain        | Only root is referenced externally |
+| **Domain Event**        | Record of change        | Domain        | Past tense naming (`OrderPlaced`)  |
+| **Repository**          | Persistence abstraction | Domain (port) | Per aggregate, not per table       |
+| **Domain Service**      | Stateless logic         | Domain        | When logic doesn't fit an entity   |
+| **Application Service** | Orchestration           | Application   | Coordinates domain + infra         |
 
 ## Anti-Patterns (CRITICAL)
 
-| Anti-Pattern | Problem | Fix |
-|--------------|---------|-----|
-| **Anemic Domain Model** | Entities are data bags, logic in services | Move behavior INTO entities |
-| **Repository per Entity** | Breaks aggregate boundaries | One repository per AGGREGATE |
-| **Leaking Infrastructure** | Domain imports DB/HTTP libs | Domain has ZERO external deps |
-| **God Aggregate** | Too many entities, slow transactions | Split into smaller aggregates |
-| **Skipping Use Cases** | Controllers call repositories directly in a use-case architecture | Route through application use cases |
-| **CRUD Thinking** | Modeling data, not behavior | Model business operations |
-| **Premature CQRS** | Adding complexity before needed | Start with simple read/write, evolve |
-| **Cross-Aggregate TX** | Multiple aggregates in one transaction | Use domain events for consistency |
+| Anti-Pattern               | Problem                                                           | Fix                                  |
+| -------------------------- | ----------------------------------------------------------------- | ------------------------------------ |
+| **Anemic Domain Model**    | Entities are data bags, logic in services                         | Move behavior INTO entities          |
+| **Repository per Entity**  | Breaks aggregate boundaries                                       | One repository per AGGREGATE         |
+| **Leaking Infrastructure** | Domain imports DB/HTTP libs                                       | Domain has ZERO external deps        |
+| **God Aggregate**          | Too many entities, slow transactions                              | Split into smaller aggregates        |
+| **Skipping Use Cases**     | Controllers call repositories directly in a use-case architecture | Route through application use cases  |
+| **CRUD Thinking**          | Modeling data, not behavior                                       | Model business operations            |
+| **Premature CQRS**         | Adding complexity before needed                                   | Start with simple read/write, evolve |
+| **Cross-Aggregate TX**     | Multiple aggregates in one transaction                            | Use domain events for consistency    |
 
 ## Implementation Order
 
@@ -174,19 +175,20 @@ src/
 
 Read the matching file before doing the task in the left column:
 
-| Before you... | Read |
-|---------------|------|
-| Write code in any layer, wire dependency injection, or decide 3-layer vs 4-layer | [references/LAYERS.md](references/LAYERS.md) |
+| Before you...                                                                                                  | Read                                                       |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Write code in any layer, wire dependency injection, or decide 3-layer vs 4-layer                               | [references/LAYERS.md](references/LAYERS.md)               |
 | Split a system into services/contexts, integrate with a legacy or third-party system (ACL), run Event Storming | [references/DDD-STRATEGIC.md](references/DDD-STRATEGIC.md) |
-| Model an entity, value object, aggregate, repository, domain service, or factory | [references/DDD-TACTICAL.md](references/DDD-TACTICAL.md) |
-| Define ports/adapters, name interfaces, or lay out a ports-first structure | [references/HEXAGONAL.md](references/HEXAGONAL.md) |
-| Add commands/queries, domain vs integration events, outbox, sagas, or evaluate CQRS/Event Sourcing | [references/CQRS-EVENTS.md](references/CQRS-EVENTS.md) |
-| Write unit/integration/architecture tests for any layer | [references/TESTING.md](references/TESTING.md) |
-| Answer a quick "which pattern/which layer" question without deep-diving | [references/CHEATSHEET.md](references/CHEATSHEET.md) |
+| Model an entity, value object, aggregate, repository, domain service, or factory                               | [references/DDD-TACTICAL.md](references/DDD-TACTICAL.md)   |
+| Define ports/adapters, name interfaces, or lay out a ports-first structure                                     | [references/HEXAGONAL.md](references/HEXAGONAL.md)         |
+| Add commands/queries, domain vs integration events, outbox, sagas, or evaluate CQRS/Event Sourcing             | [references/CQRS-EVENTS.md](references/CQRS-EVENTS.md)     |
+| Write unit/integration/architecture tests for any layer                                                        | [references/TESTING.md](references/TESTING.md)             |
+| Answer a quick "which pattern/which layer" question without deep-diving                                        | [references/CHEATSHEET.md](references/CHEATSHEET.md)       |
 
 ## Sources
 
 ### Primary Sources
+
 - [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/) — Alistair Cockburn (2005)
 - [Domain-Driven Design: The Blue Book](https://www.domainlanguage.com/ddd/blue-book/) — Eric Evans (2003)
 - [The Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) — Robert C. Martin (2012)
@@ -194,6 +196,7 @@ Read the matching file before doing the task in the left column:
 - [Implementing Domain-Driven Design](https://openlibrary.org/works/OL17392277W) — Vaughn Vernon (2013)
 
 ### Primary Pattern References
+
 - [CQRS](https://martinfowler.com/bliki/CQRS.html) — Martin Fowler
 - [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) — Martin Fowler
 - [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html) — Martin Fowler (PoEAA)
@@ -203,10 +206,12 @@ Read the matching file before doing the task in the left column:
 - [Effective Aggregate Design](https://www.dddcommunity.org/library/vernon_2011/) — Vaughn Vernon
 
 ### Implementation Guides
+
 - [Microsoft: DDD + CQRS Microservices](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/)
 - [Domain Events](https://udidahan.com/2009/06/14/domain-events-salvation/) — Udi Dahan
 
 ### Supplemental Syntheses
+
 - [Clean Architecture: Standing on the Shoulders of Giants](https://herbertograca.com/2017/09/28/clean-architecture-standing-on-the-shoulders-of-giants/) — Herberto Graça
 - [Explicit Architecture](https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/) — Herberto Graça (opinionated synthesis, not canonical source)
 - [Get Your Hands Dirty on Clean Architecture](https://reflectoring.io/book/) — Tom Hombergs

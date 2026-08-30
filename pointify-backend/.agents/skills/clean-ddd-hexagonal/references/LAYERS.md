@@ -2,11 +2,12 @@
 
 > Sources:
 > Primary:
+>
 > - [The Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) — Robert C. Martin
 > - [Onion Architecture](https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/) — Jeffrey Palermo
-> Implementation guide:
+>   Implementation guide:
 > - [Designing a DDD-oriented Microservice](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice) — Microsoft
-> Supplemental synthesis:
+>   Supplemental synthesis:
 > - [Clean Architecture: Standing on the Shoulders of Giants](https://herbertograca.com/2017/09/28/clean-architecture-standing-on-the-shoulders-of-giants/) — Herberto Graça
 
 ## Contents
@@ -22,12 +23,12 @@
 
 ## The Four Layers
 
-| Layer | Responsibility | Dependencies |
-|-------|---------------|--------------|
-| **Domain** | Business logic, entities, rules | None (pure) |
-| **Application** | Use cases, orchestration | Domain |
-| **Infrastructure** | External systems, frameworks | Application, Domain |
-| **Presentation** | API/UI entry points | Application |
+| Layer              | Responsibility                  | Dependencies        |
+| ------------------ | ------------------------------- | ------------------- |
+| **Domain**         | Business logic, entities, rules | None (pure)         |
+| **Application**    | Use cases, orchestration        | Domain              |
+| **Infrastructure** | External systems, frameworks    | Application, Domain |
+| **Presentation**   | API/UI entry points             | Application         |
 
 **Presentation is optional as a separate layer.** In the 3-layer default from `SKILL.md`, controllers and other driver adapters live under `infrastructure/http/`. This file also shows the 4-layer variant where they get their own top-level `presentation/` folder. Choose one home for controllers per codebase — never both.
 
@@ -78,11 +79,7 @@ import { AggregateRoot } from '../shared/aggregate_root';
 import { OrderItem } from './order_item';
 import { Money, OrderId, CustomerId, OrderStatus } from './value_objects';
 import { OrderPlaced, OrderShipped } from './events';
-import {
-  InsufficientStockError,
-  InvalidQuantityError,
-  InvalidOrderStateError,
-} from './errors';
+import { InsufficientStockError, InvalidQuantityError, InvalidOrderStateError } from './errors';
 import { Product } from '../product/product';
 
 export class Order extends AggregateRoot<OrderId> {
@@ -110,7 +107,7 @@ export class Order extends AggregateRoot<OrderId> {
       throw new InsufficientStockError(product.id, quantity);
     }
 
-    const existingItem = this.items.find(i => i.productId.equals(product.id));
+    const existingItem = this.items.find((i) => i.productId.equals(product.id));
     if (existingItem) {
       existingItem.increaseQuantity(quantity);
     } else {
@@ -127,10 +124,7 @@ export class Order extends AggregateRoot<OrderId> {
   }
 
   get total(): Money {
-    return this.items.reduce(
-      (sum, item) => sum.add(item.subtotal),
-      Money.zero()
-    );
+    return this.items.reduce((sum, item) => sum.add(item.subtotal), Money.zero());
   }
 }
 ```
@@ -395,7 +389,7 @@ export class OrderController {
 
       const orderId = await this.placeOrder.execute({
         customerId: req.user.id,
-        items: request.items.map(item => ({
+        items: request.items.map((item) => ({
           productId: item.product_id,
           quantity: item.quantity,
         })),
@@ -510,6 +504,7 @@ export function configureContainer(): Container {
 The same layered structure applies to any language:
 
 ### Go
+
 ```
 internal/
 ├── domain/
@@ -519,6 +514,7 @@ internal/
 ```
 
 ### Rust
+
 ```
 src/
 ├── domain/
@@ -528,6 +524,7 @@ src/
 ```
 
 ### Python
+
 ```
 src/
 ├── domain/

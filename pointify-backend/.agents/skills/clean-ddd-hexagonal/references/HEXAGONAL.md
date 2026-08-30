@@ -2,10 +2,11 @@
 
 > Sources:
 > Primary:
+>
 > - [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/) — Alistair Cockburn (2005)
 > - [Hexagonal Architecture Explained](https://openlibrary.org/works/OL38388131W) — Alistair Cockburn & Juan Manuel Garrido de Paz (2024)
 > - [Interview with Alistair Cockburn](https://jmgarridopaz.github.io/content/interviewalistair.html) — Juan Manuel Garrido de Paz
-> Implementation guide:
+>   Implementation guide:
 > - [Hexagonal Architecture Pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/hexagonal-architecture.html) — AWS
 
 ## Contents
@@ -187,12 +188,10 @@ import { OrderServiceServer, PlaceOrderRequest, PlaceOrderResponse } from './gen
 export class GrpcOrderService implements OrderServiceServer {
   constructor(private readonly placeOrder: IPlaceOrderPort) {}
 
-  async placeOrder(
-    request: PlaceOrderRequest,
-  ): Promise<PlaceOrderResponse> {
+  async placeOrder(request: PlaceOrderRequest): Promise<PlaceOrderResponse> {
     const command: PlaceOrderCommand = {
       customerId: request.getCustomerId(),
-      items: request.getItemsList().map(item => ({
+      items: request.getItemsList().map((item) => ({
         productId: item.getProductId(),
         quantity: item.getQuantity(),
       })),
@@ -331,21 +330,23 @@ class RabbitMQEventPublisher implements IEventPublisherPort:
 ### Alistair Cockburn's Recommended Pattern
 
 **Ports:** `For[Doing][Something]`
+
 - Driver: `ForPlacingOrders`, `ForConfiguringSettings`
 - Driven: `ForStoringUsers`, `ForNotifyingAlerts`
 
 **Adapters:** Reference the technology
+
 - `CliCommandForPlacingOrders`
 - `MysqlDatabaseForStoringUsers`
 - `SlackNotifierForAlerts`
 
 ### Alternative Patterns
 
-| Pattern | Port | Adapter |
-|---------|------|---------|
-| Interface/Impl | `IOrderRepository` | `PostgresOrderRepository` |
-| Port suffix | `OrderRepositoryPort` | `PostgresOrderAdapter` |
-| Using prefix | `IOrderStorage` | `OrderStorageUsingPostgres` |
+| Pattern        | Port                  | Adapter                     |
+| -------------- | --------------------- | --------------------------- |
+| Interface/Impl | `IOrderRepository`    | `PostgresOrderRepository`   |
+| Port suffix    | `OrderRepositoryPort` | `PostgresOrderAdapter`      |
+| Using prefix   | `IOrderStorage`       | `OrderStorageUsingPostgres` |
 
 ### Project Structure
 
@@ -430,35 +431,25 @@ The power of hexagonal architecture: swap adapters without changing the core.
 // infrastructure/config/container.ts
 
 function configureDevelopment(container: Container): void {
-  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort')
-    .to(InMemoryOrderRepository);
-  container.bind<IEventPublisherPort>('IEventPublisherPort')
-    .to(InMemoryEventPublisher);
-  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort')
-    .to(FakePaymentGateway);
+  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort').to(InMemoryOrderRepository);
+  container.bind<IEventPublisherPort>('IEventPublisherPort').to(InMemoryEventPublisher);
+  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort').to(FakePaymentGateway);
 }
 
 function configureTest(container: Container): void {
-  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort')
-    .to(InMemoryOrderRepository);
-  container.bind<IEventPublisherPort>('IEventPublisherPort')
-    .to(SpyEventPublisher);
-  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort')
-    .to(MockPaymentGateway);
+  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort').to(InMemoryOrderRepository);
+  container.bind<IEventPublisherPort>('IEventPublisherPort').to(SpyEventPublisher);
+  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort').to(MockPaymentGateway);
 }
 
 function configureProduction(container: Container): void {
-  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort')
-    .to(PostgresOrderRepository);
-  container.bind<IEventPublisherPort>('IEventPublisherPort')
-    .to(RabbitMQEventPublisher);
-  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort')
-    .to(StripePaymentGateway);
+  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort').to(PostgresOrderRepository);
+  container.bind<IEventPublisherPort>('IEventPublisherPort').to(RabbitMQEventPublisher);
+  container.bind<IPaymentGatewayPort>('IPaymentGatewayPort').to(StripePaymentGateway);
 }
 
 function configureWithMongoDB(container: Container): void {
-  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort')
-    .to(MongoDBOrderRepository);
+  container.bind<IOrderRepositoryPort>('IOrderRepositoryPort').to(MongoDBOrderRepository);
 }
 ```
 

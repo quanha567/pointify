@@ -1,6 +1,7 @@
 # DDD Tactical Patterns
 
 > Sources:
+>
 > - [Domain-Driven Design: The Blue Book](https://www.domainlanguage.com/ddd/blue-book/) — Eric Evans (2003)
 > - [Implementing Domain-Driven Design](https://openlibrary.org/works/OL17392277W) — Vaughn Vernon (2013)
 > - [Effective Aggregate Design](https://www.dddcommunity.org/library/vernon_2011/) — Vaughn Vernon
@@ -99,13 +100,13 @@ An object defined by its **attributes**, not identity. Two value objects are equ
 
 ### Common Value Objects
 
-| Value Object | Attributes | Validation |
-|--------------|-----------|------------|
-| Money | amount, currency | amount >= 0 |
-| Email | address | valid email format |
-| Address | street, city, zip, country | required fields |
-| DateRange | start, end | start <= end |
-| Quantity | value | value > 0 |
+| Value Object | Attributes                 | Validation         |
+| ------------ | -------------------------- | ------------------ |
+| Money        | amount, currency           | amount >= 0        |
+| Email        | address                    | valid email format |
+| Address      | street, city, zip, country | required fields    |
+| DateRange    | start, end                 | start <= end       |
+| Quantity     | value                      | value > 0          |
 
 ### Pattern
 
@@ -173,14 +174,15 @@ A cluster of entities and value objects treated as a single unit for data change
 
 ### Aggregate Sizing Heuristics
 
-| Metric | Healthy | Warning | Action |
-|--------|---------|---------|--------|
-| Entities per aggregate | 1-5 | 6-10 | >10: Split |
-| Lines of code (root) | <500 | 500-1000 | >1000: Split |
-| Transaction lock time | <100ms | 100-500ms | >500ms: Split |
-| Concurrent modification conflicts | Rare | Occasional | Frequent: Split |
+| Metric                            | Healthy | Warning    | Action          |
+| --------------------------------- | ------- | ---------- | --------------- |
+| Entities per aggregate            | 1-5     | 6-10       | >10: Split      |
+| Lines of code (root)              | <500    | 500-1000   | >1000: Split    |
+| Transaction lock time             | <100ms  | 100-500ms  | >500ms: Split   |
+| Concurrent modification conflicts | Rare    | Occasional | Frequent: Split |
 
 **Questions to ask:**
+
 - Can parts be eventually consistent? → Separate aggregates
 - Do all parts change together? → Same aggregate
 - Are there independent lifecycles? → Separate aggregates
@@ -210,7 +212,7 @@ flowchart LR
     style Product fill:#3b82f6,stroke:#2563eb,color:white
 ```
 
-*Reference by ID only*
+_Reference by ID only_
 
 **Bad: God Aggregate**
 
@@ -226,7 +228,7 @@ flowchart TB
     style GodOrder fill:#ef4444,stroke:#dc2626,color:white
 ```
 
-*Too large, too many reasons to change, contention issues*
+_Too large, too many reasons to change, contention issues_
 
 ### Pattern
 

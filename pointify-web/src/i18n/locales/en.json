@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "Pointify",
+    "morphingTexts": [
+      "Estimate together, in real time.",
+      "Align together, in real time.",
+      "Decide together, in real time.",
+      "Ship together, in real time."
+    ],
+    "subtitle": "Create an estimation room in seconds. Share the code. Get your team on the same page.",
+    "brandSubtitle": "Real-time Planning Poker for agile teams"
+  },
+  "nav": {
+    "home": "Home",
+    "language": "Language",
+    "theme": "Theme",
+    "signIn": "Sign In"
+  },
+  "createRoom": {
+    "badge": "For Facilitators",
+    "title": "Create a Room",
+    "description": "Start an estimation room, choose your deck preset, and share the room code with your team.",
+    "cta": "Create Room",
+    "modalTitle": "Set Up a New Estimation Room",
+    "modalDescription": "Configure room settings and deck presets to begin your Scrum Poker session.",
+    "fieldRoomName": "Room Name",
+    "fieldRoomNamePlaceholder": "e.g., Sprint 15 Planning",
+    "fieldCreatorName": "Your Display Name",
+    "fieldCreatorNamePlaceholder": "e.g., Alex (Scrum Master)",
+    "fieldDeck": "Choose Deck Preset",
+    "deckCards": "Cards in this deck:",
+    "fieldRole": "Initial Role",
+    "roleEstimator": "Estimator",
+    "roleSpectator": "Spectator",
+    "cancel": "Cancel",
+    "submit": "Create & Join Room",
+    "successToast": "Room created — {{name}} ({{code}})",
+    "errorNameRequired": "Please enter your display name"
+  },
+  "joinRoom": {
+    "badge": "For Participants",
+    "title": "Join a Room",
+    "description": "Enter the room code shared by your facilitator to join the estimation round.",
+    "fieldCode": "Room Code",
+    "fieldCodePlaceholder": "e.g., PT-9842",
+    "fieldName": "Your Display Name",
+    "fieldNamePlaceholder": "e.g., David Chen",
+    "fieldRole": "Your Role",
+    "cta": "Join Room",
+    "successToast": "Joining room {{code}} as {{role}}",
+    "errorCodeRequired": "Please enter the room code",
+    "errorNameRequired": "Please enter your display name"
+  },
+  "recentRooms": {
+    "title": "Recently Visited Rooms",
+    "clearHistory": "Clear History",
+    "clearedToast": "Cleared recent rooms history",
+    "copiedToast": "Copied room code: {{code}}",
+    "rejoin": "Rejoin",
+    "emptyTitle": "No recent rooms yet",
+    "emptySubtitle": "Rooms you create or join will appear here automatically for quick re-entry.",
+    "justNow": "Just now",
+    "hoursAgo": "{{count}}h ago"
+  },
+  "decks": {
+    "fibonacci": {
+      "name": "Fibonacci",
+      "description": "Standard sequence (0, 1, 2, 3, 5, 8, 13…)"
+    },
+    "modified-fibonacci": {
+      "name": "Modified Fibonacci",
+      "description": "Includes ½ and rounded large numbers"
+    },
+    "t-shirt": {
+      "name": "T-Shirt Sizes",
+      "description": "Qualitative estimation (XS → XXL)"
+    },
+    "powers-of-2": {
+      "name": "Powers of 2",
+      "description": "Doubling sequence for exponential jumps"
+    }
+  },
+  "roles": {
+    "estimator": "Estimator",
+    "spectator": "Spectator"
+  },
+  "auth": {
+    "loginTab": "Sign In",
+    "registerTab": "Create Account",
+    "loginTitle": "Welcome back to Pointify",
+    "loginSubtitle": "Sign in to manage your agile rooms and custom estimation decks.",
+    "registerTitle": "Get started with Pointify",
+    "registerSubtitle": "Create an account to host persistent sprint estimation sessions.",
+    "googleButton": "Continue with Google",
+    "orDivider": "or continue with email",
+    "displayNameLabel": "Your Display Name",
+    "displayNamePlaceholder": "e.g., Alex Johnson",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "alex@company.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Forgot password?",
+    "submitLogin": "Sign In",
+    "submitRegister": "Create Account",
+    "guestOption": "Need to estimate right now without an account?",
+    "guestAction": "Continue as Guest",
+    "guestModalTitle": "Quick Guest Access",
+    "guestModalDescription": "Enter a temporary nickname to join or create estimation rooms instantly.",
+    "guestNamePlaceholder": "e.g., Sarah (Developer)",
+    "guestSubmit": "Enter as Guest",
+    "noAccountPrompt": "Don't have an account?",
+    "haveAccountPrompt": "Already have an account?",
+    "switchRegister": "Sign up",
+    "switchLogin": "Sign in",
+    "showcaseBadge": "Enterprise-grade Agile Tool",
+    "showcaseTitle": "Streamlined Poker Estimation for Modern Teams",
+    "showcaseItem1": "Live WebSocket consensus with zero latency",
+    "showcaseItem2": "Persistent room management & story point analytics",
+    "showcaseItem3": "Frictionless guest invites for cross-functional stakeholders",
+    "successLoginToast": "Welcome back, {{name}}!",
+    "successRegisterToast": "Account created successfully. Welcome, {{name}}!",
+    "successGuestToast": "Joined session as guest: {{name}}",
+    "logoutToast": "Signed out successfully",
+    "forgotModalTitle": "Reset your password",
+    "forgotModalDesc": "Enter your email address and we'll send you a password reset link.",
+    "forgotSubmit": "Send Reset Link",
+    "forgotSentToast": "Password reset link sent to your email."
+  },
+  "account": {
+    "profile": "Profile",
+    "myRooms": "My Rooms",
+    "guestBadge": "Guest",
+    "signOut": "Sign Out",
+    "upgradeToAccount": "Save Progress & Register"
+  }
+}

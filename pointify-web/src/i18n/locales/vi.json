@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "Pointify",
+    "morphingTexts": [
+      "Ước lượng cùng nhau, ngay lập tức.",
+      "Đồng thuận cùng nhau, ngay lập tức.",
+      "Quyết định cùng nhau, ngay lập tức.",
+      "Triển khai cùng nhau, ngay lập tức."
+    ],
+    "subtitle": "Tạo phòng ước lượng trong vài giây. Chia sẻ mã phòng. Cả nhóm đồng bộ tức thì.",
+    "brandSubtitle": "Planning Poker thời gian thực cho nhóm Agile"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "language": "Ngôn ngữ",
+    "theme": "Giao diện",
+    "signIn": "Đăng nhập"
+  },
+  "createRoom": {
+    "badge": "Dành cho Người điều phối",
+    "title": "Tạo phòng mới",
+    "description": "Khởi tạo phòng ước lượng, chọn bộ bài và chia sẻ mã phòng cho đồng đội.",
+    "cta": "Tạo phòng",
+    "modalTitle": "Thiết lập phòng ước lượng mới",
+    "modalDescription": "Cấu hình thông tin phòng và bộ bài để bắt đầu phiên Scrum Poker.",
+    "fieldRoomName": "Tên phòng",
+    "fieldRoomNamePlaceholder": "vd: Sprint 15 Planning",
+    "fieldCreatorName": "Tên hiển thị của bạn",
+    "fieldCreatorNamePlaceholder": "vd: Alex (Scrum Master)",
+    "fieldDeck": "Chọn bộ bài",
+    "deckCards": "Các lá bài trong bộ bài:",
+    "fieldRole": "Vai trò ban đầu",
+    "roleEstimator": "Người ước lượng",
+    "roleSpectator": "Quan sát viên",
+    "cancel": "Hủy",
+    "submit": "Tạo & Vào phòng",
+    "successToast": "Đã tạo phòng {{name}} ({{code}})",
+    "errorNameRequired": "Vui lòng nhập tên của bạn"
+  },
+  "joinRoom": {
+    "badge": "Dành cho Thành viên",
+    "title": "Tham gia phòng",
+    "description": "Nhập mã phòng được chia sẻ từ đồng đội để tham gia vòng ước lượng.",
+    "fieldCode": "Mã phòng",
+    "fieldCodePlaceholder": "vd: PT-9842",
+    "fieldName": "Tên hiển thị của bạn",
+    "fieldNamePlaceholder": "vd: David Chen",
+    "fieldRole": "Vai trò",
+    "cta": "Vào phòng",
+    "successToast": "Đang tham gia phòng {{code}} với vai trò {{role}}",
+    "errorCodeRequired": "Vui lòng nhập mã phòng",
+    "errorNameRequired": "Vui lòng nhập tên của bạn"
+  },
+  "recentRooms": {
+    "title": "Phòng đã tham gia gần đây",
+    "clearHistory": "Xóa lịch sử",
+    "clearedToast": "Đã dọn dẹp lịch sử phòng gần đây",
+    "copiedToast": "Đã sao chép mã phòng: {{code}}",
+    "rejoin": "Vào lại",
+    "emptyTitle": "Chưa có phòng nào được lưu gần đây",
+    "emptySubtitle": "Các phòng bạn tạo hoặc tham gia sẽ tự động hiển thị tại đây.",
+    "justNow": "Vừa xong",
+    "hoursAgo": "{{count}} giờ trước"
+  },
+  "decks": {
+    "fibonacci": {
+      "name": "Fibonacci",
+      "description": "Chuỗi tiêu chuẩn (0, 1, 2, 3, 5, 8, 13…)"
+    },
+    "modified-fibonacci": {
+      "name": "Modified Fibonacci",
+      "description": "Bổ sung ½ và làm tròn số lớn"
+    },
+    "t-shirt": {
+      "name": "T-Shirt Sizes",
+      "description": "Ước lượng định tính (XS → XXL)"
+    },
+    "powers-of-2": {
+      "name": "Powers of 2",
+      "description": "Lũy thừa 2 cho thang phức tạp nhân đôi"
+    }
+  },
+  "roles": {
+    "estimator": "Người ước lượng",
+    "spectator": "Quan sát viên"
+  },
+  "auth": {
+    "loginTab": "Đăng nhập",
+    "registerTab": "Tạo tài khoản",
+    "loginTitle": "Chào mừng trở lại Pointify",
+    "loginSubtitle": "Đăng nhập để quản trị các phòng ước lượng và bộ bài tùy biến của bạn.",
+    "registerTitle": "Bắt đầu cùng Pointify",
+    "registerSubtitle": "Tạo tài khoản để sở hữu và lưu trữ các phiên ước lượng sprint lâu dài.",
+    "googleButton": "Tiếp tục với Google",
+    "orDivider": "hoặc tiếp tục với email",
+    "displayNameLabel": "Tên hiển thị của bạn",
+    "displayNamePlaceholder": "vd: Alex Nguyễn",
+    "emailLabel": "Địa chỉ Email",
+    "emailPlaceholder": "alex@congty.com",
+    "passwordLabel": "Mật khẩu",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Quên mật khẩu?",
+    "submitLogin": "Đăng nhập",
+    "submitRegister": "Tạo tài khoản",
+    "guestOption": "Bạn muốn ước lượng ngay mà không cần tạo tài khoản?",
+    "guestAction": "Tiếp tục với tư cách Khách",
+    "guestModalTitle": "Truy cập nhanh với vai trò Khách",
+    "guestModalDescription": "Nhập tên hiển thị tạm thời để tham gia hoặc tạo phòng ước lượng ngay lập tức.",
+    "guestNamePlaceholder": "vd: Tuấn (Developer)",
+    "guestSubmit": "Vào phiên với tư cách Khách",
+    "noAccountPrompt": "Chưa có tài khoản?",
+    "haveAccountPrompt": "Đã có tài khoản?",
+    "switchRegister": "Đăng ký ngay",
+    "switchLogin": "Đăng nhập",
+    "showcaseBadge": "Công cụ Agile chuyên nghiệp",
+    "showcaseTitle": "Ước lượng Scrum Poker chuẩn xác cho Agile Teams",
+    "showcaseItem1": "Đồng thuận thời gian thực với độ trễ cực thấp",
+    "showcaseItem2": "Quản lý phòng vĩnh viễn & theo dõi lịch sử story points",
+    "showcaseItem3": "Mời thành viên tham gia dễ dàng không rào cản",
+    "successLoginToast": "Chào mừng trở lại, {{name}}!",
+    "successRegisterToast": "Tạo tài khoản thành công. Chào mừng, {{name}}!",
+    "successGuestToast": "Đã tham gia phiên với vai trò khách: {{name}}",
+    "logoutToast": "Đã đăng xuất thành công",
+    "forgotModalTitle": "Đặt lại mật khẩu",
+    "forgotModalDesc": "Nhập địa chỉ email của bạn để nhận liên kết khôi phục mật khẩu.",
+    "forgotSubmit": "Gửi liên kết khôi phục",
+    "forgotSentToast": "Đã gửi liên kết đặt lại mật khẩu vào email của bạn."
+  },
+  "account": {
+    "profile": "Hồ sơ",
+    "myRooms": "Phòng của tôi",
+    "guestBadge": "Khách",
+    "signOut": "Đăng xuất",
+    "upgradeToAccount": "Lưu tiến trình & Đăng ký"
+  }
+}
