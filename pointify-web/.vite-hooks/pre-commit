@@ -1,1 +1,1 @@
-vp staged
+cd pointify-web && vp staged

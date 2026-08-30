@@ -3,9 +3,16 @@
     "target": "es2023",
     "module": "esnext",
     "lib": ["ES2023", "DOM"],
-    "types": ["vite/client"],
+    "rootDir": "./src",
+    "types": ["vite/client", "node", "react", "react-dom"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
+
+    "jsx": "react-jsx",
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
