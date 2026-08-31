@@ -23,5 +23,9 @@ Pointify is a real-time collaborative Scrum Poker (Planning Poker) application f
 | **Guest Participant** | **Thành viên khách** | Unauthenticated participant identified only by display name in a room | Anonymous user, temp user |
 | **Authentication** | **Xác thực** | Identity verification process (Login, Register, Logout) via Firebase | Login flow, signin |
 | **Facilitator Key** | **Khóa điều phối** | Secret token granting facilitator privileges to manage room states and rounds | Admin token, host secret |
+| **Room Code** | **Mã phòng** | Short, human-readable unique identifier for room access and sharing (e.g., PT-8492) | Room number, PIN, hash, mã số phòng |
 | **Claim Facilitator** | **Nhận quyền điều phối** | Action allowing an active participant to take over facilitator role after inactivity timeout | Steal host, take admin |
+| **Command Palette** | **Bảng điều khiển lệnh** | Global search and quick navigation modal activated via keyboard shortcut (Cmd+K / Ctrl+K) | Search bar, omnibox, thanh tìm kiếm |
+| **Admin Shell** | **Khung quản trị** | Fullscreen layout shell with collapsible sidebar, dynamic breadcrumbs, and command bar | Admin page, admin frame, layout quản trị |
+
 

@@ -1,5 +1,5 @@
-import type { Table } from '@tanstack/react-table';
 import { SlidersHorizontalIcon, RotateCcwIcon, RowsIcon, CheckIcon } from 'lucide-react';
+import type { RowData } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -10,15 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import type { TableDensity } from './types';
+import type { TableDensity, DataTableInstance } from './types';
 
-interface DataTableViewOptionsProps<TData> {
-  table: Table<TData>;
+interface DataTableViewOptionsProps<TData extends RowData = any> {
+  table: DataTableInstance<TData>;
   density: TableDensity;
   onDensityChange: (density: TableDensity) => void;
 }
 
-export function DataTableViewOptions<TData>({
+export function DataTableViewOptions<TData extends RowData = any>({
   table,
   density,
   onDensityChange,
@@ -33,16 +33,13 @@ export function DataTableViewOptions<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto h-8 text-xs border-border/80 hover:border-primary/50 transition-colors"
+          className="ml-auto h-8.5 text-xs border-border bg-background dark:bg-zinc-900 hover:bg-accent text-foreground font-medium rounded-lg shadow-xs transition-colors cursor-pointer"
         >
           <SlidersHorizontalIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
           Tùy chỉnh cột
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-56 shadow-xl border-border/60 bg-popover/95 backdrop-blur-md"
-      >
+      <DropdownMenuContent align="end" className="w-56 shadow-xl border-border/60 bg-popover">
         <DropdownMenuLabel className="text-xs font-semibold text-foreground/80 flex items-center justify-between">
           <span>Độ giãn dòng (Density)</span>
           <RowsIcon className="h-3.5 w-3.5 text-muted-foreground" />

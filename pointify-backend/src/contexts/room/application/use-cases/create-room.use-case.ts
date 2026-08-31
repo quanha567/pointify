@@ -5,6 +5,7 @@ import { Room } from '../../domain/room.aggregate.js';
 import { Participant } from '../../domain/entities/participant.entity.js';
 import { Deck } from '../../domain/value-objects/deck.vo.js';
 import { FacilitatorKey } from '../../domain/value-objects/facilitator-key.vo.js';
+import { RoomCode } from '../../domain/value-objects/room-code.vo.js';
 import { ok, type Result } from '../../../../shared/domain/result.js';
 import type { CreateRoomInputDto, CreateRoomResultDto } from '../dtos/room.dto.js';
 
@@ -16,7 +17,21 @@ export class CreateRoomUseCase {
   ) {}
 
   async execute(input: CreateRoomInputDto): Promise<Result<CreateRoomResultDto, Error>> {
-    const roomId = crypto.randomBytes(4).toString('hex'); // 8-char human readable room code
+    let roomId = '';
+    const maxRetries = 5;
+    for (let i = 0; i < maxRetries; i++) {
+      const candidateCode = RoomCode.generate().value;
+      const existing = await this.roomRepository.findById(candidateCode);
+      if (!existing) {
+        roomId = candidateCode;
+        break;
+      }
+    }
+
+    if (!roomId) {
+      roomId = RoomCode.generate().value;
+    }
+
     const facilitatorId = input.facilitator.id || crypto.randomUUID();
 
     const facilitator = Participant.create(facilitatorId, {

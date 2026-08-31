@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import crypto from 'node:crypto';
 import { FirebaseService } from '../../../../firebase/firebase.service.js';
 import type {
   IAuthService,
   DecodedAuthToken,
+  CreateUserAuthParams,
+  CreatedAuthUser,
 } from '../../application/services/auth-service.interface.js';
 
 @Injectable()
@@ -23,6 +26,26 @@ export class FirebaseAuthService implements IAuthService {
       name: decoded.name,
       picture: decoded.picture ?? null,
       providerId: decoded.firebase?.sign_in_provider || 'password',
+    };
+  }
+
+  async createUser(params: CreateUserAuthParams): Promise<CreatedAuthUser> {
+    const password =
+      params.password ||
+      `Pt!${crypto.randomBytes(8).toString('hex')}${crypto.randomInt(10, 99)}`;
+
+    const userRecord = await this.firebaseService.getAuth().createUser({
+      email: params.email,
+      password,
+      displayName: params.displayName,
+      photoURL: params.photoURL || undefined,
+    });
+
+    return {
+      uid: userRecord.uid,
+      email: userRecord.email ?? null,
+      displayName: userRecord.displayName || params.displayName,
+      photoURL: userRecord.photoURL ?? null,
     };
   }
 }

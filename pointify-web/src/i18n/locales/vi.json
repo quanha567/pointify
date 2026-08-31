@@ -29,7 +29,11 @@
     "fieldCreatorNamePlaceholder": "vd: Alex (Scrum Master)",
     "fieldDeck": "Chọn bộ bài",
     "deckCards": "Các lá bài trong bộ bài:",
+    "deckCardsCount": "lá bài",
     "fieldRole": "Vai trò ban đầu",
+    "spectatorModeTitle": "Chế độ Quan sát viên",
+    "spectatorModeActiveDesc": "Chỉ theo dõi tiến trình ước lượng, không tham gia bỏ phiếu bài.",
+    "spectatorModeInactiveDesc": "Tham gia với tư cách Người ước lượng (trực tiếp chọn lá bài).",
     "roleEstimator": "Người ước lượng",
     "roleSpectator": "Quan sát viên",
     "cancel": "Hủy",
@@ -41,12 +45,19 @@
     "badge": "Dành cho Thành viên",
     "title": "Tham gia phòng",
     "description": "Nhập mã phòng được chia sẻ từ đồng đội để tham gia vòng ước lượng.",
+    "modalTitle": "Tham gia phòng ước lượng",
+    "modalDescription": "Nhập mã phòng và tên của bạn để cùng đội ngũ bắt đầu ước lượng.",
     "fieldCode": "Mã phòng",
     "fieldCodePlaceholder": "vd: PT-9842",
     "fieldName": "Tên hiển thị của bạn",
     "fieldNamePlaceholder": "vd: David Chen",
     "fieldRole": "Vai trò",
+    "spectatorModeTitle": "Chế độ Quan sát viên",
+    "spectatorModeActiveDesc": "Chỉ theo dõi tiến trình ước lượng, không tham gia bỏ phiếu bài.",
+    "spectatorModeInactiveDesc": "Tham gia với tư cách Người ước lượng (trực tiếp chọn lá bài).",
+    "cancel": "Hủy",
     "cta": "Vào phòng",
+    "submit": "Tham gia phòng",
     "successToast": "Đang tham gia phòng {{code}} với vai trò {{role}}",
     "errorCodeRequired": "Vui lòng nhập mã phòng",
     "errorNameRequired": "Vui lòng nhập tên của bạn"
@@ -124,13 +135,233 @@
     "forgotModalTitle": "Đặt lại mật khẩu",
     "forgotModalDesc": "Nhập địa chỉ email của bạn để nhận liên kết khôi phục mật khẩu.",
     "forgotSubmit": "Gửi liên kết khôi phục",
-    "forgotSentToast": "Đã gửi liên kết đặt lại mật khẩu vào email của bạn."
+    "forgotSentToast": "Đã gửi liên kết đặt lại mật khẩu vào email của bạn.",
+    "processing": "Đang xử lý...",
+    "cancelButton": "Hủy",
+    "fillFieldsError": "Vui lòng điền đầy đủ các trường bắt buộc",
+    "enterEmailError": "Vui lòng nhập địa chỉ email",
+    "enterNameError": "Vui lòng nhập tên hiển thị",
+    "failedResetEmail": "Không thể gửi email đặt lại mật khẩu",
+    "failedSignOut": "Không thể đăng xuất"
   },
   "account": {
     "profile": "Hồ sơ",
     "myRooms": "Phòng của tôi",
     "guestBadge": "Khách",
     "signOut": "Đăng xuất",
-    "upgradeToAccount": "Lưu tiến trình & Đăng ký"
+    "upgradeToAccount": "Lưu tiến trình & Đăng ký",
+    "temporarySession": "Phiên tạm thời"
+  },
+  "admin": {
+    "brand": {
+      "title": "Pointify Admin",
+      "subtitle": "Scrum Poker • v1.0"
+    },
+    "nav": {
+      "overview": "Tổng quan",
+      "management": "Quản lý",
+      "system": "Hệ thống",
+      "dashboard": "Bảng điều khiển",
+      "users": "Quản lý tài khoản",
+      "rooms": "Phòng ước lượng",
+      "decks": "Bộ bài (Decks)",
+      "settings": "Cấu hình hệ thống",
+      "logs": "Nhật ký hoạt động",
+      "comingSoon": "Sắp có"
+    },
+    "breadcrumbs": {
+      "admin": "Admin",
+      "overview": "Tổng quan",
+      "management": "Quản lý",
+      "system": "Hệ thống",
+      "users": "Quản lý tài khoản",
+      "rooms": "Phòng ước lượng",
+      "settings": "Cấu hình hệ thống"
+    },
+    "header": {
+      "adminRole": "Quản trị viên",
+      "backToHome": "Về trang chủ",
+      "overview": "Tổng quan",
+      "signOut": "Đăng xuất"
+    },
+    "navUser": {
+      "adminRole": "Quản trị viên",
+      "backToApp": "Về ứng dụng chính",
+      "systemOverview": "Tổng quan hệ thống",
+      "signOut": "Đăng xuất"
+    },
+    "search": {
+      "trigger": "Tìm kiếm nhanh...",
+      "triggerShort": "Tìm kiếm...",
+      "dialogTitle": "Điều hướng Admin",
+      "inputPlaceholder": "Nhập tên trang hoặc thao tác cần tìm...",
+      "empty": "Không tìm thấy kết quả phù hợp.",
+      "groupNav": "Trang quản trị (Navigation)",
+      "groupTheme": "Giao diện & Hệ thống",
+      "navDashboard": "Tổng quan hệ thống (Dashboard)",
+      "navUsers": "Quản lý tài khoản (Users)",
+      "navRooms": "Phòng ước lượng (Rooms)",
+      "navDecks": "Bộ bài ước lượng (Decks)",
+      "navSettings": "Cấu hình hệ thống (Settings)",
+      "themeLight": "Chuyển sang giao diện Sáng (Light Mode)",
+      "themeDark": "Chuyển sang giao diện Tối (Dark Mode)",
+      "backToHome": "Về trang chủ ứng dụng (Pointify)",
+      "signOut": "Đăng xuất tài khoản quản trị"
+    },
+    "theme": {
+      "toggleTitle": "Chuyển đổi giao diện",
+      "light": "Sáng (Light)",
+      "dark": "Tối (Dark)",
+      "system": "Hệ thống (Auto)"
+    },
+    "overview": {
+      "title": "Tổng quan Quản trị (Admin Overview)",
+      "subtitle": "Theo dõi các chỉ số vận hành, tài khoản người dùng và trạng thái hệ thống Scrum Poker.",
+      "stats": {
+        "totalUsers": "Tổng số tài khoản",
+        "totalUsersChange": "+14% so với tháng trước",
+        "rooms": "Phòng ước lượng",
+        "roomsChange": "+28 phòng đang hoạt động",
+        "admins": "Quản trị viên",
+        "adminsChange": "Bảo mật 2FA 100%",
+        "latency": "Độ trễ hệ thống",
+        "latencyChange": "Uptime 99.98%"
+      },
+      "usersCard": {
+        "title": "Quản lý tài khoản (Users Table)",
+        "description": "Bảng dữ liệu ảo hóa cao cấp hỗ trợ cuộn mượt hàng ngàn người dùng, lọc đa tiêu chí, ghim cột và xuất file CSV.",
+        "badge": "AG-Grid Style",
+        "featuresTitle": "Tính năng đã hoàn thiện:",
+        "feature1": "Virtual Scrolling với @tanstack/react-virtual duy trì 60 FPS",
+        "feature2": "Ghim cột trái (Checkbox) và ghim cột phải (Menu thao tác)",
+        "feature3": "Kéo giãn độ rộng cột (Column Resizing) trực quan",
+        "feature4": "Tùy chỉnh ẩn/hiện cột và chuyển đổi độ giãn dòng (Compact / Normal / Comfortable)",
+        "feature5": "Chỉnh sửa và thêm mới tài khoản với TanStack Form + Zod trong Slideout Sheet",
+        "feature6": "Thao tác hàng loạt (Bulk Actions) với thanh công cụ nổi (Floating Toolbar)",
+        "openUsers": "Mở danh sách Người dùng"
+      },
+      "infraCard": {
+        "title": "Trạng thái hạ tầng",
+        "description": "Các dịch vụ kết nối",
+        "auth": "Firebase Auth",
+        "firestore": "Cloud Firestore",
+        "backend": "NestJS Fastify Backend",
+        "connected": "Đã kết nối",
+        "healthy": "Hoạt động tốt"
+      }
+    },
+    "guard": {
+      "loginRequired": "Vui lòng đăng nhập để truy cập trang quản trị",
+      "noPermission": "Bạn không có quyền truy cập khu vực Quản trị viên",
+      "loading": "Đang xác thực quyền quản trị..."
+    },
+    "users": {
+      "title": "Quản lý tài khoản (Users)",
+      "subtitle": "Bảng dữ liệu ảo hóa kết nối dữ liệu thật từ máy chủ, hỗ trợ tìm kiếm, lọc và phân quyền.",
+      "refresh": "Làm mới",
+      "createAccount": "Thêm tài khoản",
+      "searchPlaceholder": "Tìm theo tên, email, UID...",
+      "exportCsv": "Xuất CSV",
+      "columns": {
+        "user": "Người dùng",
+        "email": "Email",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "provider": "Đăng nhập qua",
+        "createdAt": "Ngày tạo",
+        "lastLoginAt": "Đăng nhập gần nhất",
+        "actions": "Thao tác",
+        "never": "Chưa đăng nhập"
+      },
+      "roles": {
+        "admin": "Quản trị viên",
+        "member": "Thành viên"
+      },
+      "statuses": {
+        "active": "Hoạt động",
+        "disabled": "Đã khóa"
+      },
+      "providers": {
+        "google": "Google Auth",
+        "password": "Mật khẩu Email",
+        "unknown": "Khác"
+      },
+      "actions": {
+        "copyUid": "Sao chép UID",
+        "edit": "Chỉnh sửa thông tin",
+        "disable": "Khóa tài khoản",
+        "activate": "Mở khóa tài khoản",
+        "promoteAdmin": "Cấp quyền Quản trị viên",
+        "demoteMember": "Chuyển về Thành viên"
+      },
+      "bulk": {
+        "activate": "Mở khóa ({{count}})",
+        "disable": "Khóa ({{count}})",
+        "confirmDisableTitle": "Khóa {{count}} tài khoản đã chọn?",
+        "confirmDisableDesc": "Các tài khoản bị khóa sẽ không thể đăng nhập hoặc tham gia phòng ước lượng. Bạn có thể mở khóa lại bất cứ lúc nào.",
+        "confirmDisableButton": "Khóa tài khoản"
+      },
+      "confirm": {
+        "cancel": "Hủy",
+        "disableTitle": "Khóa tài khoản người dùng?",
+        "disableDesc": "Người dùng {{name}} sẽ bị vô hiệu hóa truy cập ngay lập tức.",
+        "disableButton": "Khóa tài khoản",
+        "changeRoleTitle": "Thay đổi quyền tài khoản?",
+        "changeRoleDesc": "Bạn có chắc chắn muốn chuyển vai trò của {{name}} thành {{role}}?",
+        "confirmButton": "Xác nhận"
+      },
+      "form": {
+        "createTitle": "Thêm tài khoản mới",
+        "editTitle": "Chỉnh sửa tài khoản",
+        "createDesc": "Nhập thông tin người dùng mới vào hệ thống Pointify.",
+        "editDesc": "Cập nhật quyền hạn và trạng thái cho {{name}}.",
+        "email": "Địa chỉ Email",
+        "emailPlaceholder": "user@congty.com",
+        "displayName": "Tên hiển thị",
+        "displayNamePlaceholder": "Alex Nguyễn",
+        "photoURL": "Đường dẫn Ảnh đại diện (URL)",
+        "photoURLPlaceholder": "https://...",
+        "role": "Vai trò tài khoản",
+        "status": "Trạng thái hoạt động",
+        "roleAdminDesc": "Toàn quyền quản trị hệ thống và người dùng",
+        "roleMemberDesc": "Tạo và tham gia các phòng Scrum Poker",
+        "statusActiveDesc": "Được phép đăng nhập và sử dụng bình thường",
+        "statusDisabledDesc": "Bị khóa, không thể đăng nhập vào hệ thống",
+        "cancel": "Hủy",
+        "createSubmit": "Tạo tài khoản",
+        "editSubmit": "Lưu thay đổi",
+        "saving": "Đang lưu...",
+        "validationEmail": "Địa chỉ email không hợp lệ",
+        "validationDisplayName": "Tên hiển thị phải có từ 2 đến 50 ký tự",
+        "validationPhotoUrl": "Đường dẫn ảnh đại diện không hợp lệ"
+      },
+      "toasts": {
+        "copiedUid": "Đã sao chép UID: {{uid}}",
+        "createdSuccess": "Đã tạo tài khoản {{name}}",
+        "updatedSuccess": "Đã cập nhật tài khoản {{name}}",
+        "bulkActivated": "Đã kích hoạt {{count}} tài khoản",
+        "bulkDisabled": "Đã khóa {{count}} tài khoản",
+        "selfLockError": "Không thể tự khóa tài khoản quản trị của chính bạn",
+        "selfDemoteError": "Không thể tự hạ quyền quản trị của chính bạn",
+        "selfExcludedInfo": "Tài khoản của bạn đã được tự động loại trừ khỏi danh sách khóa",
+        "fetchError": "Không thể tải danh sách tài khoản",
+        "saveError": "Có lỗi xảy ra khi lưu thông tin",
+        "bulkError": "Không thể cập nhật trạng thái hàng loạt"
+      },
+      "error": {
+        "title": "Không thể tải dữ liệu",
+        "desc": "Đã xảy ra lỗi khi lấy danh sách người dùng từ máy chủ.",
+        "retry": "Thử lại"
+      }
+    }
+  },
+  "footer": {
+    "brand": "Pointify \u2022 Agile Scrum Poker",
+    "tagline": "Xây dựng cho trải nghiệm ước lượng sprint thời gian thực mượt mà."
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn đang tìm không tồn tại hoặc đã được di chuyển.",
+    "backHome": "Về trang chủ"
   }
 }

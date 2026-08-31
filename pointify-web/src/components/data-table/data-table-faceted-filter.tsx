@@ -1,4 +1,4 @@
-import type { Column } from '@tanstack/react-table';
+import type { RowData } from '@tanstack/react-table';
 import { CheckIcon, PlusCircleIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Badge } from '../ui/badge';
@@ -14,15 +14,15 @@ import {
 } from '../ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Separator } from '../ui/separator';
-import type { DataTableFilterOption } from './types';
+import type { DataTableFilterOption, DataTableColumn } from './types';
 
-interface DataTableFacetedFilterProps<TData, TValue> {
-  column?: Column<TData, TValue>;
+interface DataTableFacetedFilterProps<TData extends RowData = any, TValue = any> {
+  column?: DataTableColumn<TData, TValue>;
   title?: string;
   options: DataTableFilterOption[];
 }
 
-export function DataTableFacetedFilter<TData, TValue>({
+export function DataTableFacetedFilter<TData extends RowData = any, TValue = any>({
   column,
   title,
   options,
@@ -35,22 +35,19 @@ export function DataTableFacetedFilter<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 border-dashed border-border/80 text-xs hover:border-primary/50 transition-colors"
+          className="h-8.5 border-border bg-background dark:bg-zinc-900 hover:bg-accent text-foreground text-xs shadow-xs font-medium rounded-lg transition-colors cursor-pointer"
         >
           <PlusCircleIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
           {title}
           {selectedValues.size > 0 && (
             <>
               <Separator orientation="vertical" className="mx-1.5 h-4" />
-              <Badge
-                variant="secondary"
-                className="rounded-sm px-1 font-normal lg:hidden text-[10px]"
-              >
+              <Badge className="rounded-md px-1.5 py-0 h-4 font-semibold lg:hidden text-[10px] bg-primary/15 text-primary border border-primary/25 dark:bg-primary/20 dark:text-primary-foreground">
                 {selectedValues.size}
               </Badge>
               <div className="hidden space-x-1 lg:flex">
                 {selectedValues.size > 2 ? (
-                  <Badge variant="secondary" className="rounded-sm px-1 font-normal text-[10px]">
+                  <Badge className="rounded-md px-1.5 py-0 h-4 font-semibold text-[10px] bg-primary/15 text-primary border border-primary/25 dark:bg-primary/20 dark:text-primary-foreground">
                     {selectedValues.size} đã chọn
                   </Badge>
                 ) : (
@@ -58,9 +55,8 @@ export function DataTableFacetedFilter<TData, TValue>({
                     .filter((option) => selectedValues.has(option.value))
                     .map((option) => (
                       <Badge
-                        variant="secondary"
                         key={option.value}
-                        className="rounded-sm px-1.5 font-normal text-[10px]"
+                        className="rounded-md px-1.5 py-0 h-4 font-semibold text-[10px] bg-primary/15 text-primary border border-primary/25 dark:bg-primary/20 dark:text-primary-foreground"
                       >
                         {option.label}
                       </Badge>

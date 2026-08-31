@@ -1,19 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import i18n from '@/i18n';
+import type { DeckType, ParticipantRole, RecentRoom } from '@/features/room/types/room.types';
 
 export type SupportedLanguage = 'vi' | 'en';
-export type DeckType = 'fibonacci' | 'modified-fibonacci' | 't-shirt' | 'powers-of-2';
-export type ParticipantRole = 'estimator' | 'spectator';
-
-export interface RecentRoom {
-  code: string;
-  name: string;
-  deckType: DeckType;
-  lastVisited: string;
-  role: ParticipantRole;
-  timestamp: number;
-}
+export type { DeckType, ParticipantRole, RecentRoom };
 
 interface AppState {
   language: SupportedLanguage;

@@ -8,7 +8,7 @@ import './style.css';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutes
+      staleTime: 1000 * 60 * 2,
       refetchOnWindowFocus: false,
     },
   },
@@ -21,13 +21,8 @@ const router = createRouter({
   },
 });
 
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
-
 const rootElement = document.getElementById('root');
+
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(

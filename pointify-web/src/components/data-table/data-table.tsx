@@ -1,33 +1,35 @@
 import React, { useRef, useState, useMemo } from 'react';
 import {
-  type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
-  type VisibilityState,
+  type ColumnVisibilityState,
   type ColumnPinningState,
   type RowSelectionState,
   type PaginationState,
   type OnChangeFn,
+  type RowData,
+  useTable,
   flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { cn } from '../../lib/utils';
 import { DataTableToolbar } from './data-table-toolbar';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableFloatingBar } from './data-table-floating-bar';
-import { type TableDensity, type DataTableFilterOption, DENSITY_CONFIGS } from './types';
+import {
+  type TableDensity,
+  type DataTableFilterOption,
+  type DataTableColumnDef,
+  type DataTableColumn,
+  type CustomColumnMeta,
+  dataTableFeatures,
+  DENSITY_CONFIGS,
+} from './types';
 import { Skeleton } from '../ui/skeleton';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '../ui/empty';
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData = any> {
+  columns: DataTableColumnDef<TData, any>[];
   data: TData[];
   isLoading?: boolean;
   searchPlaceholder?: string;
@@ -48,16 +50,23 @@ interface DataTableProps<TData, TValue> {
     sorting: SortingState;
     onSortingChange: (sorting: SortingState) => void;
   };
+  serverFilters?: {
+    globalFilter?: string;
+    onGlobalFilterChange?: (filter: string) => void;
+    columnFilters?: ColumnFiltersState;
+    onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
+  };
   onExportCsv?: (data: TData[]) => void;
   onExportSelected?: (selectedData: TData[]) => void;
   floatingActions?: (selectedRows: TData[]) => React.ReactNode;
   toolbarExtraActions?: React.ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
+  getColumnFlex?: (column: DataTableColumn<TData, any>) => number | string | boolean | undefined;
   className?: string;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData = any>({
   columns,
   data,
   isLoading = false,
@@ -67,23 +76,25 @@ export function DataTable<TData, TValue>({
   totalRows,
   serverPagination,
   serverSorting,
+  serverFilters,
   onExportCsv,
   onExportSelected,
   floatingActions,
   toolbarExtraActions,
   emptyTitle = 'Chưa có dữ liệu',
   emptyDescription = 'Không tìm thấy kết quả nào phù hợp với bộ lọc hiện tại.',
+  getColumnFlex,
   className,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   // Table States
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState<string>('');
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({});
+  const [clientColumnFilters, setClientColumnFilters] = useState<ColumnFiltersState>([]);
+  const [clientGlobalFilter, setClientGlobalFilter] = useState<string>('');
   const [clientSorting, setClientSorting] = useState<SortingState>([]);
   const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
-    left: ['select'],
-    right: ['actions'],
+    start: ['select'],
+    end: ['actions'],
   });
   const [density, setDensity] = useState<TableDensity>('normal');
 
@@ -117,9 +128,30 @@ export function DataTable<TData, TValue>({
       }
     : setClientPagination;
 
-  const table = useReactTable({
+  const columnFilters =
+    serverFilters?.columnFilters !== undefined ? serverFilters.columnFilters : clientColumnFilters;
+  const onColumnFiltersChange: OnChangeFn<ColumnFiltersState> = serverFilters?.onColumnFiltersChange
+    ? (updaterOrValue) => {
+        const next =
+          typeof updaterOrValue === 'function' ? updaterOrValue(columnFilters) : updaterOrValue;
+        serverFilters.onColumnFiltersChange!(next);
+      }
+    : setClientColumnFilters;
+
+  const globalFilter =
+    serverFilters?.globalFilter !== undefined ? serverFilters.globalFilter : clientGlobalFilter;
+  const onGlobalFilterChange: OnChangeFn<string> = serverFilters?.onGlobalFilterChange
+    ? (updaterOrValue) => {
+        const next =
+          typeof updaterOrValue === 'function' ? updaterOrValue(globalFilter) : updaterOrValue;
+        serverFilters.onGlobalFilterChange!(next);
+      }
+    : setClientGlobalFilter;
+
+  const table = useTable<typeof dataTableFeatures, TData>({
+    features: dataTableFeatures,
     data,
-    columns,
+    columns: columns as any,
     state: {
       sorting,
       columnVisibility,
@@ -134,20 +166,15 @@ export function DataTable<TData, TValue>({
     columnResizeMode: 'onChange',
     manualPagination: !!serverPagination,
     manualSorting: !!serverSorting,
+    manualFiltering: !!serverFilters,
     pageCount: serverPagination?.pageCount ?? -1,
     onRowSelectionChange: setRowSelection,
     onSortingChange,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange,
+    onGlobalFilterChange,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnPinningChange: setColumnPinning,
     onPaginationChange,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
   const { rows } = table.getRowModel();
@@ -155,22 +182,55 @@ export function DataTable<TData, TValue>({
 
   const densityConfig = DENSITY_CONFIGS[density];
 
-  // Row Virtualizer for high-performance scrolling
+  // Row Virtualizer for high-performance AG-Grid style absolute positioning
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => densityConfig.rowHeight,
-    overscan: 10,
+    overscan: 12,
   });
 
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalVirtualSize = rowVirtualizer.getTotalSize();
 
-  const paddingTop = virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0;
-  const paddingBottom =
-    virtualRows.length > 0
-      ? totalVirtualSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
-      : 0;
+  // Dynamic Column Flex Style Resolver via Meta / Prop
+  const getColumnFlexStyle = (column: DataTableColumn<TData, any>) => {
+    const meta = column.columnDef.meta as CustomColumnMeta | undefined;
+    const customFlex = getColumnFlex ? getColumnFlex(column) : meta?.flex;
+    const baseSize = column.getSize();
+    const minSize = column.columnDef.minSize || baseSize;
+    const maxSize = column.columnDef.maxSize;
+
+    if (typeof customFlex === 'number') {
+      return {
+        flex: `${customFlex} 1 ${baseSize}px`,
+        minWidth: `${minSize}px`,
+        maxWidth: maxSize ? `${maxSize}px` : undefined,
+      };
+    }
+    if (typeof customFlex === 'string') {
+      return {
+        flex: customFlex,
+        minWidth: `${minSize}px`,
+        maxWidth: maxSize ? `${maxSize}px` : undefined,
+      };
+    }
+    if (customFlex === true) {
+      return {
+        flex: `1 1 ${baseSize}px`,
+        minWidth: `${minSize}px`,
+        maxWidth: maxSize ? `${maxSize}px` : undefined,
+      };
+    }
+
+    // Default Fixed Width Column
+    return {
+      width: `${baseSize}px`,
+      flex: `0 0 ${baseSize}px`,
+      minWidth: `${minSize}px`,
+      maxWidth: maxSize ? `${maxSize}px` : undefined,
+    };
+  };
 
   // CSV Export Handler
   const handleExportCsv = () => {
@@ -205,57 +265,69 @@ export function DataTable<TData, TValue>({
   };
 
   const selectedOriginals = useMemo(() => {
-    return table.getFilteredSelectedRowModel().rows.map((r) => r.original);
+    return table.getFilteredSelectedRowModel().rows.map((r) => r.original as TData);
   }, [rowSelection, data]);
+
+  const totalTableWidth = table.getTotalSize();
 
   return (
     <div className={cn('flex flex-col h-full w-full', className)}>
-      {/* Table Toolbar */}
-      <DataTableToolbar
-        table={table}
-        searchPlaceholder={searchPlaceholder}
-        searchColumnId={searchColumnId}
-        density={density}
-        onDensityChange={setDensity}
-        facetedFilters={facetedFilters}
-        onExportCsv={handleExportCsv}
-        extraActions={toolbarExtraActions}
-      />
+      {/* AG-Grid Styled Container with Integrated Toolbar */}
+      <div className="relative flex-1 flex flex-col min-h-[350px] w-full overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+        {/* Table Toolbar Header */}
+        <div className="p-3 border-b border-border/80 bg-card">
+          <DataTableToolbar
+            table={table}
+            searchPlaceholder={searchPlaceholder}
+            searchColumnId={searchColumnId}
+            density={density}
+            onDensityChange={setDensity}
+            facetedFilters={facetedFilters}
+            onExportCsv={handleExportCsv}
+            extraActions={toolbarExtraActions}
+          />
+        </div>
 
-      {/* AG-Grid Styled Table Container */}
-      <div className="relative flex-1 flex flex-col min-h-[350px] w-full overflow-hidden rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-lg">
+        {/* High Performance AG-Grid Div Viewport */}
         <div
           ref={tableContainerRef}
-          className="flex-1 w-full overflow-auto scrollbar-thin scrollbar-thumb-border/80"
+          className="flex-1 w-full overflow-auto scrollbar-thin scrollbar-thumb-border bg-card"
         >
-          <table className="w-full border-collapse text-left">
-            {/* Sticky Header */}
-            <thead className="sticky top-0 z-20 bg-muted/90 backdrop-blur-md border-b border-border/80 shadow-xs">
+          <div
+            className="flex flex-col relative w-full"
+            style={{ minWidth: `${totalTableWidth}px` }}
+          >
+            {/* Sticky Header Row */}
+            <div className="sticky top-0 z-20 w-full bg-muted/90 border-b border-border/80 text-muted-foreground shadow-2xs select-none">
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
+                <div key={headerGroup.id} className="flex items-center w-full h-9">
                   {headerGroup.headers.map((header) => {
                     const isPinned = header.column.getIsPinned();
                     const isResizing = header.column.getIsResizing();
+                    const isIconOnlyCol =
+                      header.column.id === 'select' || header.column.id === 'actions';
+                    const flexStyle = getColumnFlexStyle(header.column);
 
                     return (
-                      <th
+                      <div
                         key={header.id}
-                        colSpan={header.colSpan}
                         style={{
-                          width: header.getSize(),
+                          ...flexStyle,
                           left:
-                            isPinned === 'left' ? `${header.column.getStart('left')}px` : undefined,
-                          right:
-                            isPinned === 'right'
-                              ? `${header.column.getAfter('right')}px`
+                            isPinned === 'start'
+                              ? `${header.column.getStart('start')}px`
                               : undefined,
+                          right:
+                            isPinned === 'end' ? `${header.column.getAfter('end')}px` : undefined,
                         }}
                         className={cn(
-                          'relative select-none text-xs font-semibold uppercase tracking-wider text-muted-foreground border-r border-border/40 last:border-r-0',
-                          densityConfig.cellPadding,
-                          isPinned && 'sticky z-30 bg-muted/95 backdrop-blur-md shadow-xs',
-                          isPinned === 'left' && 'border-r-2 border-r-border/80',
-                          isPinned === 'right' && 'border-l-2 border-l-border/80',
+                          'relative flex items-center text-xs font-medium text-muted-foreground group/th h-full overflow-hidden bg-muted/90',
+                          isIconOnlyCol ? 'px-0.5 justify-center' : densityConfig.cellPadding,
+                          isPinned && 'sticky z-30',
+                          isPinned === 'start' &&
+                            'shadow-[2px_0_4px_rgba(0,0,0,0.04)] border-r border-border/60',
+                          isPinned === 'end' &&
+                            'shadow-[-2px_0_4px_rgba(0,0,0,0.04)] border-l border-border/60 bg-muted',
                         )}
                       >
                         {header.isPlaceholder
@@ -268,111 +340,132 @@ export function DataTable<TData, TValue>({
                             onMouseDown={header.getResizeHandler()}
                             onTouchStart={header.getResizeHandler()}
                             className={cn(
-                              'absolute right-0 top-0 h-full w-1.5 cursor-col-resize user-select-none touch-none hover:bg-primary/70 transition-colors',
-                              isResizing && 'bg-primary w-2',
+                              'absolute right-0 top-1.5 bottom-1.5 w-1.5 cursor-col-resize select-none touch-none rounded-full z-30 opacity-0 group-hover/th:opacity-100 hover:bg-primary transition-all',
+                              isResizing && 'opacity-100 bg-primary w-1.5',
                             )}
                           />
                         )}
-                      </th>
+                      </div>
                     );
                   })}
-                </tr>
+                </div>
               ))}
-            </thead>
+            </div>
 
-            {/* Virtualized Body */}
-            <tbody className="divide-y divide-border/40 bg-card/20">
+            {/* Virtualized Rows Container */}
+            <div
+              className="relative w-full bg-card"
+              style={{
+                height: isLoading
+                  ? `${8 * densityConfig.rowHeight}px`
+                  : rows.length === 0
+                    ? '280px'
+                    : `${totalVirtualSize}px`,
+              }}
+            >
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, index) => (
-                  <tr key={`skeleton-${index}`} className="h-12 border-b border-border/30">
-                    {table.getVisibleLeafColumns().map((col) => (
-                      <td key={col.id} className={cn('p-3', densityConfig.cellPadding)}>
-                        <Skeleton className="h-4 w-full max-w-[140px] rounded-md" />
-                      </td>
-                    ))}
-                  </tr>
+                  <div
+                    key={`skeleton-${index}`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${index * densityConfig.rowHeight}px)`,
+                      height: `${densityConfig.rowHeight}px`,
+                    }}
+                    className="flex items-center border-b border-border/40"
+                  >
+                    {table.getVisibleLeafColumns().map((col) => {
+                      const isIconOnlyCol = col.id === 'select' || col.id === 'actions';
+                      const flexStyle = getColumnFlexStyle(col);
+                      return (
+                        <div
+                          key={col.id}
+                          style={flexStyle}
+                          className={cn(
+                            'flex items-center bg-card',
+                            isIconOnlyCol ? 'px-0.5 justify-center' : densityConfig.cellPadding,
+                          )}
+                        >
+                          <Skeleton className="h-4 w-full max-w-[140px] rounded-md" />
+                        </div>
+                      );
+                    })}
+                  </div>
                 ))
               ) : rows.length > 0 ? (
-                <>
-                  {paddingTop > 0 && (
-                    <tr>
-                      <td style={{ height: `${paddingTop}px` }} />
-                    </tr>
-                  )}
-                  {virtualRows.map((virtualRow) => {
-                    const row = rows[virtualRow.index];
-                    const isSelected = row.getIsSelected();
+                virtualRows.map((virtualRow) => {
+                  const row = rows[virtualRow.index];
+                  const isSelected = row.getIsSelected();
 
-                    return (
-                      <tr
-                        key={row.id}
-                        data-index={virtualRow.index}
-                        ref={rowVirtualizer.measureElement}
-                        className={cn(
-                          'transition-colors hover:bg-accent/40 group',
-                          isSelected && 'bg-primary/10 hover:bg-primary/15 font-medium',
-                          virtualRow.index % 2 === 1 && 'bg-muted/10',
-                        )}
-                        style={{ height: `${densityConfig.rowHeight}px` }}
-                      >
-                        {row.getVisibleCells().map((cell) => {
-                          const isPinned = cell.column.getIsPinned();
+                  return (
+                    <div
+                      key={row.id}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${virtualRow.start}px)`,
+                        height: `${virtualRow.size}px`,
+                      }}
+                      className="flex items-center border-b border-border/40 transition-colors group"
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        const isPinned = cell.column.getIsPinned();
+                        const isIconOnlyCol =
+                          cell.column.id === 'select' || cell.column.id === 'actions';
+                        const flexStyle = getColumnFlexStyle(cell.column);
 
-                          return (
-                            <td
-                              key={cell.id}
-                              style={{
-                                width: cell.column.getSize(),
-                                left:
-                                  isPinned === 'left'
-                                    ? `${cell.column.getStart('left')}px`
-                                    : undefined,
-                                right:
-                                  isPinned === 'right'
-                                    ? `${cell.column.getAfter('right')}px`
-                                    : undefined,
-                              }}
-                              className={cn(
-                                'border-r border-border/30 last:border-r-0 text-foreground/90 align-middle',
-                                densityConfig.cellPadding,
-                                densityConfig.fontSize,
-                                isPinned && 'sticky z-10 bg-card/95 backdrop-blur-md',
-                                isPinned === 'left' && 'border-r-2 border-r-border/80 shadow-xs',
-                                isPinned === 'right' && 'border-l-2 border-l-border/80 shadow-xs',
-                              )}
-                            >
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                  {paddingBottom > 0 && (
-                    <tr>
-                      <td style={{ height: `${paddingBottom}px` }} />
-                    </tr>
-                  )}
-                </>
-              ) : (
-                <tr>
-                  <td
-                    colSpan={table.getVisibleLeafColumns().length}
-                    className="h-64 text-center p-8"
-                  >
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <Empty className="py-6 border-0">
-                        <EmptyHeader>
-                          <EmptyTitle>{emptyTitle}</EmptyTitle>
-                          <EmptyDescription>{emptyDescription}</EmptyDescription>
-                        </EmptyHeader>
-                      </Empty>
+                        return (
+                          <div
+                            key={cell.id}
+                            style={{
+                              ...flexStyle,
+                              left:
+                                isPinned === 'start'
+                                  ? `${cell.column.getStart('start')}px`
+                                  : undefined,
+                              right:
+                                isPinned === 'end' ? `${cell.column.getAfter('end')}px` : undefined,
+                            }}
+                            className={cn(
+                              'relative flex items-center text-foreground align-middle h-full overflow-hidden transition-colors',
+                              isIconOnlyCol ? 'px-0.5 justify-center' : densityConfig.cellPadding,
+                              densityConfig.fontSize,
+                              isSelected
+                                ? 'bg-primary/10 group-hover:bg-primary/15 dark:bg-primary/15 dark:group-hover:bg-primary/20'
+                                : 'bg-card group-hover:bg-muted/50 dark:group-hover:bg-muted/30',
+                              isPinned && 'sticky z-10',
+                              isPinned === 'start' &&
+                                'shadow-[2px_0_4px_rgba(0,0,0,0.03)] border-r border-border/40',
+                              isPinned === 'end' &&
+                                'shadow-[-2px_0_4px_rgba(0,0,0,0.03)] border-l border-border/40',
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </td>
-                </tr>
+                  );
+                })
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                  <Empty className="py-6 border-0">
+                    <EmptyHeader>
+                      <EmptyTitle>{emptyTitle}</EmptyTitle>
+                      <EmptyDescription>{emptyDescription}</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </div>
               )}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
 
         {/* Footer Pagination */}

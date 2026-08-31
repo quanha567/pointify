@@ -10,13 +10,15 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { syncSessionWithBackend, logoutBackendSession } from '@/lib/api';
+import { syncSessionWithBackend, logoutBackendSession } from '@/features/auth/api/auth.api';
 
 export interface AuthUserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role?: 'admin' | 'member';
+  status?: 'active' | 'disabled';
 }
 
 interface AuthState {
@@ -68,7 +70,18 @@ export const useAuthStore = create<AuthState>()(
             // Synchronize with Fastify backend & Firestore
             try {
               const token = await firebaseUser.getIdToken();
-              await syncSessionWithBackend(token);
+              const syncRes = await syncSessionWithBackend(token);
+              if (syncRes.success && syncRes.user) {
+                set((state) => ({
+                  user: state.user
+                    ? {
+                        ...state.user,
+                        role: syncRes.user.role,
+                        status: syncRes.user.status,
+                      }
+                    : null,
+                }));
+              }
             } catch (syncErr) {
               console.warn('Background backend session sync notice:', syncErr);
             }

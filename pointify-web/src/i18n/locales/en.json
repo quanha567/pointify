@@ -29,7 +29,11 @@
     "fieldCreatorNamePlaceholder": "e.g., Alex (Scrum Master)",
     "fieldDeck": "Choose Deck Preset",
     "deckCards": "Cards in this deck:",
+    "deckCardsCount": "cards",
     "fieldRole": "Initial Role",
+    "spectatorModeTitle": "Spectator Mode",
+    "spectatorModeActiveDesc": "Observer only: Watch the room progress without submitting card votes.",
+    "spectatorModeInactiveDesc": "Participate as an Estimator (submit and reveal card votes).",
     "roleEstimator": "Estimator",
     "roleSpectator": "Spectator",
     "cancel": "Cancel",
@@ -41,12 +45,19 @@
     "badge": "For Participants",
     "title": "Join a Room",
     "description": "Enter the room code shared by your facilitator to join the estimation round.",
+    "modalTitle": "Join an Estimation Room",
+    "modalDescription": "Enter the room code and your display name to start estimating with your team.",
     "fieldCode": "Room Code",
     "fieldCodePlaceholder": "e.g., PT-9842",
     "fieldName": "Your Display Name",
     "fieldNamePlaceholder": "e.g., David Chen",
     "fieldRole": "Your Role",
+    "spectatorModeTitle": "Spectator Mode",
+    "spectatorModeActiveDesc": "Observer only: Watch the room progress without submitting card votes.",
+    "spectatorModeInactiveDesc": "Participate as an Estimator (submit and reveal card votes).",
+    "cancel": "Cancel",
     "cta": "Join Room",
+    "submit": "Join Room",
     "successToast": "Joining room {{code}} as {{role}}",
     "errorCodeRequired": "Please enter the room code",
     "errorNameRequired": "Please enter your display name"
@@ -124,13 +135,233 @@
     "forgotModalTitle": "Reset your password",
     "forgotModalDesc": "Enter your email address and we'll send you a password reset link.",
     "forgotSubmit": "Send Reset Link",
-    "forgotSentToast": "Password reset link sent to your email."
+    "forgotSentToast": "Password reset link sent to your email.",
+    "processing": "Processing...",
+    "cancelButton": "Cancel",
+    "fillFieldsError": "Please fill in all required fields",
+    "enterEmailError": "Please enter your email address",
+    "enterNameError": "Please enter a display name",
+    "failedResetEmail": "Failed to send reset email",
+    "failedSignOut": "Failed to sign out"
   },
   "account": {
     "profile": "Profile",
     "myRooms": "My Rooms",
     "guestBadge": "Guest",
     "signOut": "Sign Out",
-    "upgradeToAccount": "Save Progress & Register"
+    "upgradeToAccount": "Save Progress & Register",
+    "temporarySession": "Temporary Session"
+  },
+  "admin": {
+    "brand": {
+      "title": "Pointify Admin",
+      "subtitle": "Scrum Poker • v1.0"
+    },
+    "nav": {
+      "overview": "Overview",
+      "management": "Management",
+      "system": "System",
+      "dashboard": "Dashboard",
+      "users": "Account Management",
+      "rooms": "Estimation Rooms",
+      "decks": "Deck Presets",
+      "settings": "System Settings",
+      "logs": "Activity Logs",
+      "comingSoon": "Soon"
+    },
+    "breadcrumbs": {
+      "admin": "Admin",
+      "overview": "Overview",
+      "management": "Management",
+      "system": "System",
+      "users": "Account Management",
+      "rooms": "Estimation Rooms",
+      "settings": "System Settings"
+    },
+    "header": {
+      "adminRole": "Administrator",
+      "backToHome": "Back to Home",
+      "overview": "Overview",
+      "signOut": "Sign Out"
+    },
+    "navUser": {
+      "adminRole": "Administrator",
+      "backToApp": "Back to Main App",
+      "systemOverview": "System Overview",
+      "signOut": "Sign Out"
+    },
+    "search": {
+      "trigger": "Quick search...",
+      "triggerShort": "Search...",
+      "dialogTitle": "Admin Navigation",
+      "inputPlaceholder": "Type page name or action to search...",
+      "empty": "No matching results found.",
+      "groupNav": "Administration Pages",
+      "groupTheme": "Appearance & System",
+      "navDashboard": "System Dashboard",
+      "navUsers": "Account Management (Users)",
+      "navRooms": "Estimation Rooms",
+      "navDecks": "Estimation Decks",
+      "navSettings": "System Settings",
+      "themeLight": "Switch to Light Mode",
+      "themeDark": "Switch to Dark Mode",
+      "backToHome": "Back to Main App (Pointify)",
+      "signOut": "Sign out of Admin"
+    },
+    "theme": {
+      "toggleTitle": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System (Auto)"
+    },
+    "overview": {
+      "title": "Admin Overview",
+      "subtitle": "Monitor system operations, user accounts, and Scrum Poker health.",
+      "stats": {
+        "totalUsers": "Total Users",
+        "totalUsersChange": "+14% from last month",
+        "rooms": "Estimation Rooms",
+        "roomsChange": "+28 active rooms",
+        "admins": "Administrators",
+        "adminsChange": "100% 2FA Protected",
+        "latency": "System Latency",
+        "latencyChange": "99.98% Uptime"
+      },
+      "usersCard": {
+        "title": "Account Management (Users Table)",
+        "description": "High-performance virtualized table supporting thousands of users with multi-filter, column pin, and CSV export.",
+        "badge": "AG-Grid Style",
+        "featuresTitle": "Completed Features:",
+        "feature1": "Virtual Scrolling with @tanstack/react-virtual at 60 FPS",
+        "feature2": "Pinned left (Checkbox) and right (Action Menu) columns",
+        "feature3": "Intuitive Column Resizing support",
+        "feature4": "Custom column visibility and row density (Compact / Normal / Comfortable)",
+        "feature5": "Create and edit accounts with TanStack Form + Zod in Slideout Sheet",
+        "feature6": "Bulk Actions with a floating toolbar",
+        "openUsers": "Open User List"
+      },
+      "infraCard": {
+        "title": "Infrastructure Status",
+        "description": "Connected Services",
+        "auth": "Firebase Auth",
+        "firestore": "Cloud Firestore",
+        "backend": "NestJS Fastify Backend",
+        "connected": "Connected",
+        "healthy": "Operational"
+      }
+    },
+    "guard": {
+      "loginRequired": "Please log in to access the admin area",
+      "noPermission": "You don't have permission to access the Admin area",
+      "loading": "Verifying admin access..."
+    },
+    "users": {
+      "title": "Account Management (Users)",
+      "subtitle": "Virtualized data table connected to real backend data with live search, filters, and role assignment.",
+      "refresh": "Refresh",
+      "createAccount": "Add User",
+      "searchPlaceholder": "Search by name, email, UID...",
+      "exportCsv": "Export CSV",
+      "columns": {
+        "user": "User",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "provider": "Auth Provider",
+        "createdAt": "Created Date",
+        "lastLoginAt": "Last Login",
+        "actions": "Actions",
+        "never": "Never logged in"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "member": "Member"
+      },
+      "statuses": {
+        "active": "Active",
+        "disabled": "Disabled"
+      },
+      "providers": {
+        "google": "Google Auth",
+        "password": "Email Password",
+        "unknown": "Other"
+      },
+      "actions": {
+        "copyUid": "Copy UID",
+        "edit": "Edit Account",
+        "disable": "Disable Account",
+        "activate": "Enable Account",
+        "promoteAdmin": "Promote to Admin",
+        "demoteMember": "Demote to Member"
+      },
+      "bulk": {
+        "activate": "Enable ({{count}})",
+        "disable": "Disable ({{count}})",
+        "confirmDisableTitle": "Disable {{count}} selected accounts?",
+        "confirmDisableDesc": "Disabled accounts will no longer be able to log in or join estimation rooms. You can re-enable them at any time.",
+        "confirmDisableButton": "Disable Accounts"
+      },
+      "confirm": {
+        "cancel": "Cancel",
+        "disableTitle": "Disable user account?",
+        "disableDesc": "User {{name}} will have their access immediately revoked.",
+        "disableButton": "Disable Account",
+        "changeRoleTitle": "Change account role?",
+        "changeRoleDesc": "Are you sure you want to change the role of {{name}} to {{role}}?",
+        "confirmButton": "Confirm"
+      },
+      "form": {
+        "createTitle": "Add New User",
+        "editTitle": "Edit User",
+        "createDesc": "Enter details for the new Pointify user account.",
+        "editDesc": "Update role and status permissions for {{name}}.",
+        "email": "Email Address",
+        "emailPlaceholder": "user@company.com",
+        "displayName": "Display Name",
+        "displayNamePlaceholder": "Alex Nguyen",
+        "photoURL": "Avatar URL",
+        "photoURLPlaceholder": "https://...",
+        "role": "Account Role",
+        "status": "Account Status",
+        "roleAdminDesc": "Full management access across system and users",
+        "roleMemberDesc": "Can create and participate in Scrum Poker rooms",
+        "statusActiveDesc": "Allowed to log in and use Pointify normally",
+        "statusDisabledDesc": "Disabled, cannot log in to the system",
+        "cancel": "Cancel",
+        "createSubmit": "Create User",
+        "editSubmit": "Save Changes",
+        "saving": "Saving...",
+        "validationEmail": "Invalid email address",
+        "validationDisplayName": "Display name must be between 2 and 50 characters",
+        "validationPhotoUrl": "Invalid avatar image URL"
+      },
+      "toasts": {
+        "copiedUid": "Copied UID: {{uid}}",
+        "createdSuccess": "Created account for {{name}}",
+        "updatedSuccess": "Updated account for {{name}}",
+        "bulkActivated": "Activated {{count}} accounts",
+        "bulkDisabled": "Disabled {{count}} accounts",
+        "selfLockError": "You cannot disable your own admin account",
+        "selfDemoteError": "You cannot demote your own admin account",
+        "selfExcludedInfo": "Your account was automatically excluded from the disable list",
+        "fetchError": "Failed to load user accounts",
+        "saveError": "An error occurred while saving account details",
+        "bulkError": "Failed to bulk update account statuses"
+      },
+      "error": {
+        "title": "Failed to Load Data",
+        "desc": "An error occurred while fetching user accounts from the server.",
+        "retry": "Try Again"
+      }
+    }
+  },
+  "footer": {
+    "brand": "Pointify • Agile Scrum Poker",
+    "tagline": "Built for seamless real-time sprint estimations."
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home"
   }
 }

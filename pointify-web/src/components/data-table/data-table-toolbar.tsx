@@ -1,11 +1,12 @@
 import { DownloadIcon, SearchIcon, XIcon } from 'lucide-react';
+import type { RowData } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
 import { DataTableViewOptions } from './data-table-view-options';
 import type { DataTableToolbarProps } from './types';
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData = any>({
   table,
   searchPlaceholder = 'Tìm kiếm dữ liệu...',
   searchColumnId,
@@ -15,11 +16,11 @@ export function DataTableToolbar<TData>({
   onExportCsv,
   extraActions,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter;
+  const isFiltered = (table.state.columnFilters?.length ?? 0) > 0 || !!table.state.globalFilter;
 
   const searchValue = searchColumnId
     ? ((table.getColumn(searchColumnId)?.getFilterValue() as string) ?? '')
-    : ((table.getState().globalFilter as string) ?? '');
+    : ((table.state.globalFilter as string) ?? '');
 
   const handleSearchChange = (value: string) => {
     if (searchColumnId) {
@@ -30,20 +31,20 @@ export function DataTableToolbar<TData>({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3">
+    <div className="flex flex-wrap items-center justify-between gap-2.5">
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs sm:w-64">
-          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <Input
             placeholder={searchPlaceholder}
             value={searchValue}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="h-8 pl-8 pr-7 text-xs border-border/80 focus-visible:ring-primary/30"
+            className="h-8.5 pl-8 pr-7 text-xs bg-background dark:bg-zinc-900 border-border shadow-xs focus-visible:ring-1 focus-visible:ring-primary rounded-lg text-foreground placeholder:text-muted-foreground"
           />
           {searchValue && (
             <button
               onClick={() => handleSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <XIcon className="h-3.5 w-3.5" />
             </button>
@@ -70,7 +71,7 @@ export function DataTableToolbar<TData>({
               table.resetColumnFilters();
               table.setGlobalFilter('');
             }}
-            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+            className="h-8.5 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg cursor-pointer"
           >
             Đặt lại
             <XIcon className="ml-1.5 h-3.5 w-3.5" />
@@ -84,7 +85,7 @@ export function DataTableToolbar<TData>({
             variant="outline"
             size="sm"
             onClick={onExportCsv}
-            className="h-8 text-xs border-border/80 hover:border-primary/50 text-foreground/80 hover:text-foreground transition-colors"
+            className="h-8.5 text-xs border-border bg-background dark:bg-zinc-900 hover:bg-accent text-foreground shadow-xs font-medium rounded-lg transition-colors cursor-pointer"
           >
             <DownloadIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
             Xuất CSV

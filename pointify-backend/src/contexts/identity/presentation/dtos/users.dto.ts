@@ -83,3 +83,36 @@ export class AdminUserListResponseDto {
   totalPages!: number;
 }
 
+export class AdminCreateUserDto {
+  @ApiProperty({ example: 'newuser@pointify.app' })
+  email!: string;
+
+  @ApiProperty({ example: 'John Developer' })
+  displayName!: string;
+
+  @ApiPropertyOptional({ example: 'https://pointify.app/avatars/john.png' })
+  photoURL?: string | null;
+
+  @ApiPropertyOptional({ enum: ['admin', 'member'], default: 'member' })
+  role?: 'admin' | 'member';
+
+  @ApiPropertyOptional({ enum: ['active', 'disabled'], default: 'active' })
+  status?: 'active' | 'disabled';
+}
+
+export class AdminBulkUpdateStatusDto {
+  @ApiProperty({ example: ['uid1', 'uid2'], type: [String] })
+  uids!: string[];
+
+  @ApiProperty({ enum: ['active', 'disabled'] })
+  status!: 'active' | 'disabled';
+}
+
+export class AdminBulkUpdateStatusResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+
+  @ApiProperty({ example: 5 })
+  updatedCount!: number;
+}
+

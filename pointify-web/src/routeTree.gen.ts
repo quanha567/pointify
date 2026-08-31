@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin';
 import { Route as AuthRouteImport } from './routes/auth';
 import { Route as AdminIndexRouteImport } from './routes/admin.index';
 import { Route as AdminUsersRouteImport } from './routes/admin.users';
+import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,18 +41,25 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any);
+const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
+  id: '/rooms/$roomId',
+  path: '/rooms/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
   '/admin/users': typeof AdminUsersRoute;
+  '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
   '/auth': typeof AuthRoute;
   '/admin/users': typeof AdminUsersRoute;
+  '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin': typeof AdminIndexRoute;
 }
 export interface FileRoutesById {
@@ -60,20 +68,30 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
   '/admin/users': typeof AdminUsersRoute;
+  '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/admin' | '/auth' | '/admin/users' | '/admin/';
+  fullPaths:
+    '/' | '/admin' | '/auth' | '/admin/users' | '/rooms/$roomId' | '/admin/';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/auth' | '/admin/users' | '/admin';
-  id: '__root__' | '/' | '/admin' | '/auth' | '/admin/users' | '/admin/';
+  to: '/' | '/auth' | '/admin/users' | '/rooms/$roomId' | '/admin';
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/admin/users'
+    | '/rooms/$roomId'
+    | '/admin/';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AdminRoute: typeof AdminRouteWithChildren;
   AuthRoute: typeof AuthRoute;
+  RoomsRoomIdRoute: typeof RoomsRoomIdRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport;
       parentRoute: typeof AdminRoute;
     };
+    '/rooms/$roomId': {
+      id: '/rooms/$roomId';
+      path: '/rooms/$roomId';
+      fullPath: '/rooms/$roomId';
+      preLoaderRoute: typeof RoomsRoomIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -132,6 +157,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  RoomsRoomIdRoute: RoomsRoomIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

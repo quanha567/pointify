@@ -1,12 +1,13 @@
-import type { Column } from '@tanstack/react-table';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  CheckIcon,
   ChevronsUpDownIcon,
   EyeOffIcon,
   PinIcon,
   PinOffIcon,
 } from 'lucide-react';
+import type { RowData } from '@tanstack/react-table';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import {
@@ -16,70 +17,107 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { Typography } from '../ui/typography';
+import type { DataTableColumn } from './types';
 
-interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes<HTMLDivElement> {
-  column: Column<TData, TValue>;
+interface DataTableColumnHeaderProps<
+  TData extends RowData,
+  TValue = any,
+> extends React.HTMLAttributes<HTMLDivElement> {
+  column: DataTableColumn<TData, TValue>;
   title: string;
 }
 
-export function DataTableColumnHeader<TData, TValue>({
+export function DataTableColumnHeader<TData extends RowData, TValue = any>({
   column,
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort() && !column.getCanPin() && !column.getCanHide()) {
-    return <div className={cn('font-semibold text-foreground/80', className)}>{title}</div>;
+    return (
+      <Typography
+        as="div"
+        variant="small"
+        className={cn('text-xs font-semibold text-foreground/85 select-none', className)}
+      >
+        {title}
+      </Typography>
+    );
   }
 
   const isPinned = column.getIsPinned();
   const sortDirection = column.getIsSorted();
 
   return (
-    <div className={cn('flex items-center space-x-1.5', className)}>
+    <div className={cn('flex items-center space-x-1 group/header', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="-ml-2 h-8 data-[state=open]:bg-accent font-semibold hover:bg-accent/70 text-foreground/80 hover:text-foreground text-xs uppercase tracking-wider"
+            className={cn(
+              'group/btn -ml-2 h-7 px-2 hover:bg-muted/80 data-[state=open]:bg-muted rounded-md transition-colors select-none gap-1.5',
+              (sortDirection || isPinned) && 'bg-muted/60',
+            )}
           >
-            <span>{title}</span>
+            <Typography
+              as="span"
+              variant="small"
+              className={cn(
+                'truncate text-xs font-semibold text-foreground/80 group-hover/btn:text-foreground',
+                (sortDirection || isPinned) && 'text-foreground font-bold',
+              )}
+            >
+              {title}
+            </Typography>
             {sortDirection === 'desc' ? (
-              <ArrowDownIcon className="ml-1.5 h-3.5 w-3.5 text-primary" />
+              <span className="flex items-center justify-center h-4 w-4 rounded bg-primary/10 text-primary">
+                <ArrowDownIcon className="h-3 w-3 stroke-[2.5]" />
+              </span>
             ) : sortDirection === 'asc' ? (
-              <ArrowUpIcon className="ml-1.5 h-3.5 w-3.5 text-primary" />
+              <span className="flex items-center justify-center h-4 w-4 rounded bg-primary/10 text-primary">
+                <ArrowUpIcon className="h-3 w-3 stroke-[2.5]" />
+              </span>
             ) : (
-              <ChevronsUpDownIcon className="ml-1.5 h-3.5 w-3.5 opacity-40 group-hover:opacity-100" />
+              <ChevronsUpDownIcon className="h-3 w-3 text-muted-foreground/40 group-hover/btn:text-muted-foreground transition-colors" />
             )}
             {isPinned && (
-              <PinIcon className="ml-1 h-3 w-3 rotate-45 text-primary fill-primary/30" />
+              <span title={`Đang ghim ${isPinned === 'start' ? 'trái' : 'phải'}`}>
+                <PinIcon className="h-3 w-3 rotate-45 text-primary fill-primary/20" />
+              </span>
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-48 bg-popover/95 backdrop-blur-md shadow-xl border-border/60"
+          className="w-48 bg-popover shadow-xl border-border/60 p-1"
         >
           {column.getCanSort() && (
             <>
               <DropdownMenuItem
                 onClick={() => column.toggleSorting(false)}
-                className="cursor-pointer text-xs"
+                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
               >
-                <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                Sắp xếp tăng dần
+                <div className="flex items-center">
+                  <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  Sắp xếp tăng dần
+                </div>
+                {sortDirection === 'asc' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => column.toggleSorting(true)}
-                className="cursor-pointer text-xs"
+                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
               >
-                <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                Sắp xếp giảm dần
+                <div className="flex items-center">
+                  <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  Sắp xếp giảm dần
+                </div>
+                {sortDirection === 'desc' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
               </DropdownMenuItem>
               {sortDirection && (
                 <DropdownMenuItem
                   onClick={() => column.clearSorting()}
-                  className="cursor-pointer text-xs text-muted-foreground"
+                  className="cursor-pointer text-xs rounded-sm text-muted-foreground"
                 >
                   <ChevronsUpDownIcon className="mr-2 h-3.5 w-3.5" />
                   Bỏ sắp xếp
@@ -92,23 +130,29 @@ export function DataTableColumnHeader<TData, TValue>({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => column.pin('left')}
-                className="cursor-pointer text-xs"
+                onClick={() => column.pin('start')}
+                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
               >
-                <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                Ghim bên trái
+                <div className="flex items-center">
+                  <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  Ghim bên trái
+                </div>
+                {isPinned === 'start' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => column.pin('right')}
-                className="cursor-pointer text-xs"
+                onClick={() => column.pin('end')}
+                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
               >
-                <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground rotate-90" />
-                Ghim bên phải
+                <div className="flex items-center">
+                  <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground rotate-90" />
+                  Ghim bên phải
+                </div>
+                {isPinned === 'end' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
               </DropdownMenuItem>
               {isPinned && (
                 <DropdownMenuItem
                   onClick={() => column.pin(false)}
-                  className="cursor-pointer text-xs text-muted-foreground"
+                  className="cursor-pointer text-xs rounded-sm text-muted-foreground"
                 >
                   <PinOffIcon className="mr-2 h-3.5 w-3.5" />
                   Bỏ ghim cột
@@ -122,7 +166,7 @@ export function DataTableColumnHeader<TData, TValue>({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => column.toggleVisibility(false)}
-                className="cursor-pointer text-xs text-muted-foreground"
+                className="cursor-pointer text-xs rounded-sm text-muted-foreground"
               >
                 <EyeOffIcon className="mr-2 h-3.5 w-3.5" />
                 Ẩn cột này

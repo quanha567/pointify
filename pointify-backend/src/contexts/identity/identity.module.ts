@@ -9,6 +9,9 @@ import { GetUserProfileUseCase } from './application/use-cases/get-user-profile.
 import { UpdateUserProfileUseCase } from './application/use-cases/update-user-profile.use-case.js';
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case.js';
 import { AdminUpdateUserUseCase } from './application/use-cases/admin-update-user.use-case.js';
+import { AdminCreateUserUseCase } from './application/use-cases/admin-create-user.use-case.js';
+import { AdminBulkUpdateStatusUseCase } from './application/use-cases/admin-bulk-update-status.use-case.js';
+import { AdminAuthGuard } from './presentation/guards/admin-auth.guard.js';
 import { AuthController } from './presentation/controllers/auth.controller.js';
 import { UsersController } from './presentation/controllers/users.controller.js';
 import { AdminUsersController } from './presentation/controllers/admin-users.controller.js';
@@ -30,8 +33,18 @@ import { AdminUsersController } from './presentation/controllers/admin-users.con
     UpdateUserProfileUseCase,
     ListUsersUseCase,
     AdminUpdateUserUseCase,
+    AdminCreateUserUseCase,
+    AdminBulkUpdateStatusUseCase,
+    AdminAuthGuard,
   ],
-  exports: [USER_REPOSITORY, AUTH_SERVICE, GetUserProfileUseCase, ListUsersUseCase],
+  exports: [
+    USER_REPOSITORY,
+    AUTH_SERVICE,
+    GetUserProfileUseCase,
+    ListUsersUseCase,
+    AdminCreateUserUseCase,
+    AdminBulkUpdateStatusUseCase,
+    AdminAuthGuard,
+  ],
 })
 export class IdentityModule {}
-

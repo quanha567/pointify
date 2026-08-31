@@ -1,11 +1,15 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   Query,
   Body,
+  Req,
+  UseGuards,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,9 +22,18 @@ import {
 } from '@nestjs/swagger';
 import { ListUsersUseCase } from '../../application/use-cases/list-users.use-case.js';
 import { AdminUpdateUserUseCase } from '../../application/use-cases/admin-update-user.use-case.js';
+import { AdminCreateUserUseCase } from '../../application/use-cases/admin-create-user.use-case.js';
+import { AdminBulkUpdateStatusUseCase } from '../../application/use-cases/admin-bulk-update-status.use-case.js';
+import {
+  AdminAuthGuard,
+  type AuthenticatedAdminRequest,
+} from '../guards/admin-auth.guard.js';
 import {
   AdminUserListQueryDto,
   AdminUpdateUserDto,
+  AdminCreateUserDto,
+  AdminBulkUpdateStatusDto,
+  AdminBulkUpdateStatusResponseDto,
   AdminUserListResponseDto,
   UserProfileResponseDto,
 } from '../dtos/users.dto.js';
@@ -28,11 +41,14 @@ import {
 @ApiTags('Admin / Users')
 @ApiBearerAuth('bearer')
 @ApiCookieAuth('cookie')
+@UseGuards(AdminAuthGuard)
 @Controller('api/admin/users')
 export class AdminUsersController {
   constructor(
     private readonly listUsersUseCase: ListUsersUseCase,
     private readonly adminUpdateUserUseCase: AdminUpdateUserUseCase,
+    private readonly adminCreateUserUseCase: AdminCreateUserUseCase,
+    private readonly adminBulkUpdateStatusUseCase: AdminBulkUpdateStatusUseCase,
   ) {}
 
   @Get()
@@ -73,6 +89,71 @@ export class AdminUsersController {
     };
   }
 
+  @Post()
+  @ApiOperation({
+    summary: 'Create a new user account as admin',
+    description: 'Creates a new user record in Firebase Auth and persists profile in Firestore.',
+  })
+  @ApiBody({ type: AdminCreateUserDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User created successfully',
+    type: UserProfileResponseDto,
+  })
+  async createUser(
+    @Body() body: AdminCreateUserDto,
+  ): Promise<UserProfileResponseDto> {
+    const result = await this.adminCreateUserUseCase.execute({
+      email: body.email,
+      displayName: body.displayName,
+      photoURL: body.photoURL,
+      role: body.role,
+      status: body.status,
+    });
+
+    if (result.isFail) {
+      throw new BadRequestException(result.error.message);
+    }
+
+    return {
+      success: true,
+      user: result.value,
+    };
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({
+    summary: 'Bulk update user status as admin',
+    description: 'Updates status of multiple user accounts in an atomic batch write operation.',
+  })
+  @ApiBody({ type: AdminBulkUpdateStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Bulk update processed successfully',
+    type: AdminBulkUpdateStatusResponseDto,
+  })
+  async bulkUpdateStatus(
+    @Body() body: AdminBulkUpdateStatusDto,
+    @Req() req: AuthenticatedAdminRequest,
+  ): Promise<AdminBulkUpdateStatusResponseDto> {
+    const currentAdminUid = req.adminUser?.uid;
+
+    const result = await this.adminBulkUpdateStatusUseCase.execute({
+      uids: body.uids,
+      status: body.status,
+      currentAdminUid,
+    });
+
+    if (result.isFail) {
+      throw new BadRequestException(result.error.message);
+    }
+
+    return {
+      success: true,
+      updatedCount: result.value.updatedCount,
+    };
+  }
+
   @Patch(':uid')
   @ApiOperation({
     summary: 'Update user account as admin',
@@ -89,7 +170,20 @@ export class AdminUsersController {
   async updateUser(
     @Param('uid') uid: string,
     @Body() body: AdminUpdateUserDto,
+    @Req() req: AuthenticatedAdminRequest,
   ): Promise<UserProfileResponseDto> {
+    const currentAdminUid = req.adminUser?.uid;
+
+    // Self-protection guardrail: Do not allow admin to disable or demote themselves
+    if (currentAdminUid === uid) {
+      if (body.status === 'disabled') {
+        throw new BadRequestException('Không thể tự khóa tài khoản quản trị của chính mình');
+      }
+      if (body.role === 'member') {
+        throw new BadRequestException('Không thể tự hạ quyền quản trị của chính mình');
+      }
+    }
+
     const result = await this.adminUpdateUserUseCase.execute({
       uid,
       displayName: body.displayName,

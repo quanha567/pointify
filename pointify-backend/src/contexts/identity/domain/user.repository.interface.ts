@@ -20,6 +20,7 @@ export interface IUserRepository {
   findByUid(uid: string): Promise<User | null>;
   save(user: User): Promise<void>;
   findAll(options?: FindUsersOptions): Promise<FindUsersResult>;
+  bulkUpdateStatus(uids: string[], status: 'active' | 'disabled'): Promise<number>;
 }
 
 export const USER_REPOSITORY = Symbol('IUserRepository');

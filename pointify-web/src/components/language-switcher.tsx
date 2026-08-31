@@ -52,7 +52,7 @@ export function LanguageSwitcher() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8.5 px-2.5 gap-2 rounded-full border-border/80 bg-background/80 hover:bg-accent/80 backdrop-blur shadow-2xs transition-all text-xs font-medium cursor-pointer"
+          className="h-8.5 px-2.5 gap-2 rounded-lg border-border/80 bg-background/80 hover:bg-accent/80 backdrop-blur shadow-2xs transition-all text-xs font-medium cursor-pointer"
         >
           <CountryFlag countryCode={currentLang.countryCode} alt={currentLang.label} />
           <span className="hidden sm:inline font-semibold">{currentLang.label}</span>

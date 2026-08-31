@@ -114,5 +114,41 @@ export class FirestoreUserRepository implements IUserRepository {
       total,
     };
   }
+
+  async bulkUpdateStatus(uids: string[], status: 'active' | 'disabled'): Promise<number> {
+    if (!uids || uids.length === 0) {
+      return 0;
+    }
+
+    const firestore = this.firebaseService.getFirestore();
+    const now = Date.now();
+    let updatedCount = 0;
+
+    // Process in batches of 400 (Firestore limit is 500 operations per batch)
+    const chunkSize = 400;
+    for (let i = 0; i < uids.length; i += chunkSize) {
+      const chunk = uids.slice(i, i + chunkSize);
+      const batch = firestore.batch();
+
+      for (const uid of chunk) {
+        if (!uid || typeof uid !== 'string') continue;
+        const docRef = this.collection.doc(uid);
+        batch.set(
+          docRef,
+          {
+            status,
+            updatedAt: now,
+          },
+          { merge: true },
+        );
+        updatedCount++;
+      }
+
+      await batch.commit();
+    }
+
+    this.logger.debug(`Bulk updated status to '${status}' for ${updatedCount} users`);
+    return updatedCount;
+  }
 }
 

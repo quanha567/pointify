@@ -48,3 +48,23 @@ export interface ListUsersResultDto {
   totalPages: number;
 }
 
+export interface AdminCreateUserInputDto {
+  email: string;
+  displayName: string;
+  role?: 'admin' | 'member';
+  status?: 'active' | 'disabled';
+  photoURL?: string | null;
+  password?: string;
+}
+
+export interface AdminBulkUpdateStatusInputDto {
+  uids: string[];
+  status: 'active' | 'disabled';
+  currentAdminUid?: string;
+}
+
+export interface AdminBulkUpdateStatusResultDto {
+  success: boolean;
+  updatedCount: number;
+}
+

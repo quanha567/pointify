@@ -10,7 +10,7 @@ function Menubar({ className, ...props }: React.ComponentProps<typeof MenubarPri
   return (
     <MenubarPrimitive.Root
       data-slot="menubar"
-      className={cn('flex h-9 items-center rounded-4xl border p-1', className)}
+      className={cn('flex h-9 items-center rounded-lg border p-1', className)}
       {...props}
     />
   );
