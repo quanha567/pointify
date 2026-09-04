@@ -127,12 +127,18 @@ const userSheetRef = useRef<UserFormSheetHandle>(null);
 
 ---
 
-## 5. Quy chuẩn UI, Styling & Shadcn Primitives
+## 5. Quy chuẩn UI, Styling, Typography & Shadcn Primitives
 
 1. **Semantic Design Tokens (Tailwind v4)**:
    - 100% sử dụng token ngữ nghĩa định nghĩa trong `src/style.css` (`bg-background`, `text-foreground`, `bg-card`, `border-border`, `bg-primary`, `text-muted-foreground`).
    - ❌ Tuyệt đối không hardcode mã màu bất biến dạng hex (ví dụ `bg-[#0f172a]`, `text-[#ffffff]`) làm hỏng Dark/Light mode.
-2. **Shadcn UI Integrity**:
+2. **Quy chuẩn Typography & Thang Cỡ Chữ (Tuân thủ `DESIGN.md` & ADR 0021)**:
+   - **Thang kích cỡ**: Page Title (`text-2xl sm:text-3xl`), Card/Modal Title (`text-lg sm:text-xl` hoặc `text-xl sm:text-2xl`), Form Label / Buttons / Tabs (`text-sm font-medium`), Body (`text-sm sm:text-base`), Helper / Muted (`text-xs sm:text-sm`), Badges/Meta (`text-xs font-medium`).
+   - ❌ **CẤM font dưới 12px**: Tuyệt đối không sử dụng `text-[9px]`, `text-[10px]`, `text-[11px]`. Kích cỡ tối thiểu toàn hệ thống là `text-xs` (12px).
+   - ❌ **CẤM `text-xs` cho Form Label & Main Buttons**: Nhãn nhập liệu và các nút bấm hành động chính phải đạt tối thiểu `text-sm` (14px).
+   - ✅ **Tối ưu tiếng Việt**: Kết hợp `leading-normal` (1.5) hoặc `leading-relaxed` để dấu thanh điệu (sắc, huyền, hỏi, ngã, nặng) không bị dính vào dòng trên.
+   - ✅ **Tương quan cỡ Icon**: Chữ 12px (`text-xs`) đi cùng icon `size-3.5`; chữ 14px (`text-sm`) đi cùng icon `size-4`; chữ 16px đi cùng icon `size-4.5`/`size-5`.
+3. **Shadcn UI Integrity**:
    - Giữ các primitive trong `src/components/ui/` đồng bộ với chuẩn Shadcn / Radix / Base UI.
    - Tùy biến giao diện thông qua class Tailwind và file `style.css`; không chỉnh sửa logic cốt lõi của primitive components.
    - Luôn gộp class động qua hàm `cn(...)` (`clsx` + `tailwind-merge`).

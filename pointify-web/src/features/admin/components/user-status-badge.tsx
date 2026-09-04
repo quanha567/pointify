@@ -39,7 +39,7 @@ export function UserStatusBadge({ status, className }: UserStatusBadgeProps) {
         className,
       )}
     >
-      <BanIcon className="size-3 text-rose-600 dark:text-rose-400 shrink-0" />
+      <BanIcon className="size-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
       <span>{t('admin.users.statuses.disabled')}</span>
     </Badge>
   );

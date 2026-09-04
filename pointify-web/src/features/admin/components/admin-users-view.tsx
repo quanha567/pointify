@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
-import { TypographyH3, TypographyMuted } from '@/components/ui/typography';
+import { TypographyH2, TypographyMuted } from '@/components/ui/typography';
 import { DataTable, type DataTableFilterOption } from '@/components/data-table';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { useAdminUsersQuery, useAdminUserMutations } from '../api/use-admin-users';
@@ -288,30 +288,31 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
       {/* Clean Minimalist Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-3 shrink-0">
         <div>
-          <TypographyH3 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <TypographyH2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             {t('admin.users.title')}
-          </TypographyH3>
-          <TypographyMuted className="text-xs mt-0.5">{t('admin.users.subtitle')}</TypographyMuted>
+          </TypographyH2>
+          <TypographyMuted className="text-sm sm:text-base leading-relaxed mt-1">
+            {t('admin.users.subtitle')}
+          </TypographyMuted>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-8.5 px-3 text-xs gap-1.5 bg-card dark:bg-zinc-900 border-border hover:bg-accent text-foreground shadow-xs font-medium rounded-lg cursor-pointer transition-all active:scale-[0.98]"
+            className="h-9 sm:h-10 px-3.5 text-sm font-medium gap-2 bg-card border-border hover:bg-accent text-foreground shadow-xs rounded-xl cursor-pointer transition-all active:scale-[0.98]"
           >
-            <RefreshCwIcon className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+            <RefreshCwIcon className={cn('size-4', isFetching && 'animate-spin')} />
             <span>{t('admin.users.refresh')}</span>
           </Button>
 
           <Button
-            size="sm"
             onClick={handleCreateUser}
-            className="h-8.5 px-3.5 text-xs gap-1.5 bg-primary text-primary-foreground font-semibold shadow-xs hover:bg-primary/90 rounded-lg cursor-pointer transition-all active:scale-[0.98]"
+            className="h-9 sm:h-10 px-4 text-sm font-medium gap-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 rounded-xl cursor-pointer transition-all active:scale-[0.98]"
           >
-            <UserPlusIcon className="h-3.5 w-3.5" />
+            <UserPlusIcon className="size-4" />
             <span>{t('admin.users.createAccount')}</span>
           </Button>
         </div>

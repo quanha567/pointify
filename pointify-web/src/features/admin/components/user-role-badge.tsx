@@ -21,7 +21,7 @@ export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
           className,
         )}
       >
-        <ShieldCheckIcon className="size-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+        <ShieldCheckIcon className="size-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
         <span>{t('admin.users.roles.admin')}</span>
       </Badge>
     );
@@ -36,7 +36,7 @@ export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
         className,
       )}
     >
-      <UserCheckIcon className="size-3 text-muted-foreground shrink-0" />
+      <UserCheckIcon className="size-3.5 text-muted-foreground shrink-0" />
       <span>{t('admin.users.roles.member')}</span>
     </Badge>
   );

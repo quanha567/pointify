@@ -49,6 +49,12 @@ export class FirebaseService implements OnModuleInit {
   }
 
   getFirestore(): Firestore {
-    return getFirestore(this.app);
+    const db = getFirestore(this.app);
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {
+      // settings may only be set once
+    }
+    return db;
   }
 }

@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -30,7 +31,7 @@ import { UserRoleBadge } from './user-role-badge';
 import { UserStatusBadge } from './user-status-badge';
 import type { UserAccountDto } from '../types/admin-users.types';
 
-function GoogleIcon({ className = 'h-3.5 w-3.5' }: { className?: string }) {
+function GoogleIcon({ className = 'size-3.5' }: { className?: string }) {
   return (
     <svg className={cn('shrink-0', className)} viewBox="0 0 24 24">
       <path
@@ -53,7 +54,7 @@ function GoogleIcon({ className = 'h-3.5 w-3.5' }: { className?: string }) {
   );
 }
 
-export interface UserTableColumnsOptions {
+export interface GetUserTableColumnsOptions {
   onEdit: (user: UserAccountDto) => void;
   onToggleStatusRequest: (user: UserAccountDto) => void;
   onToggleRoleRequest: (user: UserAccountDto) => void;
@@ -67,14 +68,14 @@ export function getUserTableColumns({
   onToggleRoleRequest,
   onCopyUid,
   t,
-}: UserTableColumnsOptions): DataTableColumnDef<UserAccountDto>[] {
+}: GetUserTableColumnsOptions): DataTableColumnDef<UserAccountDto>[] {
   return [
-    // Select Checkbox (Pinned Left)
+    // Select Checkbox Column (Pinned Left)
     {
       id: 'select',
-      size: 40,
-      minSize: 40,
-      maxSize: 40,
+      size: 44,
+      minSize: 44,
+      maxSize: 44,
       enableResizing: false,
       enableSorting: false,
       enableHiding: false,
@@ -86,7 +87,8 @@ export function getUserTableColumns({
               (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
             onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Chọn tất cả"
+            aria-label="Select all"
+            className="translate-y-[2px]"
           />
         </div>
       ),
@@ -95,7 +97,8 @@ export function getUserTableColumns({
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Chọn dòng"
+            aria-label="Select row"
+            className="translate-y-[2px]"
           />
         </div>
       ),
@@ -125,10 +128,10 @@ export function getUserTableColumns({
             </Avatar>
             <div className="flex flex-col min-w-0 overflow-hidden">
               <span className="font-semibold text-xs text-foreground truncate">
-                {user.displayName || 'Không có tên'}
+                {user.displayName || t('admin.users.columns.noName')}
               </span>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="font-mono text-[10px] text-muted-foreground/80 truncate max-w-[120px]">
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
                   {user.uid}
                 </span>
                 <button
@@ -137,7 +140,7 @@ export function getUserTableColumns({
                   className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer transition-colors p-0.5 rounded"
                   title={t('admin.users.actions.copyUid')}
                 >
-                  <CopyIcon className="size-2.5" />
+                  <CopyIcon className="size-3.5" />
                 </button>
               </div>
             </div>
@@ -162,8 +165,8 @@ export function getUserTableColumns({
         const email = row.original.email;
         return (
           <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate">
-            <MailIcon className="size-3 text-muted-foreground shrink-0" />
-            <span className="truncate">{email || 'Chưa cung cấp'}</span>
+            <MailIcon className="size-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate">{email || t('admin.users.columns.noEmail')}</span>
           </div>
         );
       },
@@ -218,7 +221,7 @@ export function getUserTableColumns({
             {isGoogle ? (
               <Badge
                 variant="outline"
-                className="gap-1.5 py-0.5 px-2 bg-background border-border text-[11px] font-medium text-foreground"
+                className="gap-1.5 py-0.5 px-2 bg-background border-border text-xs font-medium text-foreground"
               >
                 <GoogleIcon />
                 <span>{t('admin.users.providers.google')}</span>
@@ -226,15 +229,15 @@ export function getUserTableColumns({
             ) : isPassword ? (
               <Badge
                 variant="outline"
-                className="gap-1.5 py-0.5 px-2 bg-background border-border text-[11px] font-medium text-foreground"
+                className="gap-1.5 py-0.5 px-2 bg-background border-border text-xs font-medium text-foreground"
               >
-                <KeyRoundIcon className="size-3 text-muted-foreground" />
+                <KeyRoundIcon className="size-3.5 text-muted-foreground" />
                 <span>{t('admin.users.providers.password')}</span>
               </Badge>
             ) : (
               <Badge
                 variant="outline"
-                className="gap-1 py-0.5 px-2 bg-muted text-[11px] text-muted-foreground"
+                className="gap-1 py-0.5 px-2 bg-muted text-xs font-medium text-muted-foreground"
               >
                 {provider || t('admin.users.providers.unknown')}
               </Badge>
@@ -259,7 +262,7 @@ export function getUserTableColumns({
         const date = new Date(createdAt);
         return (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <CalendarIcon className="size-3 shrink-0" />
+            <CalendarIcon className="size-3.5 shrink-0" />
             <span>{format(date, 'dd/MM/yyyy')}</span>
           </div>
         );
@@ -279,7 +282,7 @@ export function getUserTableColumns({
         const lastLoginAt = row.original.lastLoginAt;
         if (!lastLoginAt) {
           return (
-            <span className="text-[11px] text-muted-foreground/70 italic">
+            <span className="text-xs text-muted-foreground/70 italic">
               {t('admin.users.columns.never')}
             </span>
           );
@@ -287,7 +290,7 @@ export function getUserTableColumns({
         const date = new Date(lastLoginAt);
         return (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <ClockIcon className="size-3 shrink-0" />
+            <ClockIcon className="size-3.5 shrink-0" />
             <span>{format(date, 'dd/MM/yyyy HH:mm')}</span>
           </div>
         );
@@ -305,7 +308,7 @@ export function getUserTableColumns({
       enableHiding: false,
       header: () => (
         <div className="flex items-center justify-center w-full">
-          <span className="text-[11px] font-semibold text-muted-foreground">
+          <span className="text-xs font-semibold text-muted-foreground">
             {t('admin.users.columns.actions')}
           </span>
         </div>
@@ -319,65 +322,76 @@ export function getUserTableColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-md p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="size-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <MoreHorizontalIcon className="size-4" />
                   <span className="sr-only">{t('admin.users.columns.actions')}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 text-xs">
-                <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+              <DropdownMenuContent
+                align="end"
+                className="w-52 p-1.5 rounded-xl shadow-xl border-border"
+              >
+                <DropdownMenuLabel className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground">
                   {t('admin.users.columns.actions')}
                 </DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => onCopyUid(user.uid)}
-                  className="gap-2 cursor-pointer"
-                >
-                  <CopyIcon className="size-3.5 text-muted-foreground" />
-                  <span>{t('admin.users.actions.copyUid')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(user)} className="gap-2 cursor-pointer">
-                  <Edit2Icon className="size-3.5 text-muted-foreground" />
-                  <span>{t('admin.users.actions.edit')}</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onToggleStatusRequest(user)}
-                  className={cn(
-                    'gap-2 cursor-pointer font-medium',
-                    user.status === 'active'
-                      ? 'text-rose-600 dark:text-rose-400 focus:text-rose-600'
-                      : 'text-emerald-600 dark:text-emerald-400 focus:text-emerald-600',
-                  )}
-                >
-                  {user.status === 'active' ? (
-                    <>
-                      <BanIcon className="size-3.5 text-rose-600 dark:text-rose-400" />
-                      <span>{t('admin.users.actions.disable')}</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2Icon className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>{t('admin.users.actions.activate')}</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onToggleRoleRequest(user)}
-                  className="gap-2 cursor-pointer text-indigo-600 dark:text-indigo-400 focus:text-indigo-600 font-medium"
-                >
-                  {user.role === 'admin' ? (
-                    <>
-                      <UserCheckIcon className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                      <span>{t('admin.users.actions.demoteMember')}</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheckIcon className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                      <span>{t('admin.users.actions.promoteAdmin')}</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => onCopyUid(user.uid)}
+                    className="gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer"
+                  >
+                    <CopyIcon className="size-4 text-muted-foreground" />
+                    <span>{t('admin.users.actions.copyUid')}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onEdit(user)}
+                    className="gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer"
+                  >
+                    <Edit2Icon className="size-4 text-muted-foreground" />
+                    <span>{t('admin.users.actions.edit')}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => onToggleStatusRequest(user)}
+                    className={cn(
+                      'gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer',
+                      user.status === 'active'
+                        ? 'text-rose-600 dark:text-rose-400 focus:text-rose-600'
+                        : 'text-emerald-600 dark:text-emerald-400 focus:text-emerald-600',
+                    )}
+                  >
+                    {user.status === 'active' ? (
+                      <>
+                        <BanIcon className="size-4 text-rose-600 dark:text-rose-400" />
+                        <span>{t('admin.users.actions.disable')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2Icon className="size-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>{t('admin.users.actions.activate')}</span>
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onToggleRoleRequest(user)}
+                    className="gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer text-indigo-600 dark:text-indigo-400 focus:text-indigo-600"
+                  >
+                    {user.role === 'admin' ? (
+                      <>
+                        <UserCheckIcon className="size-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>{t('admin.users.actions.demoteMember')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheckIcon className="size-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>{t('admin.users.actions.promoteAdmin')}</span>
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

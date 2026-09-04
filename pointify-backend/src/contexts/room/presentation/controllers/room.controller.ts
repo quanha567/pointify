@@ -83,6 +83,7 @@ export class RoomController {
     }
     return {
       success: true,
+      data: result.value,
       room: result.value,
     };
   }

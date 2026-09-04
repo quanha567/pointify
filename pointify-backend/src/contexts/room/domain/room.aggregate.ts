@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../../../shared/domain/aggregate-root.base.js';
 import { Participant } from './entities/participant.entity.js';
-import { Round, type RoundStatistics } from './entities/round.entity.js';
+import { Round, type RoundStatistics, type RoundTimer } from './entities/round.entity.js';
 import { Deck, type DeckType } from './value-objects/deck.vo.js';
 import { FacilitatorKey } from './value-objects/facilitator-key.vo.js';
 import type { CardValue } from './value-objects/card.vo.js';
@@ -52,6 +52,7 @@ export interface RoomProjection {
     startedAt: number;
     revealedAt: number | null;
     statistics: RoundStatistics | null;
+    timer: RoundTimer | null;
   };
   roundsHistoryCount: number;
   createdAt: number;
@@ -160,6 +161,31 @@ export class Room extends AggregateRoot<RoomProps, string> {
     }
   }
 
+  public setParticipantOnline(participantId: string, isOnline: boolean): void {
+    const participant = this.props.participants.get(participantId);
+    if (participant) {
+      participant.setOnline(isOnline);
+      this.touch();
+    }
+  }
+
+  public switchParticipantRole(
+    participantId: string,
+    isSpectator: boolean,
+  ): Result<void, ParticipantNotFoundError> {
+    const participant = this.props.participants.get(participantId);
+    if (!participant) {
+      return fail(new ParticipantNotFoundError(participantId));
+    }
+
+    participant.setSpectator(isSpectator);
+    if (isSpectator) {
+      this.props.currentRound.clearEstimate(participantId);
+    }
+    this.touch();
+    return ok(undefined);
+  }
+
   public submitEstimate(
     participantId: string,
     cardValue: CardValue,
@@ -224,6 +250,77 @@ export class Room extends AggregateRoot<RoomProps, string> {
 
     this.touch();
     return ok(this.props.currentRound);
+  }
+
+  public startTimer(key: string, durationSeconds: number): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+    this.props.currentRound.startTimer(durationSeconds);
+    this.touch();
+    return ok(undefined);
+  }
+
+  public pauseTimer(key: string): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+    this.props.currentRound.pauseTimer();
+    this.touch();
+    return ok(undefined);
+  }
+
+  public resumeTimer(key: string): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+    this.props.currentRound.resumeTimer();
+    this.touch();
+    return ok(undefined);
+  }
+
+  public stopTimer(key: string): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+    this.props.currentRound.stopTimer();
+    this.touch();
+    return ok(undefined);
+  }
+
+  public addTimerSeconds(key: string, seconds: number): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+    this.props.currentRound.addTimerSeconds(seconds);
+    this.touch();
+    return ok(undefined);
+  }
+
+  public updateConfig(
+    key: string,
+    updates: { name?: string; deck?: Deck },
+  ): Result<{ clearedVotes: boolean }, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+
+    let clearedVotes = false;
+
+    if (updates.name && updates.name.trim()) {
+      this.props.name = updates.name.trim();
+    }
+
+    if (updates.deck && updates.deck.type !== this.props.deck.type) {
+      this.props.deck = updates.deck;
+      if (this.props.currentRound.status === 'voting' && this.props.currentRound.estimates.size > 0) {
+        this.props.currentRound.clearAllEstimates();
+        clearedVotes = true;
+      }
+    }
+
+    this.touch();
+    return ok({ clearedVotes });
   }
 
   public claimFacilitator(claimantId: string): Result<FacilitatorKey, CannotClaimFacilitatorError> {
@@ -301,6 +398,7 @@ export class Room extends AggregateRoot<RoomProps, string> {
         startedAt: this.props.currentRound.startedAt,
         revealedAt: this.props.currentRound.revealedAt,
         statistics: isRevealed ? this.props.currentRound.calculateStatistics() : null,
+        timer: this.props.currentRound.timer,
       },
       roundsHistoryCount: this.props.roundsHistory.length,
       createdAt: this.props.createdAt,

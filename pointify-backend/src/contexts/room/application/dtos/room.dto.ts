@@ -51,3 +51,21 @@ export interface ClaimFacilitatorInputDto {
   roomId: string;
   claimantId: string;
 }
+
+export interface UpdateRoomConfigInputDto {
+  roomId: string;
+  facilitatorKey: string;
+  name?: string;
+  deckType?: DeckType;
+  customCards?: CardValue[];
+}
+
+export type TimerAction = 'start' | 'pause' | 'resume' | 'stop' | 'add_time';
+
+export interface ManageTimerInputDto {
+  roomId: string;
+  facilitatorKey: string;
+  action: TimerAction;
+  durationSeconds?: number;
+  additionalSeconds?: number;
+}

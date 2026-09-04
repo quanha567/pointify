@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -52,30 +53,35 @@ export function LanguageSwitcher() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8.5 px-2.5 gap-2 rounded-lg border-border/80 bg-background/80 hover:bg-accent/80 backdrop-blur shadow-2xs transition-all text-xs font-medium cursor-pointer"
+          className="h-9 px-3 gap-2 rounded-xl border-border/80 bg-background/80 hover:bg-accent/80 backdrop-blur shadow-2xs transition-all text-sm font-medium cursor-pointer"
         >
           <CountryFlag countryCode={currentLang.countryCode} alt={currentLang.label} />
           <span className="hidden sm:inline font-semibold">{currentLang.label}</span>
-          <ChevronDown className="size-3 text-muted-foreground transition-transform duration-200" />
+          <ChevronDown className="size-3.5 text-muted-foreground transition-transform duration-200" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40 p-1 rounded-xl shadow-lg border-border/80">
-        {LANGUAGES.map((lang) => {
-          const isSelected = lang.code === currentLang.code;
-          return (
-            <DropdownMenuItem
-              key={lang.code}
-              onClick={() => handleSelect(lang.code)}
-              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <CountryFlag countryCode={lang.countryCode} alt={lang.label} />
-                <span>{lang.label}</span>
-              </div>
-              {isSelected && <Check className="size-3.5 text-primary" />}
-            </DropdownMenuItem>
-          );
-        })}
+      <DropdownMenuContent
+        align="end"
+        className="w-44 p-1.5 rounded-2xl shadow-xl border-border bg-popover/95 backdrop-blur-xl"
+      >
+        <DropdownMenuGroup>
+          {LANGUAGES.map((lang) => {
+            const isSelected = lang.code === currentLang.code;
+            return (
+              <DropdownMenuItem
+                key={lang.code}
+                onClick={() => handleSelect(lang.code)}
+                className="flex items-center justify-between px-2.5 py-2 rounded-xl text-sm font-medium cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CountryFlag countryCode={lang.countryCode} alt={lang.label} />
+                  <span>{lang.label}</span>
+                </div>
+                {isSelected && <Check className="size-4 text-primary" />}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

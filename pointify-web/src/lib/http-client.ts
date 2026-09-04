@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import { env } from '@/config/env';
+import { auth } from '@/lib/firebase';
 
 export class ApiClientError extends Error {
   readonly statusCode: number;
@@ -100,6 +101,21 @@ async function handleResponse<T>(response: Response, schema?: z.ZodType<T>): Pro
   return responseData as T;
 }
 
+async function getAuthHeader(): Promise<Record<string, string>> {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const token = await currentUser.getIdToken();
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
+      }
+    }
+  } catch {
+    // Non-blocking: fallback to cookies
+  }
+  return {};
+}
+
 function mergeHeaders(base: Record<string, string>, extra?: HeadersInit): HeadersInit {
   if (!extra) return base;
   if (extra instanceof Headers) {
@@ -121,10 +137,11 @@ export const httpClient = {
     const { params: _p, schema, headers, ...rest } = options || {};
 
     try {
+      const authHeader = await getAuthHeader();
       const response = await fetch(url, {
         method: 'GET',
         credentials: 'include',
-        headers: mergeHeaders({ Accept: 'application/json' }, headers),
+        headers: mergeHeaders({ Accept: 'application/json', ...authHeader }, headers),
         ...rest,
       });
 
@@ -144,6 +161,7 @@ export const httpClient = {
     const { params: _p, schema, headers, ...rest } = options || {};
 
     try {
+      const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
       const response = await fetch(url, {
         method: 'POST',
@@ -151,6 +169,7 @@ export const httpClient = {
         headers: mergeHeaders(
           {
             Accept: 'application/json',
+            ...authHeader,
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           },
           headers,
@@ -179,6 +198,7 @@ export const httpClient = {
     const { params: _p, schema, headers, ...rest } = options || {};
 
     try {
+      const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
       const response = await fetch(url, {
         method: 'PATCH',
@@ -186,6 +206,7 @@ export const httpClient = {
         headers: mergeHeaders(
           {
             Accept: 'application/json',
+            ...authHeader,
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           },
           headers,
@@ -214,6 +235,7 @@ export const httpClient = {
     const { params: _p, schema, headers, ...rest } = options || {};
 
     try {
+      const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
       const response = await fetch(url, {
         method: 'PUT',
@@ -221,6 +243,7 @@ export const httpClient = {
         headers: mergeHeaders(
           {
             Accept: 'application/json',
+            ...authHeader,
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           },
           headers,
@@ -249,10 +272,11 @@ export const httpClient = {
     const { params: _p, schema, headers, ...rest } = options || {};
 
     try {
+      const authHeader = await getAuthHeader();
       const response = await fetch(url, {
         method: 'DELETE',
         credentials: 'include',
-        headers: mergeHeaders({ Accept: 'application/json' }, headers),
+        headers: mergeHeaders({ Accept: 'application/json', ...authHeader }, headers),
         ...rest,
       });
 

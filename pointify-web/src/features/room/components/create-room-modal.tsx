@@ -1,24 +1,24 @@
-import { useState, useImperativeHandle, useEffect } from 'react';
+import { Hash, SlidersHorizontal, User, Users, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'motion/react';
-import { Plus, X, Users, SlidersHorizontal, Hash, User } from 'lucide-react';
 import { z } from 'zod';
 
+import {
+  Form,
+  FormField,
+  FormInput,
+  FormSubmitButton,
+  useAppForm,
+  useStore,
+} from '@/components/form';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { TypographyH4, TypographyMuted } from '@/components/ui/typography';
-import {
-  useAppForm,
-  Form,
-  FormInput,
-  FormField,
-  FormSubmitButton,
-  useStore,
-} from '@/components/form';
-import { useAuthStore } from '@/store/useAuthStore';
 import { useLockBodyScroll } from '@/hooks/use-lock-body-scroll';
-import { DECK_CONFIGS } from '../constants/deck-configs';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useCreateRoomMutation } from '../api/use-room';
+import { DECK_CONFIGS } from '../constants/deck-configs';
 import type { DeckType } from '../types/room.types';
 
 const createRoomSchema = z.object({
@@ -254,18 +254,10 @@ export function CreateRoomModal({ ref, onClose }: CreateRoomModalProps) {
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClose}
-                    className="rounded-xl h-10 text-xs sm:text-sm cursor-pointer"
-                  >
+                  <Button type="button" variant="outline" onClick={handleClose}>
                     {t('createRoom.cancel')}
                   </Button>
-                  <FormSubmitButton className="gap-2 rounded-xl h-10 text-xs sm:text-sm shadow-md shadow-primary/20 cursor-pointer">
-                    <Plus className="size-4" />
-                    <span>{t('createRoom.submit')}</span>
-                  </FormSubmitButton>
+                  <FormSubmitButton>{t('createRoom.submit')}</FormSubmitButton>
                 </div>
               </Form>
             </div>

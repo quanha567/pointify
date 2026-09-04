@@ -34,10 +34,10 @@ export class UsersController {
     const authHeader = req.headers.authorization;
 
     let idToken = '';
-    if (sessionCookie) {
-      idToken = sessionCookie;
-    } else if (authHeader?.startsWith('Bearer ')) {
+    if (authHeader?.startsWith('Bearer ')) {
       idToken = authHeader.substring(7);
+    } else if (sessionCookie) {
+      idToken = sessionCookie;
     }
 
     if (!idToken) {

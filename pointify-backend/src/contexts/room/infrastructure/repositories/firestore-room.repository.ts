@@ -3,7 +3,6 @@ import { FirebaseService } from '../../../../firebase/firebase.service.js';
 import type { IRoomRepository } from '../../domain/room.repository.interface.js';
 import type { Room } from '../../domain/room.aggregate.js';
 import { RoomMapper, type FirestoreRoomDoc } from '../mappers/room.mapper.js';
-import { ConcurrencyConflictError } from '../../domain/room.errors.js';
 
 @Injectable()
 export class FirestoreRoomRepository implements IRoomRepository {
@@ -14,6 +13,10 @@ export class FirestoreRoomRepository implements IRoomRepository {
 
   private get collection() {
     return this.firebaseService.getFirestore().collection(this.collectionName);
+  }
+
+  private get firestore() {
+    return this.firebaseService.getFirestore();
   }
 
   async findById(id: string): Promise<Room | null> {
@@ -36,22 +39,15 @@ export class FirestoreRoomRepository implements IRoomRepository {
       throw new Error('Cannot save room without a valid non-empty ID');
     }
     const docRef = this.collection.doc(room.id);
-    const firestore = this.firebaseService.getFirestore();
 
-    await firestore.runTransaction(async (transaction) => {
+    await this.firestore.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(docRef);
 
       if (snapshot.exists) {
         const existingData = snapshot.data() as FirestoreRoomDoc;
         const currentStoredVersion = existingData.version || 0;
-
-        // Optimistic concurrency check: room version must be currentStoredVersion + 1
-        if (room.version <= currentStoredVersion) {
-          this.logger.warn(
-            `Concurrency conflict for room ${room.id}. Stored: ${currentStoredVersion}, Incoming: ${room.version}`,
-          );
-          throw new ConcurrencyConflictError();
-        }
+        const nextVersion = Math.max(room.version, currentStoredVersion + 1);
+        room.setVersion(nextVersion);
       }
 
       const persistenceData = RoomMapper.toPersistence(room);

@@ -16,20 +16,19 @@ export function AdminUsersError({ error, reset }: AdminUsersErrorProps) {
       <div className="p-3 rounded-full bg-destructive/10 text-destructive mb-3">
         <AlertTriangleIcon className="size-8" />
       </div>
-      <TypographyH4 className="text-base font-bold text-foreground">
+      <TypographyH4 className="text-lg sm:text-xl font-semibold text-foreground">
         {t('admin.users.error.title')}
       </TypographyH4>
-      <TypographyMuted className="text-xs max-w-sm mt-1 mb-4">
+      <TypographyMuted className="text-sm max-w-sm mt-1 mb-4 leading-normal">
         {error?.message || t('admin.users.error.desc')}
       </TypographyMuted>
       {reset && (
         <Button
           variant="outline"
-          size="sm"
           onClick={reset}
-          className="h-8.5 px-3 text-xs gap-1.5 rounded-lg cursor-pointer"
+          className="h-9 sm:h-10 px-4 text-sm font-medium gap-2 rounded-xl cursor-pointer"
         >
-          <RefreshCwIcon className="size-3.5" />
+          <RefreshCwIcon className="size-4" />
           <span>{t('admin.users.error.retry')}</span>
         </Button>
       )}

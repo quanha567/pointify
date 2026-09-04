@@ -120,4 +120,98 @@ describe('Room Aggregate Root', () => {
     expect(claimRes.isFail).toBe(true);
     expect(claimRes.isFail && claimRes.error.code).toBe('CANNOT_CLAIM_FACILITATOR');
   });
+
+  it('should update participant online status correctly', () => {
+    const { room } = createTestRoom();
+    const bob = Participant.create('user-2', { displayName: 'Bob' });
+    room.join(bob);
+
+    expect(room.participants.get('user-2')?.isOnline).toBe(true);
+    room.setParticipantOnline('user-2', false);
+    expect(room.participants.get('user-2')?.isOnline).toBe(false);
+  });
+
+  it('should switch role to spectator and clear existing estimates', () => {
+    const { room } = createTestRoom();
+    const bob = Participant.create('user-2', { displayName: 'Bob' });
+    room.join(bob);
+    room.submitEstimate('user-2', 5);
+
+    expect(room.currentRound.estimates.has('user-2')).toBe(true);
+
+    const switchRes = room.switchParticipantRole('user-2', true);
+    expect(switchRes.isOk).toBe(true);
+    expect(room.participants.get('user-2')?.isSpectator).toBe(true);
+    expect(room.currentRound.estimates.has('user-2')).toBe(false); // cleared!
+  });
+
+  it('should update room config and clear voting estimates when deck changes', () => {
+    const facilitator = Participant.create('fac-1', { displayName: 'Facilitator' });
+    const room = Room.create({ id: 'room-1', name: 'Original Name', facilitator });
+
+    room.join(Participant.create('p1', { displayName: 'Player 1' }));
+    room.submitEstimate('p1', 5);
+    expect(room.currentRound.estimates.size).toBe(1);
+
+    // Invalid key rejected
+    const badRes = room.updateConfig('wrong-key', { name: 'New Name' });
+    expect(badRes.isFail).toBe(true);
+
+    // Valid update with deck change clears estimates
+    const goodRes = room.updateConfig(room.facilitatorKey.value, {
+      name: 'Updated Name',
+      deck: Deck.tShirt(),
+    });
+    expect(goodRes.isOk).toBe(true);
+    expect(goodRes.value.clearedVotes).toBe(true);
+    expect(room.name).toBe('Updated Name');
+    expect(room.deck.type).toBe('t-shirt');
+    expect(room.currentRound.estimates.size).toBe(0);
+  });
+
+  it('should manage round countdown timer and clean up on reveal/next round', () => {
+    const { room, key } = createTestRoom();
+
+    // Initially timer is null
+    expect(room.currentRound.timer).toBeNull();
+    expect(room.toProjection().currentRound.timer).toBeNull();
+
+    // Start timer with 120s
+    const startRes = room.startTimer(key.value, 120);
+    expect(startRes.isOk).toBe(true);
+    expect(room.currentRound.timer?.durationSeconds).toBe(120);
+    expect(room.currentRound.timer?.status).toBe('running');
+    expect(room.currentRound.timer?.endsAt).toBeGreaterThan(Date.now());
+
+    // Pause timer
+    const pauseRes = room.pauseTimer(key.value);
+    expect(pauseRes.isOk).toBe(true);
+    expect(room.currentRound.timer?.status).toBe('paused');
+    expect(room.currentRound.timer?.remainingSecondsOnPause).toBeDefined();
+
+    // Add 30 seconds
+    const addRes = room.addTimerSeconds(key.value, 30);
+    expect(addRes.isOk).toBe(true);
+    expect(room.currentRound.timer?.durationSeconds).toBe(150);
+
+    // Resume timer
+    const resumeRes = room.resumeTimer(key.value);
+    expect(resumeRes.isOk).toBe(true);
+    expect(room.currentRound.timer?.status).toBe('running');
+
+    // Reject timer actions with invalid key
+    const badKeyRes = room.startTimer('bad-key', 60);
+    expect(badKeyRes.isFail).toBe(true);
+
+    // Stop timer
+    const stopRes = room.stopTimer(key.value);
+    expect(stopRes.isOk).toBe(true);
+    expect(room.currentRound.timer).toBeNull();
+
+    // Start timer again and ensure revealCards clears it
+    room.startTimer(key.value, 60);
+    expect(room.currentRound.timer).not.toBeNull();
+    room.revealCards(key.value);
+    expect(room.currentRound.timer).toBeNull();
+  });
 });

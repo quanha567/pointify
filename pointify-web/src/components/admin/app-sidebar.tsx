@@ -159,7 +159,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       isActive={isActive}
                       tooltip={item.title}
                       className={cn(
-                        'relative cursor-pointer text-xs font-medium transition-colors duration-150 h-9 px-3 data-active:bg-transparent data-active:text-primary-foreground',
+                        'relative cursor-pointer text-sm font-medium transition-colors duration-150 h-9.5 px-3 data-active:bg-transparent data-active:text-primary-foreground',
                         isActive
                           ? 'text-primary-foreground hover:text-primary-foreground hover:bg-transparent font-semibold'
                           : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground',
@@ -206,7 +206,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[9px] px-1.5 py-0 h-4 font-semibold rounded-md border-0 transition-colors',
+                            'text-xs px-2 py-0.5 font-medium rounded-md border-0 transition-colors',
                             isActive
                               ? 'bg-primary-foreground/20 text-primary-foreground'
                               : 'bg-muted text-muted-foreground',

@@ -18,3 +18,10 @@ export async function logoutBackendSession(): Promise<void> {
 export async function fetchCurrentProfile(): Promise<UserProfileResponse> {
   return httpClient.get<UserProfileResponse>('/api/users/me');
 }
+
+export async function updateCurrentProfile(data: {
+  displayName?: string;
+  photoURL?: string | null;
+}): Promise<UserProfileResponse> {
+  return httpClient.patch<UserProfileResponse>('/api/users/me', data);
+}

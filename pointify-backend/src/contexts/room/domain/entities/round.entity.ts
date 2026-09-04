@@ -4,6 +4,13 @@ import type { CardValue } from '../value-objects/card.vo.js';
 
 export type RoundStatus = 'voting' | 'revealed' | 'completed';
 
+export interface RoundTimer {
+  durationSeconds: number;
+  endsAt: number;
+  status: 'running' | 'paused';
+  remainingSecondsOnPause?: number;
+}
+
 export interface RoundStatistics {
   count: number;
   average: number | null;
@@ -20,6 +27,7 @@ export interface RoundProps {
   estimates: Map<string, Estimate>;
   startedAt: number;
   revealedAt: number | null;
+  timer?: RoundTimer | null;
 }
 
 export class Round extends Entity<RoundProps, number> {
@@ -35,6 +43,7 @@ export class Round extends Entity<RoundProps, number> {
       estimates: new Map<string, Estimate>(),
       startedAt: Date.now(),
       revealedAt: null,
+      timer: null,
     });
   }
 
@@ -46,6 +55,7 @@ export class Round extends Entity<RoundProps, number> {
       estimates: Map<string, Estimate>;
       startedAt: number;
       revealedAt: number | null;
+      timer?: RoundTimer | null;
     },
   ): Round {
     return new Round(roundNumber, {
@@ -55,6 +65,7 @@ export class Round extends Entity<RoundProps, number> {
       estimates: props.estimates,
       startedAt: props.startedAt,
       revealedAt: props.revealedAt,
+      timer: props.timer ?? null,
     });
   }
 
@@ -82,6 +93,68 @@ export class Round extends Entity<RoundProps, number> {
     return this.props.revealedAt;
   }
 
+  get timer(): RoundTimer | null {
+    return this.props.timer ?? null;
+  }
+
+  public startTimer(durationSeconds: number): void {
+    if (this.props.status !== 'voting') {
+      throw new Error('Cannot start timer when round is not in voting phase');
+    }
+    const now = Date.now();
+    this.props.timer = {
+      durationSeconds,
+      endsAt: now + durationSeconds * 1000,
+      status: 'running',
+    };
+  }
+
+  public pauseTimer(): void {
+    if (!this.props.timer || this.props.timer.status !== 'running') return;
+    const now = Date.now();
+    const remaining = Math.max(0, Math.ceil((this.props.timer.endsAt - now) / 1000));
+    this.props.timer = {
+      ...this.props.timer,
+      status: 'paused',
+      remainingSecondsOnPause: remaining,
+    };
+  }
+
+  public resumeTimer(): void {
+    if (!this.props.timer || this.props.timer.status !== 'paused') return;
+    const remaining = this.props.timer.remainingSecondsOnPause ?? 0;
+    const now = Date.now();
+    this.props.timer = {
+      durationSeconds: this.props.timer.durationSeconds,
+      endsAt: now + remaining * 1000,
+      status: 'running',
+    };
+  }
+
+  public stopTimer(): void {
+    this.props.timer = null;
+  }
+
+  public addTimerSeconds(seconds: number): void {
+    if (!this.props.timer) return;
+    if (this.props.timer.status === 'paused') {
+      const remaining = (this.props.timer.remainingSecondsOnPause ?? 0) + seconds;
+      this.props.timer = {
+        ...this.props.timer,
+        durationSeconds: this.props.timer.durationSeconds + seconds,
+        remainingSecondsOnPause: remaining,
+      };
+    } else {
+      const now = Date.now();
+      const baseEndsAt = Math.max(now, this.props.timer.endsAt);
+      this.props.timer = {
+        ...this.props.timer,
+        durationSeconds: this.props.timer.durationSeconds + seconds,
+        endsAt: baseEndsAt + seconds * 1000,
+      };
+    }
+  }
+
   public submitEstimate(participantId: string, cardValue: CardValue): void {
     if (this.props.status !== 'voting') {
       throw new Error('Cannot submit estimate when round is not in voting phase');
@@ -97,9 +170,14 @@ export class Round extends Entity<RoundProps, number> {
     this.props.estimates.delete(participantId);
   }
 
+  public clearAllEstimates(): void {
+    this.props.estimates.clear();
+  }
+
   public reveal(): void {
     this.props.status = 'revealed';
     this.props.revealedAt = Date.now();
+    this.props.timer = null;
   }
 
   public complete(): void {

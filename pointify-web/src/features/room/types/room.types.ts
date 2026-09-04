@@ -30,6 +30,13 @@ export interface RoundStatistics {
   distribution: Record<string, number>;
 }
 
+export interface RoundTimerProjection {
+  durationSeconds: number;
+  endsAt: number;
+  status: 'running' | 'paused';
+  remainingSecondsOnPause?: number;
+}
+
 export interface CurrentRoundProjection {
   roundNumber: number;
   status: 'voting' | 'revealed' | 'completed';
@@ -37,6 +44,7 @@ export interface CurrentRoundProjection {
   startedAt: number;
   revealedAt: number | null;
   statistics: RoundStatistics | null;
+  timer: RoundTimerProjection | null;
 }
 
 export interface RoomProjection {

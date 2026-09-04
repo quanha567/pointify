@@ -1,6 +1,6 @@
 import { Room, type RoomProps } from '../../domain/room.aggregate.js';
 import { Participant } from '../../domain/entities/participant.entity.js';
-import { Round, type RoundStatus } from '../../domain/entities/round.entity.js';
+import { Round, type RoundStatus, type RoundTimer } from '../../domain/entities/round.entity.js';
 import { Deck, type DeckType } from '../../domain/value-objects/deck.vo.js';
 import { FacilitatorKey } from '../../domain/value-objects/facilitator-key.vo.js';
 import { Estimate } from '../../domain/value-objects/estimate.vo.js';
@@ -30,6 +30,7 @@ export interface FirestoreRoundDoc {
   estimates: FirestoreEstimateDoc[];
   startedAt: number;
   revealedAt: number | null;
+  timer?: RoundTimer | null;
 }
 
 export interface FirestoreRoomDoc {
@@ -75,6 +76,7 @@ export class RoomMapper {
       })),
       startedAt: r.startedAt,
       revealedAt: r.revealedAt,
+      timer: r.timer || null,
     });
 
     return {
@@ -126,6 +128,7 @@ export class RoomMapper {
         estimates: estimatesMap,
         startedAt: rd.startedAt,
         revealedAt: rd.revealedAt,
+        timer: rd.timer ?? null,
       });
     };
 

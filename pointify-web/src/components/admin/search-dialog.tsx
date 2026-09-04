@@ -77,12 +77,12 @@ export function SearchDialog({ open: controlledOpen, onOpenChange }: SearchDialo
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="relative h-8.5 w-full justify-start rounded-lg border-border/70 bg-muted/40 text-xs font-normal text-muted-foreground hover:bg-muted/70 hover:text-foreground shadow-none sm:pr-12 md:w-48 lg:w-64 cursor-pointer"
+        className="relative h-9 w-full justify-start rounded-xl border-border/70 bg-muted/40 text-sm font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground shadow-none sm:pr-12 md:w-48 lg:w-64 cursor-pointer"
       >
-        <SearchIcon className="mr-2 h-3.5 w-3.5 shrink-0 opacity-60" />
+        <SearchIcon className="mr-2 size-4 shrink-0 opacity-60" />
         <span className="hidden lg:inline-flex">{t('admin.search.trigger')}</span>
         <span className="inline-flex lg:hidden">{t('admin.search.triggerShort')}</span>
-        <Kbd className="pointer-events-none absolute right-1.5 top-1 hidden h-6 select-none opacity-100 sm:flex">
+        <Kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none opacity-100 sm:flex">
           ⌘ + K
         </Kbd>
       </Button>

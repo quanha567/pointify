@@ -6,11 +6,19 @@ import {
   signInWithPopup,
   signOut,
   updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { syncSessionWithBackend, logoutBackendSession } from '@/features/auth/api/auth.api';
+import {
+  syncSessionWithBackend,
+  logoutBackendSession,
+  updateCurrentProfile,
+} from '@/features/auth/api/auth.api';
 
 export interface AuthUserProfile {
   uid: string;
@@ -19,6 +27,7 @@ export interface AuthUserProfile {
   photoURL: string | null;
   role?: 'admin' | 'member';
   status?: 'active' | 'disabled';
+  providerId?: string;
 }
 
 interface AuthState {
@@ -37,6 +46,9 @@ interface AuthState {
   logout: () => Promise<void>;
   continueAsGuest: (name: string) => void;
   clearError: () => void;
+  updateProfileData: (displayName: string, photoURL?: string | null) => Promise<void>;
+  changePassword: (currentPass: string, newPass: string) => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -52,11 +64,16 @@ export const useAuthStore = create<AuthState>()(
       initAuthListener: () => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
           if (firebaseUser) {
+            const providerId =
+              firebaseUser.providerData[0]?.providerId ||
+              (firebaseUser.isAnonymous ? 'anonymous' : 'password');
+
             const profile: AuthUserProfile = {
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
               photoURL: firebaseUser.photoURL,
+              providerId,
             };
 
             set({
@@ -209,6 +226,83 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
+      },
+
+      updateProfileData: async (displayName: string, photoURL?: string | null) => {
+        set({ isLoading: true, error: null });
+        try {
+          const trimmedName = displayName.trim();
+
+          // 1. Optimistic update so UI reflects immediately without page refresh
+          set((state) => ({
+            user: state.user
+              ? {
+                  ...state.user,
+                  displayName: trimmedName || state.user.displayName,
+                  photoURL: photoURL !== undefined ? photoURL : state.user.photoURL,
+                }
+              : null,
+          }));
+
+          // 2. Update Firebase Auth user profile
+          if (auth.currentUser) {
+            await updateProfile(auth.currentUser, {
+              displayName: trimmedName || undefined,
+              photoURL: photoURL !== undefined ? photoURL : undefined,
+            });
+          }
+
+          // 3. Sync to backend database
+          try {
+            await updateCurrentProfile({
+              displayName: trimmedName || undefined,
+              photoURL: photoURL !== undefined ? photoURL : undefined,
+            });
+          } catch (syncErr) {
+            console.warn('Backend user profile sync warning (non-blocking):', syncErr);
+          }
+
+          set({ isLoading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to update profile';
+          set({ isLoading: false, error: message });
+          throw err;
+        }
+      },
+
+      changePassword: async (currentPass: string, newPass: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const currentUser = auth.currentUser;
+          if (!currentUser || !currentUser.email) {
+            throw new Error('No authenticated user with email found');
+          }
+
+          // Re-authenticate with current password
+          const credential = EmailAuthProvider.credential(currentUser.email, currentPass);
+          await reauthenticateWithCredential(currentUser, credential);
+
+          // Update to new password
+          await updatePassword(currentUser, newPass);
+          set({ isLoading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to change password';
+          set({ isLoading: false, error: message });
+          throw err;
+        }
+      },
+
+      sendPasswordReset: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          await sendPasswordResetEmail(auth, email.trim());
+          set({ isLoading: false });
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : 'Failed to send password reset email';
+          set({ isLoading: false, error: message });
+          throw err;
+        }
       },
 
       clearError: () => set({ error: null }),

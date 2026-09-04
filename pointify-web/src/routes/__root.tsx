@@ -22,6 +22,7 @@ function RootLayout() {
   const location = useLocation();
   const { user, isGuest, guestName, logout, initAuthListener } = useAuthStore();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isRoomRoute = location.pathname.startsWith('/rooms/');
 
   useEffect(() => {
     const unsubscribe = initAuthListener();
@@ -42,7 +43,7 @@ function RootLayout() {
     }
   };
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isRoomRoute) {
     return (
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <TooltipProvider>

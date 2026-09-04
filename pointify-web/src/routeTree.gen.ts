@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root';
 import { Route as IndexRouteImport } from './routes/index';
 import { Route as AdminRouteImport } from './routes/admin';
 import { Route as AuthRouteImport } from './routes/auth';
+import { Route as ProfileRouteImport } from './routes/profile';
 import { Route as AdminIndexRouteImport } from './routes/admin.index';
 import { Route as AdminUsersRouteImport } from './routes/admin.users';
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId';
@@ -29,6 +30,11 @@ const AdminRoute = AdminRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any);
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
+  '/profile': typeof ProfileRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
   '/auth': typeof AuthRoute;
+  '/profile': typeof ProfileRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin': typeof AdminIndexRoute;
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute;
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
+  '/profile': typeof ProfileRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
@@ -74,14 +83,21 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    '/' | '/admin' | '/auth' | '/admin/users' | '/rooms/$roomId' | '/admin/';
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/profile'
+    | '/admin/users'
+    | '/rooms/$roomId'
+    | '/admin/';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/auth' | '/admin/users' | '/rooms/$roomId' | '/admin';
+  to: '/' | '/auth' | '/profile' | '/admin/users' | '/rooms/$roomId' | '/admin';
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
+    | '/profile'
     | '/admin/users'
     | '/rooms/$roomId'
     | '/admin/';
@@ -91,6 +107,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AdminRoute: typeof AdminRouteWithChildren;
   AuthRoute: typeof AuthRoute;
+  ProfileRoute: typeof ProfileRoute;
   RoomsRoomIdRoute: typeof RoomsRoomIdRoute;
 }
 
@@ -115,6 +132,13 @@ declare module '@tanstack/react-router' {
       path: '/auth';
       fullPath: '/auth';
       preLoaderRoute: typeof AuthRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/profile': {
+      id: '/profile';
+      path: '/profile';
+      fullPath: '/profile';
+      preLoaderRoute: typeof ProfileRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/admin/': {
@@ -157,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  ProfileRoute: ProfileRoute,
   RoomsRoomIdRoute: RoomsRoomIdRoute,
 };
 export const routeTree = rootRouteImport

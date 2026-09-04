@@ -1,5 +1,5 @@
 import { AdminBreadcrumbs } from '@/components/admin/admin-breadcrumbs';
-import { AdminUserMenu } from '@/components/admin/admin-user-menu';
+import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { SearchDialog } from '@/components/admin/search-dialog';
 import { ThemeToggle } from '@/components/admin/theme-toggle';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -19,7 +19,7 @@ export function AdminHeader() {
         <SearchDialog />
         <LanguageSwitcher />
         <ThemeToggle />
-        <AdminUserMenu />
+        <UserMenuDropdown />
       </div>
     </header>
   );

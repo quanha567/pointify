@@ -48,7 +48,7 @@ export function AdminBreadcrumbs() {
           <BreadcrumbLink asChild>
             <Link
               to="/admin"
-              className="text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {t('admin.breadcrumbs.admin')}
             </Link>
