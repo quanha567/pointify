@@ -1,6 +1,12 @@
 import { Room, type RoomProps } from '../../domain/room.aggregate.js';
 import { Participant } from '../../domain/entities/participant.entity.js';
 import { Round, type RoundStatus, type RoundTimer } from '../../domain/entities/round.entity.js';
+import {
+  StickyNote,
+  type StickyNoteColor,
+  type StickyNotePosition,
+  type StickyNoteProjection,
+} from '../../domain/entities/sticky-note.entity.js';
 import { Deck, type DeckType } from '../../domain/value-objects/deck.vo.js';
 import { FacilitatorKey } from '../../domain/value-objects/facilitator-key.vo.js';
 import { Estimate } from '../../domain/value-objects/estimate.vo.js';
@@ -23,6 +29,19 @@ export interface FirestoreEstimateDoc {
   submittedAt: number;
 }
 
+export interface FirestoreStickyNoteDoc {
+  id: string;
+  roomId: string;
+  text: string;
+  color: StickyNoteColor;
+  position: StickyNotePosition;
+  authorId: string;
+  authorName: string;
+  isPinned: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface FirestoreRoundDoc {
   roundNumber: number;
   status: RoundStatus;
@@ -31,6 +50,7 @@ export interface FirestoreRoundDoc {
   startedAt: number;
   revealedAt: number | null;
   timer?: RoundTimer | null;
+  archivedStickyNotes?: FirestoreStickyNoteDoc[];
 }
 
 export interface FirestoreRoomDoc {
@@ -43,6 +63,7 @@ export interface FirestoreRoomDoc {
     cards: CardValue[];
   };
   participants: FirestoreParticipantDoc[];
+  stickyNotes?: FirestoreStickyNoteDoc[];
   currentRound: FirestoreRoundDoc;
   roundsHistory: FirestoreRoundDoc[];
   version: number;
@@ -65,6 +86,19 @@ export class RoomMapper {
       }),
     );
 
+    const mapStickyNote = (n: StickyNote): FirestoreStickyNoteDoc => ({
+      id: n.id,
+      roomId: n.roomId,
+      text: n.text,
+      color: n.color,
+      position: { ...n.position },
+      authorId: n.authorId,
+      authorName: n.authorName,
+      isPinned: n.isPinned,
+      createdAt: n.createdAt,
+      updatedAt: n.updatedAt,
+    });
+
     const mapRound = (r: Round): FirestoreRoundDoc => ({
       roundNumber: r.roundNumber,
       status: r.status,
@@ -77,6 +111,18 @@ export class RoomMapper {
       startedAt: r.startedAt,
       revealedAt: r.revealedAt,
       timer: r.timer || null,
+      archivedStickyNotes: (r.archivedStickyNotes || []).map((sn) => ({
+        id: sn.id,
+        roomId: sn.roomId,
+        text: sn.text,
+        color: sn.color,
+        position: { ...sn.position },
+        authorId: sn.authorId,
+        authorName: sn.authorName,
+        isPinned: sn.isPinned,
+        createdAt: sn.createdAt,
+        updatedAt: sn.updatedAt,
+      })),
     });
 
     return {
@@ -89,6 +135,7 @@ export class RoomMapper {
         cards: room.deck.cards.map((c) => c.value),
       },
       participants,
+      stickyNotes: Array.from(room.stickyNotes.values()).map(mapStickyNote),
       currentRound: mapRound(room.currentRound),
       roundsHistory: room.roundsHistory.map((r) => mapRound(r)),
       version: room.version,
@@ -114,6 +161,26 @@ export class RoomMapper {
       );
     }
 
+    const unmapStickyNote = (docNote: FirestoreStickyNoteDoc): StickyNote => {
+      return StickyNote.reconstruct(docNote.id, {
+        roomId: docNote.roomId,
+        text: docNote.text || '',
+        color: docNote.color || 'yellow',
+        position: docNote.position,
+        authorId: docNote.authorId,
+        authorName: docNote.authorName,
+        isPinned: docNote.isPinned ?? false,
+        editingBy: null,
+        createdAt: docNote.createdAt,
+        updatedAt: docNote.updatedAt,
+      });
+    };
+
+    const stickyNotesMap = new Map<string, StickyNote>();
+    for (const n of doc.stickyNotes || []) {
+      stickyNotesMap.set(n.id, unmapStickyNote(n));
+    }
+
     const unmapRound = (rd: FirestoreRoundDoc): Round => {
       const estimatesMap = new Map<string, Estimate>();
       for (const e of rd.estimates || []) {
@@ -129,6 +196,21 @@ export class RoomMapper {
         startedAt: rd.startedAt,
         revealedAt: rd.revealedAt,
         timer: rd.timer ?? null,
+        archivedStickyNotes: (rd.archivedStickyNotes || []).map(
+          (sn): StickyNoteProjection => ({
+            id: sn.id,
+            roomId: sn.roomId,
+            text: sn.text,
+            color: sn.color,
+            position: sn.position,
+            authorId: sn.authorId,
+            authorName: sn.authorName,
+            isPinned: sn.isPinned,
+            editingBy: null,
+            createdAt: sn.createdAt,
+            updatedAt: sn.updatedAt,
+          }),
+        ),
       });
     };
 
@@ -143,6 +225,7 @@ export class RoomMapper {
       facilitatorKey,
       deck,
       participants: participantsMap,
+      stickyNotes: stickyNotesMap,
       currentRound,
       roundsHistory,
       createdAt: doc.createdAt,

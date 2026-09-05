@@ -104,6 +104,30 @@ describe('Room Aggregate Root', () => {
     expect(room.roundsHistory[0].roundNumber).toBe(1);
   });
 
+  it('should reset current round without incrementing roundNumber or pushing to history', () => {
+    const { room } = createTestRoom();
+    room.submitEstimate('user-1', 8);
+    room.revealCards('secret-key-123');
+    expect(room.currentRound.status).toBe('revealed');
+    expect(room.currentRound.roundNumber).toBe(1);
+
+    const resetRes = room.resetRound('secret-key-123');
+    expect(resetRes.isOk).toBe(true);
+
+    // Assert round number did NOT increment
+    expect(room.currentRound.roundNumber).toBe(1);
+    expect(room.currentRound.status).toBe('voting');
+    expect(room.currentRound.estimates.size).toBe(0);
+    expect(room.currentRound.revealedAt).toBeNull();
+    expect(room.roundsHistory.length).toBe(0);
+
+    // Participant estimates projection must be cleared
+    const projection = room.toProjection('user-1');
+    const user1 = projection.participants.find((p) => p.id === 'user-1');
+    expect(user1?.hasEstimated).toBe(false);
+    expect(user1?.estimatedValue).toBeNull();
+  });
+
   it('should reject facilitator actions with invalid key', () => {
     const { room } = createTestRoom();
     const res = room.revealCards('wrong-key');
@@ -213,5 +237,83 @@ describe('Room Aggregate Root', () => {
     expect(room.currentRound.timer).not.toBeNull();
     room.revealCards(key.value);
     expect(room.currentRound.timer).toBeNull();
+  });
+
+  it('should support collaborative sticky notes with pinning, editing, moving, and round archiving', () => {
+    const { room, key } = createTestRoom();
+
+    // Import StickyNote
+    const { StickyNote } = require('./entities/sticky-note.entity.js');
+
+    // Add unpinned sticky note
+    const note1 = StickyNote.create('note-1', {
+      roomId: room.id,
+      text: 'Need to clarify API rate limits',
+      color: 'yellow',
+      position: { x: 100, y: 200 },
+      authorId: 'user-1',
+      authorName: 'Alice',
+      isPinned: false,
+    });
+    room.addStickyNote(note1);
+
+    // Add pinned sticky note
+    const note2 = StickyNote.create('note-2', {
+      roomId: room.id,
+      text: 'Definition of Done: unit tests required',
+      color: 'blue',
+      position: { x: -300, y: 150 },
+      authorId: 'user-2',
+      authorName: 'Bob',
+      isPinned: true,
+    });
+    room.addStickyNote(note2);
+
+    expect(room.stickyNotes.size).toBe(2);
+
+    // Move note 1
+    const moved = room.moveStickyNote('note-1', { x: 150, y: 250 });
+    expect(moved).toBe(true);
+    expect(room.stickyNotes.get('note-1')?.position).toEqual({ x: 150, y: 250 });
+
+    // Edit note 1
+    const edited = room.editStickyNote('note-1', 'Updated: API rate limits clarified', 'green');
+    expect(edited).toBe(true);
+    expect(room.stickyNotes.get('note-1')?.text).toBe('Updated: API rate limits clarified');
+    expect(room.stickyNotes.get('note-1')?.color).toBe('green');
+
+    // Soft lock editing state
+    room.setStickyNoteEditing('note-1', { userId: 'user-1', userName: 'Alice' });
+    expect(room.stickyNotes.get('note-1')?.editingBy?.userName).toBe('Alice');
+
+    // Toggle pin on note 1
+    const isPinned = room.togglePinStickyNote('note-1');
+    expect(isPinned).toBe(true);
+    expect(room.stickyNotes.get('note-1')?.isPinned).toBe(true);
+
+    // Toggle back to unpinned
+    room.togglePinStickyNote('note-1');
+    expect(room.stickyNotes.get('note-1')?.isPinned).toBe(false);
+
+    // Advance to next round
+    const nextRes = room.nextRound(key.value, 'User Story 2');
+    expect(nextRes.isOk).toBe(true);
+
+    // Note 1 (unpinned) should be removed from active stickyNotes and archived in round 1
+    expect(room.stickyNotes.has('note-1')).toBe(false);
+    // Note 2 (pinned) must remain active
+    expect(room.stickyNotes.has('note-2')).toBe(true);
+
+    // Check round 1 archive
+    const pastRound = room.roundsHistory[0];
+    expect(pastRound.archivedStickyNotes.length).toBe(1);
+    expect(pastRound.archivedStickyNotes[0].id).toBe('note-1');
+    expect(pastRound.archivedStickyNotes[0].text).toBe('Updated: API rate limits clarified');
+    expect(pastRound.archivedStickyNotes[0].position).toEqual({ x: 150, y: 250 });
+
+    // Delete note 2
+    const deleted = room.deleteStickyNote('note-2');
+    expect(deleted).toBe(true);
+    expect(room.stickyNotes.size).toBe(0);
   });
 });

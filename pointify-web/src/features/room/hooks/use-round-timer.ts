@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { RoundTimerProjection } from '../types/room.types';
-import { playTimerChime } from '../utils/web-audio-chime';
+import { playTimerChime, unlockAudioContext } from '../utils/web-audio-chime';
 
 const STORAGE_MUTE_KEY = 'pointify_timer_muted';
+const MUTE_CHANGE_EVENT = 'pointify_mute_changed';
 
 export type TimerColorPhase = 'brand' | 'warning' | 'urgent' | 'expired';
 
@@ -28,11 +29,29 @@ export function useRoundTimer(
     return localStorage.getItem(STORAGE_MUTE_KEY) === 'true';
   });
 
+  // Keep all instances of useRoundTimer in sync across components
+  useEffect(() => {
+    const handleMuteChange = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>;
+      if (typeof customEvent.detail === 'boolean') {
+        setIsMuted(customEvent.detail);
+      }
+    };
+    window.addEventListener(MUTE_CHANGE_EVENT, handleMuteChange);
+    return () => {
+      window.removeEventListener(MUTE_CHANGE_EVENT, handleMuteChange);
+    };
+  }, []);
+
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_MUTE_KEY, String(next));
+        window.dispatchEvent(new CustomEvent(MUTE_CHANGE_EVENT, { detail: next }));
+      }
+      if (!next) {
+        unlockAudioContext();
       }
       return next;
     });
@@ -68,7 +87,21 @@ export function useRoundTimer(
     return () => clearInterval(interval);
   }, [timer?.status, timer?.endsAt, isRevealed]);
 
-  // Derived calculations
+  // Reliable chime trigger when timer reaches 0 (effect-based, outside render)
+  const isExpired = Boolean(
+    timer && timer.status === 'running' && !isRevealed && timer.endsAt - now <= 0,
+  );
+
+  useEffect(() => {
+    if (isExpired && !hasPlayedChimeRef.current) {
+      hasPlayedChimeRef.current = true;
+      if (!isMuted) {
+        void playTimerChime();
+      }
+    }
+  }, [isExpired, isMuted]);
+
+  // Derived calculations (pure, no side-effects)
   return useMemo(() => {
     if (!timer || isRevealed) {
       return {
@@ -109,17 +142,7 @@ export function useRoundTimer(
         };
       }
       remaining = Math.max(0, Math.ceil(diffMs / 1000));
-      if (remaining === 0) {
-        status = 'expired';
-        if (!hasPlayedChimeRef.current) {
-          hasPlayedChimeRef.current = true;
-          if (!isMuted) {
-            playTimerChime();
-          }
-        }
-      } else {
-        status = 'running';
-      }
+      status = remaining === 0 ? 'expired' : 'running';
     }
 
     const minutes = Math.floor(remaining / 60);

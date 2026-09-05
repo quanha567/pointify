@@ -1,6 +1,7 @@
 import { Entity } from '../../../../shared/domain/entity.base.js';
 import { Estimate } from '../value-objects/estimate.vo.js';
 import type { CardValue } from '../value-objects/card.vo.js';
+import type { StickyNoteProjection } from './sticky-note.entity.js';
 
 export type RoundStatus = 'voting' | 'revealed' | 'completed';
 
@@ -28,6 +29,7 @@ export interface RoundProps {
   startedAt: number;
   revealedAt: number | null;
   timer?: RoundTimer | null;
+  archivedStickyNotes?: StickyNoteProjection[];
 }
 
 export class Round extends Entity<RoundProps, number> {
@@ -44,6 +46,7 @@ export class Round extends Entity<RoundProps, number> {
       startedAt: Date.now(),
       revealedAt: null,
       timer: null,
+      archivedStickyNotes: [],
     });
   }
 
@@ -56,6 +59,7 @@ export class Round extends Entity<RoundProps, number> {
       startedAt: number;
       revealedAt: number | null;
       timer?: RoundTimer | null;
+      archivedStickyNotes?: StickyNoteProjection[];
     },
   ): Round {
     return new Round(roundNumber, {
@@ -66,6 +70,7 @@ export class Round extends Entity<RoundProps, number> {
       startedAt: props.startedAt,
       revealedAt: props.revealedAt,
       timer: props.timer ?? null,
+      archivedStickyNotes: props.archivedStickyNotes ?? [],
     });
   }
 
@@ -95,6 +100,14 @@ export class Round extends Entity<RoundProps, number> {
 
   get timer(): RoundTimer | null {
     return this.props.timer ?? null;
+  }
+
+  get archivedStickyNotes(): ReadonlyArray<StickyNoteProjection> {
+    return this.props.archivedStickyNotes ?? [];
+  }
+
+  public setArchivedStickyNotes(notes: StickyNoteProjection[]): void {
+    this.props.archivedStickyNotes = [...notes];
   }
 
   public startTimer(durationSeconds: number): void {
@@ -182,6 +195,13 @@ export class Round extends Entity<RoundProps, number> {
 
   public complete(): void {
     this.props.status = 'completed';
+  }
+
+  public reset(): void {
+    this.props.status = 'voting';
+    this.props.revealedAt = null;
+    this.props.estimates.clear();
+    this.props.timer = null;
   }
 
   public calculateStatistics(): RoundStatistics {

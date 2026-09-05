@@ -1,18 +1,71 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'motion/react';
-import { Eye, RotateCcw, Play, Pause, Sparkles, Loader2, Clock, Plus, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Eye,
+  RotateCcw,
+  Play,
+  Pause,
+  Sparkles,
+  Loader2,
+  Clock,
+  Plus,
+  X,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { CardValue, RoundTimerProjection } from '../../types/room.types';
-import { PokerStoryCardFront } from '../cards/poker-story-card-front';
+import { PokerStoryCard } from '../cards/poker-story-card';
 import { useRoundTimer } from '../../hooks/use-round-timer';
+
+const cardContainerVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.025,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const cardItemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 16,
+    scale: 0.95,
+  },
+  visible: (isSelected: boolean) => ({
+    opacity: 1,
+    y: isSelected ? -12 : 0,
+    scale: isSelected ? 1.05 : 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 350,
+      damping: 25,
+      mass: 0.8,
+    },
+  }),
+  exit: {
+    opacity: 0,
+    y: 12,
+    scale: 0.95,
+    transition: {
+      duration: 0.15,
+      ease: 'easeOut' as const,
+    },
+  },
+};
 
 interface RoomDeckDockProps {
   cards: CardValue[];
   selectedCard?: CardValue | null;
   onSelectCard?: (card: CardValue) => void;
   disabled?: boolean;
+  roundId?: string | number;
+  deckType?: string;
   // Facilitator integrated controls
   isFacilitator?: boolean;
   isRoundRevealed?: boolean;
@@ -35,6 +88,8 @@ export function RoomDeckDock({
   selectedCard,
   onSelectCard,
   disabled = false,
+  roundId,
+  deckType,
   isFacilitator = false,
   isRoundRevealed = false,
   onReveal,
@@ -107,7 +162,7 @@ export function RoomDeckDock({
                             <Clock className="size-3.5 text-primary" />
                             <span>{t('room.setTimerTitle', 'Hẹn giờ vòng ước lượng')}</span>
                           </div>
-                          <span className="text-[11px] font-bold text-muted-foreground">
+                          <span className="text-xs font-bold text-muted-foreground">
                             {Math.floor(selectedDuration / 60)}:
                             {String(selectedDuration % 60).padStart(2, '0')}
                           </span>
@@ -200,10 +255,28 @@ export function RoomDeckDock({
                         type="button"
                         onClick={() => onAddTimerSeconds?.(30)}
                         title={t('room.add30s', '+30s')}
-                        className="h-6 px-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground text-[11px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
+                        className="h-6 px-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
                       >
-                        <Plus className="size-2.5" />
+                        <Plus className="size-3" />
                         <span>30s</span>
+                      </button>
+
+                      {/* Sound Mute Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={timerState.toggleMute}
+                        title={
+                          timerState.isMuted
+                            ? t('room.soundMuted', 'Bật chuông')
+                            : t('room.soundUnmuted', 'Tắt chuông')
+                        }
+                        className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                      >
+                        {timerState.isMuted ? (
+                          <VolumeX className="size-3.5 text-muted-foreground" />
+                        ) : (
+                          <Volume2 className="size-3.5 text-primary" />
+                        )}
                       </button>
 
                       {/* Cancel / Stop Button */}
@@ -265,38 +338,88 @@ export function RoomDeckDock({
           </div>
         )}
 
+        {/* ── Top Attached Participant Timer Strip (when timer is active and user is not facilitator) ── */}
+        {!isFacilitator && isTimerActive && !isRoundRevealed && (
+          <div className="flex items-center justify-end px-4 py-1.5 border-b border-border/50 bg-muted/25">
+            <div className="h-7.5 inline-flex items-center rounded-full bg-background border border-border/70 px-1 gap-1 shadow-2xs">
+              <div
+                className={`inline-flex items-center gap-1 px-1.5 font-mono text-xs font-bold ${
+                  timerState.colorPhase === 'urgent' || timerState.status === 'expired'
+                    ? 'text-red-500'
+                    : timerState.colorPhase === 'warning'
+                      ? 'text-amber-500'
+                      : 'text-foreground'
+                }`}
+              >
+                <Clock className="size-3.5 shrink-0" />
+                <span>{timerState.formattedTime}</span>
+              </div>
+
+              <div className="h-3.5 w-px bg-border/70" />
+
+              <button
+                type="button"
+                onClick={timerState.toggleMute}
+                title={
+                  timerState.isMuted
+                    ? t('room.soundMuted', 'Bật chuông')
+                    : t('room.soundUnmuted', 'Tắt chuông')
+                }
+                className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+              >
+                {timerState.isMuted ? (
+                  <VolumeX className="size-3.5 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="size-3.5 text-primary" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Physical Poker Story Card Strip (Hidden for Spectators) ───── */}
         {!isSpectator && onSelectCard && (
-          <div className="flex items-end justify-start xl:justify-center gap-2 sm:gap-2.5 px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-3.5 overflow-x-auto scrollbar-none scroll-smooth">
-            {cards.map((card) => {
-              const isSelected = selectedCard === card;
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${deckType || 'deck'}-${roundId || 'round'}-${cards.length}`}
+              variants={cardContainerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex items-end justify-start xl:justify-center gap-2 sm:gap-2.5 px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-3.5 overflow-x-auto scrollbar-none scroll-smooth"
+            >
+              {cards.map((card) => {
+                const isSelected = selectedCard === card;
 
-              return (
-                <motion.button
-                  key={String(card)}
-                  disabled={disabled}
-                  whileHover={disabled ? {} : { y: -8, scale: 1.05 }}
-                  whileTap={disabled ? {} : { scale: 0.95 }}
-                  onClick={() => onSelectCard(card)}
-                  className={`relative w-16 h-24 sm:w-17 sm:h-25.5 md:w-18 md:h-27 rounded-xl sm:rounded-2xl shrink-0 transition-all duration-200 cursor-pointer select-none ${
-                    isSelected
-                      ? '-translate-y-3 scale-105 ring-2 ring-[#d40d65] shadow-xl shadow-pink-500/25'
-                      : 'hover:shadow-md opacity-95 hover:opacity-100'
-                  } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
-                >
-                  <PokerStoryCardFront value={card} />
+                return (
+                  <motion.button
+                    key={String(card)}
+                    variants={cardItemVariants}
+                    custom={isSelected}
+                    disabled={disabled}
+                    whileHover={disabled ? {} : { y: isSelected ? -16 : -8, scale: 1.05 }}
+                    whileTap={disabled ? {} : { scale: 0.95 }}
+                    onClick={() => onSelectCard(card)}
+                    className={`relative shrink-0 cursor-pointer select-none rounded-xl sm:rounded-2xl transition-shadow duration-200 ${
+                      isSelected
+                        ? 'ring-2 ring-[#d40d65] shadow-xl shadow-pink-500/25'
+                        : 'hover:shadow-md opacity-95 hover:opacity-100'
+                    } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  >
+                    <PokerStoryCard side="front" value={card} size="md" />
 
-                  {/* Selected indicator dot */}
-                  {isSelected && (
-                    <motion.span
-                      layoutId="selectedCardDot"
-                      className="absolute -bottom-2 inset-x-0 mx-auto size-2 rounded-full bg-[#d40d65] ring-2 ring-card shadow-md"
-                    />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
+                    {/* Selected indicator dot */}
+                    {isSelected && (
+                      <motion.span
+                        layoutId="selectedCardDot"
+                        className="absolute -bottom-2 inset-x-0 mx-auto size-2 rounded-full bg-[#d40d65] ring-2 ring-card shadow-md"
+                      />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>

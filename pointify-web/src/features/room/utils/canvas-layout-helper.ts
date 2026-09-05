@@ -11,6 +11,7 @@ export const NODE_TYPES = {
   TABLE_ARENA: 'tableArena',
   PARTICIPANT: 'participant',
   SPECTATOR: 'spectator',
+  STICKY_NOTE: 'stickyNote',
 } as const;
 
 /**
@@ -57,6 +58,7 @@ export function generateRoomNodes(room: RoomProjection, currentUserId?: string):
           isCurrentUser: currentUserId === participant.id,
         },
         draggable: false,
+        selectable: false,
       });
     });
   }
@@ -77,6 +79,25 @@ export function generateRoomNodes(room: RoomProjection, currentUserId?: string):
           isCurrentUser: currentUserId === spectator.id,
         },
         draggable: false,
+        selectable: false,
+      });
+    });
+  }
+
+  // 4. Generate Sticky Note Nodes
+  if (room.stickyNotes && room.stickyNotes.length > 0) {
+    room.stickyNotes.forEach((note) => {
+      nodes.push({
+        id: `sticky-note-${note.id}`,
+        type: NODE_TYPES.STICKY_NOTE,
+        position: { x: note.position.x, y: note.position.y },
+        data: {
+          note,
+          currentUserId,
+          isCurrentAuthor: currentUserId === note.authorId,
+        },
+        draggable: true,
+        selectable: true,
       });
     });
   }

@@ -53,5 +53,14 @@ Pointify is a real-time collaborative Scrum Poker (Planning Poker) application f
 | **Story Point Subtitle** | **Nhãn ý nghĩa độ phức tạp** | Concise agile complexity descriptor underneath the story point numeral (e.g., "Risk & big story", "Tiny", "Complex") | Card description, point meaning, nhãn giải thích |
 | **Room Settings Dialog** | **Hộp thoại Cài đặt Phòng** | Tabbed configuration modal allowing participants to manage personal preferences (language, role) and facilitators to configure room metadata (room name, estimation deck) | Config modal, room preferences, popup cài đặt |
 | **Round Countdown Timer** | **Đồng hồ đếm ngược vòng** | Server-synchronized time countdown set by Facilitator to bound an estimation round, displaying on Table Arena Node and Unified Deck Dock | Clock, stopwatch, bộ đếm giờ, timer |
+| **Unified Poker Story Card** | **Lá bài chuẩn Poker đa năng** | Standardized double-sided 3D card primitive with golden 2:3 aspect ratio, supporting seamless GPU flip transitions across seat nodes, table arena, and dock | Basic card, custom card div |
+| **Consensus Story Point Card** | **Lá bài Kết quả Đồng thuận** | Featured large estimation card prominently presented at the center of the Table Arena Node surrounded by an emerald aura when consensus is achieved | Winner card, big card |
+| **Sticky Note** | **Thẻ ghi chú dán** | Collaborative post-it note created on the room canvas containing text, color, author attribution, and pin status | Note, memo, card, giấy ghi chú, tờ note |
+| **Sticky Note Node** | **Node Thẻ ghi chú dán** | Interactive canvas node rendered on the room canvas representing a draggable Sticky Note with inline editing and color palette | Note box, sticky element, note node |
+| **Pinned Sticky Note** | **Thẻ ghi chú ghim cố định** | Sticky note marked as pinned that persists across estimation rounds, whereas unpinned notes reset with the round | Permanent note, ghim note, note giữ lại |
+| **Sticky Note Stack** | **Xấp thẻ ghi chú dán** | Bottom-left screen dock element mimicking a pad of colorful sticky notes from which participants can drag fresh notes onto the canvas | Note dock, note dispenser, khay note, xấp giấy |
+| **Archived Round Notes** | **Ghi chú lưu trữ theo vòng** | Historical collection of unpinned sticky notes archived along with a concluded estimation round's summary | Round notes history, note cũ, ghi chú lưu trữ |
+
+
 
 

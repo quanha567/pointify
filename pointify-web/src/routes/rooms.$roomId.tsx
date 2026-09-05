@@ -1,17 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { createFileRoute, useParams } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 
 import { useRoomQuery } from '@/features/room/api/use-room';
 import { useRoomSocket } from '@/features/room/api/use-room-socket';
 import { getFacilitatorKey } from '@/features/room/utils/facilitator-storage';
-import {
-  getStoredParticipant,
-  setStoredParticipant,
-  type StoredParticipant,
-} from '@/features/room/utils/participant-session';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useRoomParticipantIdentity } from '@/features/room/hooks/use-room-participant-identity';
 import { DECK_CONFIGS } from '@/features/room/constants/deck-configs';
 import { TypographyMuted } from '@/components/ui/typography';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,6 +14,7 @@ import { RoomCanvasShell } from '@/features/room/components/canvas/room-canvas-s
 import { RoomFloatingHeader } from '@/features/room/components/hud/room-floating-header';
 import { RoomDeckDock } from '@/features/room/components/hud/room-deck-dock';
 import { JoinRoomDialog } from '@/features/room/components/dialogs/join-room-dialog';
+import { initAudioUnlockListener } from '@/features/room/utils/web-audio-chime';
 import type { CardValue } from '@/features/room/types/room.types';
 
 export const Route = createFileRoute('/rooms/$roomId')({
@@ -29,48 +24,15 @@ export const Route = createFileRoute('/rooms/$roomId')({
 function RoomViewPage() {
   const { roomId } = useParams({ from: '/rooms/$roomId' });
   const { t } = useTranslation();
-  const { user } = useAuthStore();
 
-  // 1. Participant Identity Management
-  const [participant, setParticipant] = useState<StoredParticipant | null>(() => {
-    const stored = getStoredParticipant(roomId);
-    if (stored) return stored;
+  // 1. Participant identity (session, auth, join dialog)
+  const { participant, isJoinDialogOpen, handleJoinSubmit, handleParticipantJoined } =
+    useRoomParticipantIdentity(roomId);
 
-    // Auto-create from authenticated user if available
-    if (user?.uid) {
-      const authParticipant: StoredParticipant = {
-        id: user.uid,
-        displayName: user.displayName || 'Tài khoản',
-        photoURL: user.photoURL || null,
-        isGuest: false,
-        isSpectator: false,
-      };
-      setStoredParticipant(roomId, authParticipant);
-      return authParticipant;
-    }
+  // 2. Unlock Web AudioContext on initial user gesture
+  useEffect(() => initAudioUnlockListener(), []);
 
-    return null;
-  });
-
-  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(!participant);
-
-  // Synchronize when auth changes
-  useEffect(() => {
-    if (!participant && user?.uid) {
-      const authParticipant: StoredParticipant = {
-        id: user.uid,
-        displayName: user.displayName || 'Tài khoản',
-        photoURL: user.photoURL || null,
-        isGuest: false,
-        isSpectator: false,
-      };
-      setStoredParticipant(roomId, authParticipant);
-      setParticipant(authParticipant);
-      setIsJoinDialogOpen(false);
-    }
-  }, [user, roomId, participant]);
-
-  // 2. Real-time WebSocket Gateway Hook
+  // 3. Real-time WebSocket gateway
   const {
     connectionStatus,
     isActionLoading,
@@ -79,6 +41,7 @@ function RoomViewPage() {
     submitEstimate,
     revealCards,
     nextRound,
+    resetRound,
     claimFacilitator,
     switchRole,
     updateRoomConfig,
@@ -87,22 +50,21 @@ function RoomViewPage() {
     resumeTimer,
     stopTimer,
     addTimerSeconds,
+    createStickyNote,
+    moveStickyNote,
+    editStickyNote,
+    togglePinStickyNote,
+    deleteStickyNote,
+    startEditingStickyNote,
+    stopEditingStickyNote,
   } = useRoomSocket({
     roomId,
     participant,
-    onParticipantJoined: (p) => {
-      setParticipant(p);
-      setIsJoinDialogOpen(false);
-    },
+    onParticipantJoined: handleParticipantJoined,
   });
 
-  // 3. Room State Query (seeded and updated live by socket)
+  // 4. Room state query (seeded and updated live by socket)
   const { data: room, isLoading, error } = useRoomQuery(roomId, participant?.id);
-
-  const storedFacilitatorKey = getFacilitatorKey(roomId);
-  const isFacilitator =
-    Boolean(storedFacilitatorKey) ||
-    Boolean(participant?.id && room?.facilitatorId === participant.id);
 
   if (isLoading) {
     return (
@@ -125,9 +87,11 @@ function RoomViewPage() {
     );
   }
 
-  // Active deck configuration
+  // Derived state
+  const isFacilitator =
+    Boolean(getFacilitatorKey(roomId)) ||
+    Boolean(participant?.id && room.facilitatorId === participant.id);
   const activeDeckConfig = DECK_CONFIGS.find((d) => d.id === room.deckType) || DECK_CONFIGS[0];
-
   const currentParticipantInRoom = room.participants.find((p) => p.id === participant?.id);
   const selectedCard = currentParticipantInRoom?.estimatedValue ?? null;
   const isSpectator = currentParticipantInRoom?.isSpectator ?? participant?.isSpectator ?? false;
@@ -135,26 +99,17 @@ function RoomViewPage() {
     room.currentRound.status === 'revealed' || room.currentRound.status === 'completed';
 
   const handleSelectCard = (card: CardValue) => {
-    if (selectedCard === card) {
-      submitEstimate(null);
-    } else {
-      submitEstimate(card);
-    }
-  };
-
-  const handleJoinSubmit = (newParticipant: StoredParticipant) => {
-    joinRoom(newParticipant);
-    setParticipant(newParticipant);
-    setIsJoinDialogOpen(false);
-    toast.success(t('room.joinedSuccess', 'Đã tham gia phòng thành công!'));
+    submitEstimate(selectedCard === card ? null : card);
   };
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background select-none">
-      {/* 1. Pre-Lobby Join Dialog if not yet joined */}
-      <JoinRoomDialog open={isJoinDialogOpen} roomName={room.name} onJoin={handleJoinSubmit} />
+      <JoinRoomDialog
+        open={isJoinDialogOpen}
+        roomName={room.name}
+        onJoin={(p) => handleJoinSubmit(p, joinRoom)}
+      />
 
-      {/* 2. Floating Top Header Island */}
       <RoomFloatingHeader
         room={room}
         isFacilitator={isFacilitator}
@@ -167,10 +122,20 @@ function RoomViewPage() {
         onUpdateRoomConfig={updateRoomConfig}
       />
 
-      {/* 3. Whiteboard Infinite Canvas Shell (@xyflow/react) */}
-      <RoomCanvasShell room={room} currentUserId={participant?.id || ''} />
+      <RoomCanvasShell
+        room={room}
+        currentUserId={participant?.id || ''}
+        stickyNoteActions={{
+          createStickyNote,
+          moveStickyNote,
+          editStickyNote,
+          togglePinStickyNote,
+          deleteStickyNote,
+          startEditingStickyNote,
+          stopEditingStickyNote,
+        }}
+      />
 
-      {/* 4. Unified Deck Hand Dock & Facilitator Control Strip */}
       <RoomDeckDock
         cards={activeDeckConfig.cards}
         selectedCard={selectedCard}
@@ -179,8 +144,8 @@ function RoomViewPage() {
         isFacilitator={isFacilitator}
         isRoundRevealed={isRoundRevealed}
         onReveal={revealCards}
-        onNewRound={nextRound}
-        onReset={() => nextRound(room.currentRound.topic)}
+        onNewRound={() => nextRound()}
+        onReset={resetRound}
         isActionLoading={isActionLoading}
         isSpectator={isSpectator}
         timer={room.currentRound.timer}
@@ -189,6 +154,8 @@ function RoomViewPage() {
         onResumeTimer={resumeTimer}
         onStopTimer={stopTimer}
         onAddTimerSeconds={addTimerSeconds}
+        roundId={`${room.currentRound.roundNumber}-${room.currentRound.startedAt}`}
+        deckType={room.deckType}
       />
     </div>
   );

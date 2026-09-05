@@ -47,6 +47,11 @@ export interface NextRoundInputDto {
   nextTopic?: string;
 }
 
+export interface ResetRoundInputDto {
+  roomId: string;
+  facilitatorKey: string;
+}
+
 export interface ClaimFacilitatorInputDto {
   roomId: string;
   claimantId: string;

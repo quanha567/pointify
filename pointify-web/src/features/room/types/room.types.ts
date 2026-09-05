@@ -37,6 +37,32 @@ export interface RoundTimerProjection {
   remainingSecondsOnPause?: number;
 }
 
+export type StickyNoteColor = 'yellow' | 'blue' | 'green' | 'pink' | 'orange';
+
+export interface StickyNotePosition {
+  x: number;
+  y: number;
+}
+
+export interface StickyNoteEditingUser {
+  userId: string;
+  userName: string;
+}
+
+export interface StickyNoteProjection {
+  id: string;
+  roomId: string;
+  text: string;
+  color: StickyNoteColor;
+  position: StickyNotePosition;
+  authorId: string;
+  authorName: string;
+  isPinned: boolean;
+  editingBy?: StickyNoteEditingUser | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface CurrentRoundProjection {
   roundNumber: number;
   status: 'voting' | 'revealed' | 'completed';
@@ -45,6 +71,7 @@ export interface CurrentRoundProjection {
   revealedAt: number | null;
   statistics: RoundStatistics | null;
   timer: RoundTimerProjection | null;
+  archivedStickyNotes?: StickyNoteProjection[];
 }
 
 export interface RoomProjection {
@@ -55,6 +82,7 @@ export interface RoomProjection {
   facilitatorId: string;
   version: number;
   participants: ParticipantProjection[];
+  stickyNotes?: StickyNoteProjection[];
   currentRound: CurrentRoundProjection;
   roundsHistoryCount: number;
   createdAt: number;

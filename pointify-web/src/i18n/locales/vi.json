@@ -112,7 +112,8 @@
     "estimator": "Người ước lượng",
     "spectator": "Quan sát viên",
     "admin": "Quản trị viên",
-    "member": "Thành viên"
+    "member": "Thành viên",
+    "facilitator": "Người điều phối"
   },
   "auth": {
     "loginTab": "Đăng nhập",
@@ -482,6 +483,7 @@
   "room": {
     "round": "Vòng",
     "consensus100": "100% Đồng thuận",
+    "consensusCard": "Lá bài Đồng thuận",
     "statusRevealed": "Đã lật bài",
     "statusVoting": "Đang bỏ phiếu",
     "voted": "đã chọn",
@@ -491,6 +493,7 @@
     "average": "Trung bình",
     "consensus": "Đồng thuận",
     "highConsensus": "Đạt",
+    "noConsensus": "Chênh lệch",
     "totalVoters": "Số phiếu",
     "revealCards": "Lật bài ngay",
     "nextRound": "Vòng tiếp theo",
@@ -508,15 +511,29 @@
     "timerPaused": "Tạm dừng",
     "soundMuted": "Bật chuông",
     "soundUnmuted": "Tắt chuông",
+    "soundEnabled": "Đã bật chuông báo hết giờ",
+    "soundDisabled": "Đã tắt chuông báo hết giờ",
     "participantJoined": "{{name}} đã tham gia phòng",
     "participantLeft": "{{name}} đã rời phòng",
     "leftSuccess": "Đã rời phòng",
     "joinedSuccess": "Đã tham gia phòng thành công!",
     "codeCopied": "Đã sao chép mã phòng!",
+    "copyCode": "Sao chép mã phòng",
     "linkCopied": "Đã sao chép liên kết phòng!",
     "noFacilitatorKey": "Bạn không có khóa điều phối của phòng này",
+    "facilitatorOffline": "Người điều phối đang ngoại tuyến. Bạn có thể nhận quyền điều phối.",
+    "claimFacilitator": "Nhận quyền điều phối",
     "claimFacilitatorSuccess": "Bạn đã nhận quyền Điều phối viên phòng!",
     "invite": "Mời",
+    "members": "Thành viên",
+    "participants": "Thành viên tham gia",
+    "participantsSubtitle": "{{online}} trực tuyến / {{total}} thành viên",
+    "searchParticipants": "Tìm theo tên thành viên...",
+    "noParticipantsFound": "Không tìm thấy thành viên nào",
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "you": "Tôi",
+    "spectatorBadge": "Quan sát",
     "settings": "Cài đặt",
     "settingsDialog": {
       "title": "Cài đặt phòng",
@@ -577,6 +594,25 @@
       "89": "Bất khả thi",
       "?": "Chưa rõ",
       "☕": "Giải lao"
+    },
+    "stickyNote": {
+      "stickyStack": "Xấp thẻ ghi chú",
+      "stackTooltip": "Kéo thả ra bảng hoặc click để thêm thẻ ghi chú",
+      "dragHint": "Kéo thẻ ghi chú vào phòng",
+      "dragHintShort": "Kéo vào bảng",
+      "placeholder": "Nhập ghi chú...",
+      "pin": "Ghim ghi chú qua các vòng",
+      "unpin": "Bỏ ghim ghi chú",
+      "delete": "Xóa ghi chú",
+      "pinnedBadge": "ĐÃ GHIM",
+      "isTyping": "đang gõ...",
+      "color": {
+        "yellow": "Vàng",
+        "blue": "Xanh lam",
+        "green": "Xanh lá",
+        "pink": "Hồng",
+        "orange": "Cam"
+      }
     }
   }
 }

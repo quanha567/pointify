@@ -1,12 +1,12 @@
 import { memo, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { RoomProjection } from '../../types/room.types';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCircularProgressBar } from '@/components/ui/animated-circular-progress-bar';
-import { PokerStoryCardFront } from '../cards/poker-story-card-front';
+import { PokerStoryCard } from '../cards/poker-story-card';
 import { useRoundTimer } from '../../hooks/use-round-timer';
 
 /* ── Grouped Card Stacks (revealed state) ──────────────────── */
@@ -30,8 +30,8 @@ function RevealedCardStacks({ distribution }: { distribution: Record<string, num
           className="flex flex-col items-center gap-1"
         >
           <div className="relative perspective-800">
-            <div className="w-14 h-21 sm:w-16 sm:h-24 preserve-3d rotate-x-2 drop-shadow-md">
-              <PokerStoryCardFront value={value} compact />
+            <div className="preserve-3d rotate-x-2 drop-shadow-md">
+              <PokerStoryCard side="front" value={value} size="sm" />
             </div>
             {count > 1 && (
               <span className="absolute -top-2 -right-2 size-5.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-md ring-2 ring-card z-20">
@@ -87,6 +87,14 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
   const totalEstimators = participants.filter((p) => !p.isSpectator);
   const votedCount = totalEstimators.filter((p) => p.hasEstimated).length;
   const stats = currentRound.statistics;
+
+  const consensusValue = useMemo(() => {
+    if (!stats?.distribution) return null;
+    const entries = Object.entries(stats.distribution);
+    if (entries.length === 0) return null;
+    const sorted = entries.sort(([, a], [, b]) => b - a);
+    return sorted[0]?.[0] ?? null;
+  }, [stats?.distribution]);
 
   return (
     <div className="perspective-1000">
@@ -170,7 +178,7 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                         <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight leading-none">
                           {votedCount}/{totalEstimators.length}
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-bold mt-1 uppercase tracking-wider">
+                        <span className="text-xs text-muted-foreground font-bold mt-1 uppercase tracking-wider">
                           {t('room.voted', 'đã chọn')}
                         </span>
                       </AnimatedCircularProgressBar>
@@ -198,7 +206,7 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                           <span className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none">
                             {votedCount}/{totalEstimators.length}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-wider">
+                          <span className="text-xs text-muted-foreground font-bold mt-0.5 uppercase tracking-wider">
                             {t('room.voted', 'đã chọn')}
                           </span>
                         </AnimatedCircularProgressBar>
@@ -226,7 +234,7 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                             {timerState.formattedTime}
                           </span>
                           <span
-                            className={`text-[10px] font-bold mt-0.5 uppercase tracking-wider ${
+                            className={`text-xs font-bold mt-0.5 uppercase tracking-wider ${
                               timerState.status === 'expired'
                                 ? 'text-red-500 font-extrabold'
                                 : 'text-muted-foreground'
@@ -239,24 +247,6 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                                 : t('room.remainingTime', 'còn lại')}
                           </span>
                         </AnimatedCircularProgressBar>
-
-                        {/* Audio Mute Toggle Button */}
-                        <button
-                          type="button"
-                          onClick={timerState.toggleMute}
-                          title={
-                            timerState.isMuted
-                              ? t('room.soundMuted', 'Bật chuông')
-                              : t('room.soundUnmuted', 'Tắt chuông')
-                          }
-                          className="absolute -top-1 -right-1 size-7 rounded-full bg-card/90 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center shadow-xs border border-border/70 transition-colors cursor-pointer z-20"
-                        >
-                          {timerState.isMuted ? (
-                            <VolumeX className="size-3.5 text-muted-foreground" />
-                          ) : (
-                            <Volume2 className="size-3.5 text-foreground" />
-                          )}
-                        </button>
                       </div>
                     </motion.div>
                   )}
@@ -310,7 +300,9 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                             variant="outline"
                             className="text-xs px-2.5 py-0.5 rounded-md font-medium"
                           >
-                            {stats?.agreementScore ? `${stats.agreementScore}%` : 'Chênh lệch'}
+                            {stats?.agreementScore
+                              ? `${stats.agreementScore}%`
+                              : t('room.noConsensus', 'Chênh lệch')}
                           </Badge>
                         )}
                       </div>
@@ -326,8 +318,30 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
                     </div>
                   </div>
 
-                  {/* Grouped card stacks */}
-                  {stats?.distribution && <RevealedCardStacks distribution={stats.distribution} />}
+                  {/* If Consensus: Featured Large Consensus Card */}
+                  {hasConsensus && consensusValue !== null ? (
+                    <motion.div
+                      initial={{ scale: 0.75, opacity: 0, y: 16 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      transition={{ type: 'spring', stiffness: 320, damping: 22, delay: 0.2 }}
+                      className="flex flex-col items-center gap-2 pt-1"
+                    >
+                      <div className="relative">
+                        {/* Ambient Emerald Glow Aura */}
+                        <div className="absolute -inset-3 rounded-3xl bg-emerald-500/25 blur-lg animate-pulse pointer-events-none" />
+                        <div className="relative drop-shadow-2xl ring-2 ring-emerald-500/70 rounded-2xl">
+                          <PokerStoryCard side="front" value={consensusValue} size="lg" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <Sparkles className="size-3.5" />
+                        <span>{t('room.consensusCard', 'Lá bài Đồng thuận')}</span>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    /* When not consensus: Grouped card stacks */
+                    stats?.distribution && <RevealedCardStacks distribution={stats.distribution} />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

@@ -137,6 +137,14 @@ export class NextRoundRequestDto {
   nextTopic?: string;
 }
 
+export class ResetRoundRequestDto {
+  @ApiProperty({
+    description: 'Secret facilitator key',
+    example: 'fkey_abc123xyz',
+  })
+  facilitatorKey!: string;
+}
+
 export class ClaimFacilitatorRequestDto {
   @ApiProperty({
     description: 'Participant ID who is claiming host/facilitator role',

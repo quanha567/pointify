@@ -232,7 +232,7 @@ export function CreateRoomModal({ ref, onClose }: CreateRoomModalProps) {
                             <Users className="size-3.5 text-primary" />
                             <span>{t('createRoom.spectatorModeTitle')}</span>
                           </label>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {isSpectator
                               ? t('createRoom.spectatorModeActiveDesc')
                               : t('createRoom.spectatorModeInactiveDesc')}

@@ -26,10 +26,7 @@ export const SpectatorNode = memo(function SpectatorNode({ data }: SpectatorNode
       <div className="size-5 rounded-full bg-muted text-foreground font-bold text-[10px] flex items-center justify-center shrink-0">
         {participant.displayName.charAt(0).toUpperCase()}
       </div>
-      <span className="text-xs font-medium max-w-[90px] truncate">
-        {participant.displayName}
-        {isCurrentUser && ' (Tôi)'}
-      </span>
+      <span className="text-xs font-medium max-w-[100px] truncate">{participant.displayName}</span>
     </div>
   );
 });

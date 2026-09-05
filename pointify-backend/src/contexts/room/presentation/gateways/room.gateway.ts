@@ -14,6 +14,7 @@ import { JoinRoomUseCase } from '../../application/use-cases/join-room.use-case.
 import { SubmitEstimateUseCase } from '../../application/use-cases/submit-estimate.use-case.js';
 import { RevealCardsUseCase } from '../../application/use-cases/reveal-cards.use-case.js';
 import { NextRoundUseCase } from '../../application/use-cases/next-round.use-case.js';
+import { ResetRoundUseCase } from '../../application/use-cases/reset-round.use-case.js';
 import { ClaimFacilitatorUseCase } from '../../application/use-cases/claim-facilitator.use-case.js';
 import { SetParticipantOnlineUseCase } from '../../application/use-cases/set-participant-online.use-case.js';
 import { SwitchRoleUseCase } from '../../application/use-cases/switch-role.use-case.js';
@@ -22,6 +23,11 @@ import { ManageTimerUseCase } from '../../application/use-cases/manage-timer.use
 import type { CardValue } from '../../domain/value-objects/card.vo.js';
 import type { DeckType } from '../../domain/value-objects/deck.vo.js';
 import type { Room } from '../../domain/room.aggregate.js';
+import {
+  StickyNote,
+  type StickyNoteColor,
+  type StickyNotePosition,
+} from '../../domain/entities/sticky-note.entity.js';
 
 interface SocketSession {
   roomId: string;
@@ -48,6 +54,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly submitEstimateUseCase: SubmitEstimateUseCase,
     private readonly revealCardsUseCase: RevealCardsUseCase,
     private readonly nextRoundUseCase: NextRoundUseCase,
+    private readonly resetRoundUseCase: ResetRoundUseCase,
     private readonly claimFacilitatorUseCase: ClaimFacilitatorUseCase,
     private readonly setParticipantOnlineUseCase: SetParticipantOnlineUseCase,
     private readonly switchRoleUseCase: SwitchRoleUseCase,
@@ -202,10 +209,11 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     payload: { roomId: string; facilitatorKey: string; nextTopic?: string },
   ) {
     try {
+      const nextTopic = typeof payload.nextTopic === 'string' ? payload.nextTopic.trim() : undefined;
       const result = await this.nextRoundUseCase.execute({
         roomId: payload.roomId,
         facilitatorKey: payload.facilitatorKey,
-        nextTopic: payload.nextTopic,
+        nextTopic,
       });
 
       if (result.isFail) {
@@ -217,6 +225,31 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (err: unknown) {
       const message = (err as Error)?.message || 'Failed to start next round';
       this.logger.error(`Error starting next round: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
+  @SubscribeMessage('room:reset-round')
+  async handleResetRound(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: { roomId: string; facilitatorKey: string },
+  ) {
+    try {
+      const result = await this.resetRoundUseCase.execute({
+        roomId: payload.roomId,
+        facilitatorKey: payload.facilitatorKey,
+      });
+
+      if (result.isFail) {
+        client.emit('room:error', { message: result.error.message });
+        return;
+      }
+
+      await this.broadcastSanitizedRoomState(payload.roomId);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to reset round';
+      this.logger.error(`Error resetting round: ${message}`);
       client.emit('room:error', { message });
     }
   }
@@ -335,6 +368,213 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error(`Error managing timer: ${message}`);
       client.emit('room:error', { message });
     }
+  }
+
+  @SubscribeMessage('room:sticky-note-create')
+  async handleStickyNoteCreate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      note: {
+        id: string;
+        text?: string;
+        color?: StickyNoteColor;
+        position: StickyNotePosition;
+        authorId: string;
+        authorName: string;
+        isPinned?: boolean;
+      };
+    },
+  ) {
+    try {
+      const room = await this.roomRepository.findById(payload.roomId);
+      if (!room) return;
+
+      const newNote = StickyNote.create(payload.note.id, {
+        roomId: payload.roomId,
+        text: payload.note.text ?? '',
+        color: payload.note.color ?? 'yellow',
+        position: payload.note.position,
+        authorId: payload.note.authorId,
+        authorName: payload.note.authorName,
+        isPinned: payload.note.isPinned ?? false,
+      });
+
+      room.addStickyNote(newNote);
+      await this.roomRepository.save(room);
+
+      const roomChannel = `room:${payload.roomId}`;
+      this.server.in(roomChannel).emit('room:sticky-note-created', {
+        note: newNote.toProjection(),
+      });
+      await this.broadcastSanitizedRoomState(payload.roomId, room);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to create sticky note';
+      this.logger.error(`Error creating sticky note: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
+  @SubscribeMessage('room:sticky-note-move')
+  async handleStickyNoteMove(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+      position: StickyNotePosition;
+      isFinal?: boolean;
+    },
+  ) {
+    try {
+      const roomChannel = `room:${payload.roomId}`;
+      // Broadcast live movement immediately to all other participants in the room
+      client.to(roomChannel).emit('room:sticky-note-moved', {
+        noteId: payload.noteId,
+        position: payload.position,
+      });
+
+      // If final position after drag end, persist to repository
+      if (payload.isFinal) {
+        const room = await this.roomRepository.findById(payload.roomId);
+        if (room) {
+          room.moveStickyNote(payload.noteId, payload.position);
+          await this.roomRepository.save(room);
+        }
+      }
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to move sticky note';
+      this.logger.error(`Error moving sticky note: ${message}`);
+    }
+  }
+
+  @SubscribeMessage('room:sticky-note-edit')
+  async handleStickyNoteEdit(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+      text: string;
+      color?: StickyNoteColor;
+    },
+  ) {
+    try {
+      const room = await this.roomRepository.findById(payload.roomId);
+      if (!room) return;
+
+      const edited = room.editStickyNote(payload.noteId, payload.text, payload.color);
+      if (!edited) return;
+
+      await this.roomRepository.save(room);
+
+      const roomChannel = `room:${payload.roomId}`;
+      this.server.in(roomChannel).emit('room:sticky-note-edited', {
+        noteId: payload.noteId,
+        text: payload.text,
+        color: payload.color,
+      });
+      await this.broadcastSanitizedRoomState(payload.roomId, room);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to edit sticky note';
+      this.logger.error(`Error editing sticky note: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
+  @SubscribeMessage('room:sticky-note-pin')
+  async handleStickyNotePin(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+    },
+  ) {
+    try {
+      const room = await this.roomRepository.findById(payload.roomId);
+      if (!room) return;
+
+      const isPinned = room.togglePinStickyNote(payload.noteId);
+      if (isPinned === null) return;
+
+      await this.roomRepository.save(room);
+
+      const roomChannel = `room:${payload.roomId}`;
+      this.server.in(roomChannel).emit('room:sticky-note-pinned', {
+        noteId: payload.noteId,
+        isPinned,
+      });
+      await this.broadcastSanitizedRoomState(payload.roomId, room);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to pin sticky note';
+      this.logger.error(`Error pinning sticky note: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
+  @SubscribeMessage('room:sticky-note-delete')
+  async handleStickyNoteDelete(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+    },
+  ) {
+    try {
+      const room = await this.roomRepository.findById(payload.roomId);
+      if (!room) return;
+
+      const deleted = room.deleteStickyNote(payload.noteId);
+      if (!deleted) return;
+
+      await this.roomRepository.save(room);
+
+      const roomChannel = `room:${payload.roomId}`;
+      this.server.in(roomChannel).emit('room:sticky-note-deleted', {
+        noteId: payload.noteId,
+      });
+      await this.broadcastSanitizedRoomState(payload.roomId, room);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Failed to delete sticky note';
+      this.logger.error(`Error deleting sticky note: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
+  @SubscribeMessage('room:sticky-note-editing-start')
+  async handleStickyNoteEditingStart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+      user: { userId: string; userName: string };
+    },
+  ) {
+    const roomChannel = `room:${payload.roomId}`;
+    client.to(roomChannel).emit('room:sticky-note-editing-changed', {
+      noteId: payload.noteId,
+      editingBy: payload.user,
+    });
+  }
+
+  @SubscribeMessage('room:sticky-note-editing-end')
+  async handleStickyNoteEditingEnd(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      noteId: string;
+    },
+  ) {
+    const roomChannel = `room:${payload.roomId}`;
+    client.to(roomChannel).emit('room:sticky-note-editing-changed', {
+      noteId: payload.noteId,
+      editingBy: null,
+    });
   }
 
   @SubscribeMessage('room:leave')

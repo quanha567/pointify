@@ -180,7 +180,7 @@ export function JoinRoomModal({ ref, onClose }: JoinRoomModalProps) {
                             <Users className="size-3.5 text-primary" />
                             <span>{t('joinRoom.spectatorModeTitle')}</span>
                           </label>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {isSpectator
                               ? t('joinRoom.spectatorModeActiveDesc')
                               : t('joinRoom.spectatorModeInactiveDesc')}

@@ -1,10 +1,8 @@
 import { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Crown, Check } from 'lucide-react';
 import type { ParticipantProjection } from '../../types/room.types';
 import { ThinkingMascot } from './mascots/thinking-mascot';
-import { OneTechCardBack } from '../cards/one-tech-card-back';
-import { PokerStoryCardFront } from '../cards/poker-story-card-front';
+import { PokerStoryCard } from '../cards/poker-story-card';
 
 interface ParticipantNodeProps {
   data: {
@@ -41,33 +39,22 @@ export const ParticipantNode = memo(function ParticipantNode({ data }: Participa
         <div className="absolute -bottom-1.5 w-16 sm:w-20 h-4 rounded-full bg-primary/20 blur-[4px] pointer-events-none ring-1 ring-primary/10" />
 
         <AnimatePresence mode="wait">
-          {hasEstimated && !isRevealed ? (
-            /* Card chosen — face-down One Tech Stop card with 3D spring flip in */
+          {hasEstimated ? (
+            /* Card chosen — true 3D flip between face-down and revealed face-up */
             <motion.div
-              key="face-down"
-              initial={{ scale: 0.3, opacity: 0, rotateY: 90, y: 15 }}
-              animate={{ scale: 1, opacity: 1, rotateY: 0, y: 0 }}
-              exit={{ scale: 0.5, opacity: 0, rotateY: -90, y: -20 }}
+              key="chosen-card"
+              initial={{ scale: 0.3, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.5, opacity: 0, y: -20 }}
               transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-              className="w-16 h-24 sm:w-18 sm:h-26 preserve-3d z-10 cursor-default"
+              className="z-10 cursor-default"
             >
-              <OneTechCardBack />
-            </motion.div>
-          ) : hasEstimated && isRevealed ? (
-            /* Card revealed — Poker story point card front with staggered 3D cascade flip */
-            <motion.div
-              key="face-up"
-              initial={{ scale: 0.4, opacity: 0, y: -15, rotateY: 90 }}
-              animate={{ scale: 1, opacity: 1, y: 0, rotateY: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 340,
-                damping: 22,
-                delay: flipDelay,
-              }}
-              className="w-16 h-24 sm:w-18 sm:h-26 preserve-3d z-10 cursor-default"
-            >
-              <PokerStoryCardFront value={participant.estimatedValue} />
+              <PokerStoryCard
+                side={isRevealed ? 'front' : 'back'}
+                value={participant.estimatedValue}
+                size="md"
+                flipDelay={isRevealed ? flipDelay : 0}
+              />
             </motion.div>
           ) : (
             /* Thinking Mascot — contemplating before voting */
@@ -94,53 +81,17 @@ export const ParticipantNode = memo(function ParticipantNode({ data }: Participa
         </AnimatePresence>
       </div>
 
-      {/* Participant Profile Capsule — enhanced contrast & pedestal grounded */}
+      {/* Participant Name Badge — simplified to display name only, active color for current user */}
       <div
-        className={`flex items-center gap-2 px-2.5 py-1 rounded-full border shadow-xs transition-all ${
+        className={`px-3 py-1 rounded-full border shadow-xs transition-all duration-300 pointer-events-auto select-none max-w-[130px] text-center ${
           isCurrentUser
-            ? 'bg-primary/12 border-primary/40 text-foreground font-semibold shadow-sm ring-1 ring-primary/20'
-            : 'bg-card/95 border-border/80 text-foreground backdrop-blur-md'
+            ? 'bg-primary/15 border-primary/50 text-primary font-semibold shadow-sm ring-1 ring-primary/25'
+            : 'bg-card/90 border-border/80 text-foreground/85 backdrop-blur-md font-medium'
         }`}
       >
-        <div className="relative">
-          {participant.photoURL ? (
-            <img
-              src={participant.photoURL}
-              alt={participant.displayName}
-              className="size-5 rounded-full object-cover shrink-0 bg-background/50 ring-1 ring-border"
-            />
-          ) : (
-            <div className="size-5 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center shrink-0">
-              {participant.displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <span
-            className={`absolute -bottom-0.5 -right-0.5 size-1.5 rounded-full ring-1 ring-card ${
-              isOnline ? 'bg-emerald-500' : 'bg-muted-foreground'
-            }`}
-          />
-        </div>
-
-        <div className="flex items-center gap-1 max-w-[110px]">
-          <span className="text-xs truncate font-medium">
-            {participant.displayName}
-            {isCurrentUser && ' (Tôi)'}
-          </span>
-          {participant.isFacilitator && (
-            <Crown className="size-3.5 text-amber-500 fill-amber-500/20 shrink-0" />
-          )}
-        </div>
-
-        {/* Checkmark indicator when voted */}
-        {hasEstimated && !isRevealed && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-          >
-            <Check className="size-3.5 text-emerald-500 shrink-0 stroke-[2.5]" />
-          </motion.div>
-        )}
+        <span className="text-xs truncate block" title={participant.displayName}>
+          {participant.displayName}
+        </span>
       </div>
     </div>
   );

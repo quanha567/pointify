@@ -8,6 +8,7 @@ import { JoinRoomUseCase } from './application/use-cases/join-room.use-case.js';
 import { SubmitEstimateUseCase } from './application/use-cases/submit-estimate.use-case.js';
 import { RevealCardsUseCase } from './application/use-cases/reveal-cards.use-case.js';
 import { NextRoundUseCase } from './application/use-cases/next-round.use-case.js';
+import { ResetRoundUseCase } from './application/use-cases/reset-round.use-case.js';
 import { ClaimFacilitatorUseCase } from './application/use-cases/claim-facilitator.use-case.js';
 import { SetParticipantOnlineUseCase } from './application/use-cases/set-participant-online.use-case.js';
 import { SwitchRoleUseCase } from './application/use-cases/switch-role.use-case.js';
@@ -30,6 +31,7 @@ import { RoomController } from './presentation/controllers/room.controller.js';
     SubmitEstimateUseCase,
     RevealCardsUseCase,
     NextRoundUseCase,
+    ResetRoundUseCase,
     ClaimFacilitatorUseCase,
     SetParticipantOnlineUseCase,
     SwitchRoleUseCase,
@@ -45,6 +47,7 @@ import { RoomController } from './presentation/controllers/room.controller.js';
     SubmitEstimateUseCase,
     RevealCardsUseCase,
     NextRoundUseCase,
+    ResetRoundUseCase,
     ClaimFacilitatorUseCase,
     SetParticipantOnlineUseCase,
     SwitchRoleUseCase,

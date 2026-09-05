@@ -1,6 +1,13 @@
 import { AggregateRoot } from '../../../shared/domain/aggregate-root.base.js';
 import { Participant } from './entities/participant.entity.js';
 import { Round, type RoundStatistics, type RoundTimer } from './entities/round.entity.js';
+import {
+  StickyNote,
+  type StickyNoteColor,
+  type StickyNotePosition,
+  type StickyNoteProjection,
+  type StickyNoteEditingUser,
+} from './entities/sticky-note.entity.js';
 import { Deck, type DeckType } from './value-objects/deck.vo.js';
 import { FacilitatorKey } from './value-objects/facilitator-key.vo.js';
 import type { CardValue } from './value-objects/card.vo.js';
@@ -19,6 +26,7 @@ export interface RoomProps {
   facilitatorKey: FacilitatorKey;
   deck: Deck;
   participants: Map<string, Participant>;
+  stickyNotes: Map<string, StickyNote>;
   currentRound: Round;
   roundsHistory: Round[];
   createdAt: number;
@@ -45,6 +53,7 @@ export interface RoomProjection {
   facilitatorId: string;
   version: number;
   participants: ParticipantProjection[];
+  stickyNotes: StickyNoteProjection[];
   currentRound: {
     roundNumber: number;
     status: 'voting' | 'revealed' | 'completed';
@@ -53,6 +62,7 @@ export interface RoomProjection {
     revealedAt: number | null;
     statistics: RoundStatistics | null;
     timer: RoundTimer | null;
+    archivedStickyNotes?: StickyNoteProjection[];
   };
   roundsHistoryCount: number;
   createdAt: number;
@@ -91,6 +101,7 @@ export class Room extends AggregateRoot<RoomProps, string> {
         facilitatorKey,
         deck,
         participants,
+        stickyNotes: new Map<string, StickyNote>(),
         currentRound: initialRound,
         roundsHistory: [],
         createdAt: now,
@@ -103,6 +114,9 @@ export class Room extends AggregateRoot<RoomProps, string> {
   }
 
   public static reconstruct(id: string, props: RoomProps, version: number): Room {
+    if (!props.stickyNotes) {
+      props.stickyNotes = new Map<string, StickyNote>();
+    }
     return new Room(id, props, version);
   }
 
@@ -124,6 +138,57 @@ export class Room extends AggregateRoot<RoomProps, string> {
 
   get participants(): ReadonlyMap<string, Participant> {
     return this.props.participants;
+  }
+
+  get stickyNotes(): ReadonlyMap<string, StickyNote> {
+    return this.props.stickyNotes;
+  }
+
+  public addStickyNote(note: StickyNote): void {
+    this.props.stickyNotes.set(note.id, note);
+    this.touch();
+  }
+
+  public moveStickyNote(id: string, position: StickyNotePosition): boolean {
+    const note = this.props.stickyNotes.get(id);
+    if (!note) return false;
+    note.setPosition(position);
+    this.touch();
+    return true;
+  }
+
+  public editStickyNote(id: string, text: string, color?: StickyNoteColor): boolean {
+    const note = this.props.stickyNotes.get(id);
+    if (!note) return false;
+    note.setText(text);
+    if (color) {
+      note.setColor(color);
+    }
+    this.touch();
+    return true;
+  }
+
+  public togglePinStickyNote(id: string): boolean | null {
+    const note = this.props.stickyNotes.get(id);
+    if (!note) return null;
+    const isPinned = note.togglePinned();
+    this.touch();
+    return isPinned;
+  }
+
+  public deleteStickyNote(id: string): boolean {
+    const deleted = this.props.stickyNotes.delete(id);
+    if (deleted) {
+      this.touch();
+    }
+    return deleted;
+  }
+
+  public setStickyNoteEditing(id: string, editingBy: StickyNoteEditingUser | null): boolean {
+    const note = this.props.stickyNotes.get(id);
+    if (!note) return false;
+    note.setEditingBy(editingBy);
+    return true;
   }
 
   get currentRound(): Round {
@@ -237,16 +302,39 @@ export class Room extends AggregateRoot<RoomProps, string> {
     return ok(undefined);
   }
 
+  public resetRound(key: string): Result<void, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+
+    const unpinnedNotes = Array.from(this.props.stickyNotes.values()).filter((n) => !n.isPinned);
+    this.props.currentRound.setArchivedStickyNotes(unpinnedNotes.map((n) => n.toProjection()));
+    for (const unpinned of unpinnedNotes) {
+      this.props.stickyNotes.delete(unpinned.id);
+    }
+
+    this.props.currentRound.reset();
+    this.touch();
+    return ok(undefined);
+  }
+
   public nextRound(key: string, nextTopic = ''): Result<Round, UnauthorizedFacilitatorError> {
     if (!this.props.facilitatorKey.matches(key)) {
       return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+
+    const unpinnedNotes = Array.from(this.props.stickyNotes.values()).filter((n) => !n.isPinned);
+    this.props.currentRound.setArchivedStickyNotes(unpinnedNotes.map((n) => n.toProjection()));
+    for (const unpinned of unpinnedNotes) {
+      this.props.stickyNotes.delete(unpinned.id);
     }
 
     this.props.currentRound.complete();
     this.props.roundsHistory.push(this.props.currentRound);
 
     const nextRoundNumber = this.props.roundsHistory.length + 1;
-    this.props.currentRound = Round.startNew(nextRoundNumber, nextTopic);
+    const cleanTopic = typeof nextTopic === 'string' ? nextTopic.trim() : '';
+    this.props.currentRound = Round.startNew(nextRoundNumber, cleanTopic);
 
     this.touch();
     return ok(this.props.currentRound);
@@ -391,6 +479,7 @@ export class Room extends AggregateRoot<RoomProps, string> {
       facilitatorId: this.props.facilitatorId,
       version: this._version,
       participants: participantsList,
+      stickyNotes: Array.from(this.props.stickyNotes.values()).map((n) => n.toProjection()),
       currentRound: {
         roundNumber: this.props.currentRound.roundNumber,
         status: this.props.currentRound.status,
@@ -399,6 +488,7 @@ export class Room extends AggregateRoot<RoomProps, string> {
         revealedAt: this.props.currentRound.revealedAt,
         statistics: isRevealed ? this.props.currentRound.calculateStatistics() : null,
         timer: this.props.currentRound.timer,
+        archivedStickyNotes: [...this.props.currentRound.archivedStickyNotes],
       },
       roundsHistoryCount: this.props.roundsHistory.length,
       createdAt: this.props.createdAt,

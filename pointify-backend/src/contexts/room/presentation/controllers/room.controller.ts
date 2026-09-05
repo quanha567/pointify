@@ -18,6 +18,7 @@ import { JoinRoomUseCase } from '../../application/use-cases/join-room.use-case.
 import { SubmitEstimateUseCase } from '../../application/use-cases/submit-estimate.use-case.js';
 import { RevealCardsUseCase } from '../../application/use-cases/reveal-cards.use-case.js';
 import { NextRoundUseCase } from '../../application/use-cases/next-round.use-case.js';
+import { ResetRoundUseCase } from '../../application/use-cases/reset-round.use-case.js';
 import { ClaimFacilitatorUseCase } from '../../application/use-cases/claim-facilitator.use-case.js';
 import {
   CreateRoomRequestDto,
@@ -25,6 +26,7 @@ import {
   SubmitEstimateRequestDto,
   RevealCardsRequestDto,
   NextRoundRequestDto,
+  ResetRoundRequestDto,
   ClaimFacilitatorRequestDto,
 } from '../dtos/room-request.dto.js';
 
@@ -38,6 +40,7 @@ export class RoomController {
     private readonly submitEstimateUseCase: SubmitEstimateUseCase,
     private readonly revealCardsUseCase: RevealCardsUseCase,
     private readonly nextRoundUseCase: NextRoundUseCase,
+    private readonly resetRoundUseCase: ResetRoundUseCase,
     private readonly claimFacilitatorUseCase: ClaimFacilitatorUseCase,
   ) {}
 
@@ -183,6 +186,33 @@ export class RoomController {
       roomId,
       facilitatorKey: body.facilitatorKey,
       nextTopic: body.nextTopic,
+    });
+
+    if (result.isFail) {
+      throw new ForbiddenException(result.error.message);
+    }
+
+    return {
+      success: true,
+      room: result.value,
+    };
+  }
+
+  @Post(':id/reset-round')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reset current estimation round without incrementing round number',
+    description:
+      'Clears all participant votes and resets status back to voting while keeping current round number.',
+  })
+  @ApiParam({ name: 'id', description: 'Unique Room ID / Code' })
+  @ApiBody({ type: ResetRoundRequestDto })
+  @ApiResponse({ status: 200, description: 'Current round reset successfully' })
+  @ApiResponse({ status: 403, description: 'Invalid facilitatorKey' })
+  async resetRound(@Param('id') roomId: string, @Body() body: ResetRoundRequestDto) {
+    const result = await this.resetRoundUseCase.execute({
+      roomId,
+      facilitatorKey: body.facilitatorKey,
     });
 
     if (result.isFail) {

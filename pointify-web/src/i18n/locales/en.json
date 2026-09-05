@@ -112,7 +112,8 @@
     "estimator": "Estimator",
     "spectator": "Spectator",
     "admin": "Administrator",
-    "member": "Member"
+    "member": "Member",
+    "facilitator": "Facilitator"
   },
   "auth": {
     "loginTab": "Sign In",
@@ -482,6 +483,7 @@
   "room": {
     "round": "Round",
     "consensus100": "100% Consensus",
+    "consensusCard": "Consensus Card",
     "statusRevealed": "Cards Revealed",
     "statusVoting": "Voting",
     "voted": "estimated",
@@ -491,6 +493,7 @@
     "average": "Average",
     "consensus": "Consensus",
     "highConsensus": "Reached",
+    "noConsensus": "Divergent",
     "totalVoters": "Total Votes",
     "revealCards": "Reveal Cards",
     "nextRound": "Next Round",
@@ -506,17 +509,31 @@
     "remainingTime": "remaining",
     "timerExpired": "Time's up!",
     "timerPaused": "Paused",
-    "soundMuted": "Sound unmuted",
-    "soundUnmuted": "Sound muted",
+    "soundMuted": "Unmute chime",
+    "soundUnmuted": "Mute chime",
+    "soundEnabled": "Timer chime enabled",
+    "soundDisabled": "Timer chime muted",
     "participantJoined": "{{name}} joined the room",
     "participantLeft": "{{name}} left the room",
     "leftSuccess": "You have left the room",
     "joinedSuccess": "Joined room successfully!",
     "codeCopied": "Room code copied!",
+    "copyCode": "Copy room code",
     "linkCopied": "Room link copied!",
     "noFacilitatorKey": "You do not have the facilitator key for this room",
+    "facilitatorOffline": "The facilitator is currently offline. You can claim the facilitator role.",
+    "claimFacilitator": "Claim Facilitator",
     "claimFacilitatorSuccess": "You have claimed the Room Facilitator role!",
     "invite": "Invite",
+    "members": "Members",
+    "participants": "Participants",
+    "participantsSubtitle": "{{online}} online / {{total}} members",
+    "searchParticipants": "Search participants by name...",
+    "noParticipantsFound": "No participants found",
+    "online": "Online",
+    "offline": "Offline",
+    "you": "You",
+    "spectatorBadge": "Spectator",
     "settings": "Settings",
     "settingsDialog": {
       "title": "Room Settings",
@@ -577,6 +594,25 @@
       "89": "Impossible",
       "?": "Uncertain",
       "☕": "Coffee break"
+    },
+    "stickyNote": {
+      "stickyStack": "Sticky stack",
+      "stackTooltip": "Drag to canvas or click to add sticky note",
+      "dragHint": "Drag sticky note into room",
+      "dragHintShort": "Drag to board",
+      "placeholder": "Type a note...",
+      "pin": "Pin note across rounds",
+      "unpin": "Unpin note",
+      "delete": "Delete note",
+      "pinnedBadge": "PINNED",
+      "isTyping": "is typing...",
+      "color": {
+        "yellow": "Yellow",
+        "blue": "Blue",
+        "green": "Green",
+        "pink": "Pink",
+        "orange": "Orange"
+      }
     }
   }
 }
