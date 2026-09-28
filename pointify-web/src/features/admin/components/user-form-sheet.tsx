@@ -2,14 +2,7 @@ import React, { useState, useImperativeHandle, useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import {
-  UserIcon,
-  ShieldIcon,
-  ActivityIcon,
-  SparklesIcon,
-  Loader2Icon,
-  MailIcon,
-} from 'lucide-react';
+import { UserIcon, ShieldIcon, ActivityIcon, SparklesIcon, MailIcon } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -19,6 +12,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { StatefulButton, type ButtonState } from '@/components/motion/button/stateful';
 import { Input } from '@/components/ui/input';
 import { FieldGroup, Field, FieldLabel, FieldError } from '@/components/ui/field';
 import {
@@ -45,9 +39,11 @@ export interface UserFormSheetProps {
 }
 
 export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserAccountDto | null>(null);
+
+  const [submitState, setSubmitState] = useState<ButtonState>('idle');
 
   const form = useForm({
     defaultValues: {
@@ -70,9 +66,16 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
     onSubmit: async ({ value }) => {
       try {
         const parsed = userFormSchema.parse(value);
+        setSubmitState('loading');
         await onSave(parsed, editingUser);
-        setOpen(false);
+        setSubmitState('success');
+        setTimeout(() => {
+          setOpen(false);
+          setSubmitState('idle');
+        }, 400);
       } catch (err: unknown) {
+        setSubmitState('error');
+        setTimeout(() => setSubmitState('idle'), 1500);
         const message = err instanceof Error ? err.message : t('admin.users.toasts.saveError');
         toast.error(message);
       }
@@ -121,7 +124,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
           <div className="flex flex-col gap-6">
             <SheetHeader className="p-0 text-left space-y-1.5 border-b border-border pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+                <div className="p-2 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
                   <SparklesIcon className="size-5" />
                 </div>
                 <div>
@@ -150,7 +153,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
               })}
             >
               {(values) => (
-                <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/40 border border-border/80 shadow-2xs">
+                <div className="flex items-center gap-3.5 p-3.5 rounded-lg bg-muted/40 border border-border/80 shadow-2xs">
                   <Avatar className="size-12 border-2 border-border/60 shadow-xs">
                     <AvatarImage src={values.photoURL || undefined} />
                     <AvatarFallback className="bg-primary/15 text-primary text-sm font-bold">
@@ -166,8 +169,8 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                         variant="outline"
                         className={
                           values.role === 'admin'
-                            ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/25 text-xs px-2 py-0.5 font-medium'
-                            : 'bg-secondary/60 text-secondary-foreground text-xs px-2 py-0.5 font-medium'
+                            ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/25 text-xs px-2 py-0.5 font-medium rounded-sm'
+                            : 'bg-secondary/60 text-secondary-foreground text-xs px-2 py-0.5 font-medium rounded-sm'
                         }
                       >
                         {values.role === 'admin'
@@ -216,7 +219,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        className="h-10 sm:h-11 rounded-xl text-sm bg-background/50 border-border"
+                        className="h-[38px] rounded-md text-sm bg-background/50 border-border"
                       />
                       {isInvalid && (
                         <FieldError className="text-xs font-medium text-destructive">
@@ -248,7 +251,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        className="h-10 sm:h-11 rounded-xl text-sm bg-background/50 border-border"
+                        className="h-[38px] rounded-md text-sm bg-background/50 border-border"
                       />
                       {isInvalid && (
                         <FieldError className="text-xs font-medium text-destructive">
@@ -277,7 +280,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                       value={field.state.value || ''}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="h-10 sm:h-11 rounded-xl text-sm bg-background/50 border-border"
+                      className="h-[38px] rounded-md text-sm bg-background/50 border-border"
                     />
                   </Field>
                 )}
@@ -295,7 +298,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                       value={field.state.value}
                       onValueChange={(val: 'admin' | 'member') => field.handleChange(val)}
                     >
-                      <SelectTrigger className="h-10 sm:h-11 rounded-xl text-sm bg-background/50 border-border">
+                      <SelectTrigger className="h-[38px] rounded-md text-sm bg-background/50 border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -339,7 +342,7 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
                       value={field.state.value}
                       onValueChange={(val: 'active' | 'disabled') => field.handleChange(val)}
                     >
-                      <SelectTrigger className="h-10 sm:h-11 rounded-xl text-sm bg-background/50 border-border">
+                      <SelectTrigger className="h-[38px] rounded-md text-sm bg-background/50 border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -378,26 +381,21 @@ export function UserFormSheet({ ref, onSave, isLoading = false }: UserFormSheetP
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="flex-1 h-10 text-sm font-medium rounded-xl cursor-pointer"
+              className="flex-1 h-[38px] text-sm font-medium rounded-md cursor-pointer"
             >
               {t('admin.users.form.cancel')}
             </Button>
-            <Button
+            <StatefulButton
               type="submit"
-              disabled={isLoading}
-              className="flex-1 h-10 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+              state={isLoading ? 'loading' : submitState}
+              disabled={isLoading || submitState === 'loading'}
+              loadingText={t('admin.users.form.saving')}
+              successText={t('admin.users.form.saved')}
+              errorText={t('admin.users.form.error')}
+              className="flex-1 h-[38px] text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
             >
-              {isLoading ? (
-                <>
-                  <Loader2Icon className="mr-2 size-4 animate-spin" />
-                  {t('admin.users.form.saving')}
-                </>
-              ) : editingUser ? (
-                t('admin.users.form.editSubmit')
-              ) : (
-                t('admin.users.form.createSubmit')
-              )}
-            </Button>
+              {editingUser ? t('admin.users.form.editSubmit') : t('admin.users.form.createSubmit')}
+            </StatefulButton>
           </SheetFooter>
         </form>
       </SheetContent>

@@ -1,180 +1,105 @@
-import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
-import { vi, enUS } from 'date-fns/locale';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { UserPlusIcon, LayersIcon, ArrowRightIcon, UsersIcon, ActivityIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Gamepad2Icon, CheckCircle2Icon, UsersIcon, ClipboardListIcon } from 'lucide-react';
 import type { RecentActivityItem } from '../types/admin-overview.types';
 
 interface OverviewRecentActivitiesProps {
-  activities: RecentActivityItem[];
+  activities?: RecentActivityItem[];
 }
 
-export function OverviewRecentActivities({ activities }: OverviewRecentActivitiesProps) {
-  const { t, i18n } = useTranslation();
-  const dateLocale = i18n.language.startsWith('vi') ? vi : enUS;
+export function OverviewRecentActivities({ activities: _ }: OverviewRecentActivitiesProps) {
+  const { t } = useTranslation('admin');
 
-  const formatRelativeTime = (timestamp: number) => {
-    try {
-      return formatDistanceToNow(new Date(timestamp), {
-        addSuffix: true,
-        locale: dateLocale,
-      });
-    } catch {
-      return '';
-    }
-  };
+  const mockActivities = [
+    {
+      id: 'act-1',
+      user: 'Nguyen Minh',
+      action: t('admin.overview.activities.createdGame'),
+      target: 'Sprint 32 - Feature Update',
+      time: t('admin.overview.activities.m_ago', { count: 30, defaultValue: '30m ago' }),
+      icon: Gamepad2Icon,
+      iconBg: 'bg-primary/10 text-primary',
+    },
+    {
+      id: 'act-2',
+      user: 'Tran Ha',
+      action: t('admin.overview.activities.completedVoting'),
+      target: 'Sprint 31 - Bug Fixes',
+      time: t('admin.overview.activities.h_ago', { count: 1, defaultValue: '1h ago' }),
+      icon: CheckCircle2Icon,
+      iconBg: 'bg-purple-100 text-purple-600 dark:bg-purple-950/50 dark:text-purple-300',
+    },
+    {
+      id: 'act-3',
+      user: 'Le Kim',
+      action: t('admin.overview.activities.joinedRoom'),
+      target: 'Platform Team',
+      time: t('admin.overview.activities.h_ago', { count: 2, defaultValue: '2h ago' }),
+      icon: UsersIcon,
+      iconBg: 'bg-pink-100 text-pink-600 dark:bg-pink-950/50 dark:text-pink-300',
+    },
+    {
+      id: 'act-4',
+      user: 'Pham Anh',
+      action: t('admin.overview.activities.updatedBacklog'),
+      target: 'US-1024 - Improve login performance',
+      time: t('admin.overview.activities.h_ago', { count: 3, defaultValue: '3h ago' }),
+      icon: ClipboardListIcon,
+      iconBg: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      {/* Recent Activities List (2 cols) */}
-      <Card className="border border-border bg-card shadow-xs lg:col-span-2">
-        <CardHeader className="p-5 pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <ActivityIcon className="size-4 text-primary" />
-                <CardTitle className="text-base sm:text-lg font-semibold tracking-tight">
-                  {t('admin.overview.recentActivities.title')}
-                </CardTitle>
-              </div>
-              <CardDescription className="text-xs text-muted-foreground">
-                {t('admin.overview.recentActivities.subtitle')}
-              </CardDescription>
-            </div>
-            <Badge variant="outline" className="text-xs font-normal">
-              {activities.length} mới nhất
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="p-5 pt-0">
-          {activities.length === 0 ? (
-            <div className="flex h-36 items-center justify-center text-xs text-muted-foreground">
-              {t('admin.overview.recentActivities.empty')}
-            </div>
-          ) : (
-            <div className="divide-y divide-border/60">
-              {activities.map((item) => {
-                const isUser = item.type === 'user_registered';
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between py-3 transition-colors hover:bg-muted/40 px-2 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
-                          isUser
-                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                            : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                        }`}
-                      >
-                        {isUser ? (
-                          <UserPlusIcon className="size-4" />
-                        ) : (
-                          <LayersIcon className="size-4" />
-                        )}
-                      </div>
-
-                      <div className="grid gap-0.5 truncate">
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {item.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {item.subtitle}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 pl-3">
-                      <Badge
-                        variant={isUser ? 'secondary' : 'outline'}
-                        className="text-xs font-medium"
-                      >
-                        {isUser
-                          ? t('admin.overview.recentActivities.userRegistered')
-                          : t('admin.overview.recentActivities.roomCreated')}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground hidden sm:inline-block">
-                        {formatRelativeTime(item.timestamp)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Quick Navigation Links (1 col) */}
-      <Card className="flex flex-col justify-between border border-border bg-card shadow-xs">
-        <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-base sm:text-lg font-semibold tracking-tight">
-            {t('admin.overview.quickLinks.title')}
+    <Card
+      variant="container"
+      className="rounded-lg border border-border bg-card shadow-xs flex flex-col justify-between h-full"
+    >
+      <CardHeader className="p-5 pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground font-sans">
+            {t('admin.overview.cards.recentActivity')}
           </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">
-            Các lối tắt truy cập nhanh vào phân hệ quản trị
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-1 flex-col gap-3 p-5 pt-0">
           <Link
-            to="/admin/users"
-            className="group flex flex-col rounded-xl border border-border p-3.5 transition-all hover:border-primary/50 hover:bg-muted/40 hover:shadow-xs"
+            to="/admin/logs"
+            className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <UsersIcon className="size-4" />
-                </div>
-                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {t('admin.overview.quickLinks.manageUsers')}
-                </span>
-              </div>
-              <ArrowRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t('admin.overview.quickLinks.manageUsersDesc')}
-            </p>
+            <span>{t('admin.overview.cards.viewAll')}</span>
+            <span>→</span>
           </Link>
+        </div>
+      </CardHeader>
 
-          <div className="group flex flex-col rounded-xl border border-border/60 bg-muted/20 p-3.5 opacity-80">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <LayersIcon className="size-4" />
-                </div>
-                <span className="text-sm font-semibold text-muted-foreground">
-                  {t('admin.overview.quickLinks.exploreRooms')}
-                </span>
-              </div>
-              <Badge variant="outline" className="text-xs font-normal">
-                {t('admin.nav.comingSoon')}
-              </Badge>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t('admin.overview.quickLinks.exploreRoomsDesc')}
-            </p>
-          </div>
-
-          <div className="mt-auto pt-2">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full justify-center text-xs font-medium cursor-pointer"
+      <CardContent className="p-5 pt-0 flex-1 flex flex-col justify-between">
+        <div className="divide-y divide-border/30">
+          {mockActivities.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between py-2.5 hover:bg-muted/30 transition-colors px-1 rounded-md group cursor-pointer"
             >
-              <Link to="/admin/users">
-                {t('admin.overview.usersCard.openUsers', 'Mở danh sách tài khoản')}
-                <ArrowRightIcon className="ml-1 size-3.5" />
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              <div className="flex items-center gap-3 overflow-hidden pr-2">
+                <div
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-full shadow-2xs ${item.iconBg}`}
+                >
+                  <item.icon className="size-4" />
+                </div>
+
+                <div className="grid text-left leading-tight truncate">
+                  <p className="text-xs text-foreground truncate">
+                    <span className="font-semibold">{item.user}</span>{' '}
+                    <span className="text-muted-foreground">{item.action}</span>
+                  </p>
+                  <span className="text-[11px] text-muted-foreground font-medium truncate">
+                    {item.target}
+                  </span>
+                </div>
+              </div>
+
+              <span className="text-[11px] text-muted-foreground/80 shrink-0">{item.time}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

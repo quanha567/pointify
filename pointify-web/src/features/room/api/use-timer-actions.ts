@@ -9,7 +9,7 @@ import type { RoomProjection } from '../types/room.types';
 
 export function useTimerActions(getSocket: () => Socket, roomId: string) {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
 
   const manageTimer = useCallback(
     (
@@ -19,7 +19,7 @@ export function useTimerActions(getSocket: () => Socket, roomId: string) {
     ) => {
       const facilitatorKey = getFacilitatorKey(roomId);
       if (!facilitatorKey) {
-        toast.error(t('room.noFacilitatorKey', 'Bạn không có khóa điều phối của phòng này'));
+        toast.error(t('room.noFacilitatorKey'));
         return;
       }
 

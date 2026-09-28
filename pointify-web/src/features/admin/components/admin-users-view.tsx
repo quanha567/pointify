@@ -26,7 +26,7 @@ export interface AdminUsersViewProps {
 }
 
 export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersViewProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
   const { user: currentAdmin } = useAuthStore();
   const userSheetRef = useRef<UserFormSheetHandle>(null);
 
@@ -81,6 +81,7 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
       {
         columnId: 'role',
         title: t('admin.users.columns.role'),
+        singleSelect: true,
         options: [
           { label: t('admin.users.roles.admin'), value: 'admin' },
           { label: t('admin.users.roles.member'), value: 'member' },
@@ -89,6 +90,7 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
       {
         columnId: 'status',
         title: t('admin.users.columns.status'),
+        singleSelect: true,
         options: [
           { label: t('admin.users.statuses.active'), value: 'active' },
           { label: t('admin.users.statuses.disabled'), value: 'disabled' },
@@ -114,12 +116,17 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
     const roleFilter = newFilters.find((f) => f.id === 'role');
     const statusFilter = newFilters.find((f) => f.id === 'status');
 
-    const roleVal = Array.isArray(roleFilter?.value)
-      ? (roleFilter?.value[0] as 'admin' | 'member' | undefined)
-      : undefined;
-    const statusVal = Array.isArray(statusFilter?.value)
-      ? (statusFilter?.value[0] as 'active' | 'disabled' | undefined)
-      : undefined;
+    const extractSingleFilterValue = <T extends string>(filterValue: unknown): T | undefined => {
+      if (!filterValue) return undefined;
+      if (Array.isArray(filterValue)) {
+        if (filterValue.length === 0) return undefined;
+        return filterValue[filterValue.length - 1] as T;
+      }
+      return filterValue as T;
+    };
+
+    const roleVal = extractSingleFilterValue<'admin' | 'member'>(roleFilter?.value);
+    const statusVal = extractSingleFilterValue<'active' | 'disabled'>(statusFilter?.value);
 
     onNavigateSearch((prev) => ({
       ...prev,
@@ -284,7 +291,7 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
   );
 
   return (
-    <div className="flex flex-col h-full w-full space-y-3.5">
+    <div className="flex flex-col h-full w-full p-4 sm:p-6 lg:p-7 space-y-3.5">
       {/* Clean Minimalist Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-3 shrink-0">
         <div>
@@ -302,7 +309,7 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-9 sm:h-10 px-3.5 text-sm font-medium gap-2 bg-card border-border hover:bg-accent text-foreground shadow-xs rounded-xl cursor-pointer transition-all active:scale-[0.98]"
+            className="h-[38px] px-3.5 text-sm font-medium gap-2 bg-card border-border hover:bg-accent text-foreground shadow-xs rounded-md cursor-pointer transition-all active:scale-[0.98]"
           >
             <RefreshCwIcon className={cn('size-4', isFetching && 'animate-spin')} />
             <span>{t('admin.users.refresh')}</span>
@@ -310,7 +317,7 @@ export function AdminUsersView({ searchParams, onNavigateSearch }: AdminUsersVie
 
           <Button
             onClick={handleCreateUser}
-            className="h-9 sm:h-10 px-4 text-sm font-medium gap-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 rounded-xl cursor-pointer transition-all active:scale-[0.98]"
+            className="h-[38px] px-4 text-sm font-medium gap-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 rounded-md cursor-pointer transition-all active:scale-[0.98]"
           >
             <UserPlusIcon className="size-4" />
             <span>{t('admin.users.createAccount')}</span>

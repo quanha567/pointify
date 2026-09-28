@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FirebaseModule } from '../../firebase/firebase.module.js';
+import { IdentityModule } from '../identity/identity.module.js';
+import { JiraModule } from '../jira/jira.module.js';
 import { ROOM_REPOSITORY } from './domain/room.repository.interface.js';
 import { FirestoreRoomRepository } from './infrastructure/repositories/firestore-room.repository.js';
 import { CreateRoomUseCase } from './application/use-cases/create-room.use-case.js';
@@ -14,12 +16,21 @@ import { SetParticipantOnlineUseCase } from './application/use-cases/set-partici
 import { SwitchRoleUseCase } from './application/use-cases/switch-role.use-case.js';
 import { UpdateRoomConfigUseCase } from './application/use-cases/update-room-config.use-case.js';
 import { ManageTimerUseCase } from './application/use-cases/manage-timer.use-case.js';
+import { AdminGetRoomsUseCase } from './application/use-cases/admin-get-rooms.use-case.js';
+import { AdminCloseRoomUseCase } from './application/use-cases/admin-close-room.use-case.js';
+import { AdminDeleteRoomUseCase } from './application/use-cases/admin-delete-room.use-case.js';
+import { AdminTakeoverRoomUseCase } from './application/use-cases/admin-takeover-room.use-case.js';
+import {
+  AdminBulkCloseRoomsUseCase,
+  AdminBulkDeleteRoomsUseCase,
+} from './application/use-cases/admin-bulk-room-actions.use-case.js';
 import { RoomGateway } from './presentation/gateways/room.gateway.js';
 import { RoomController } from './presentation/controllers/room.controller.js';
+import { AdminRoomsController } from './presentation/controllers/admin-rooms.controller.js';
 
 @Module({
-  imports: [FirebaseModule],
-  controllers: [RoomController],
+  imports: [FirebaseModule, IdentityModule, JiraModule],
+  controllers: [RoomController, AdminRoomsController],
   providers: [
     {
       provide: ROOM_REPOSITORY,
@@ -37,6 +48,12 @@ import { RoomController } from './presentation/controllers/room.controller.js';
     SwitchRoleUseCase,
     UpdateRoomConfigUseCase,
     ManageTimerUseCase,
+    AdminGetRoomsUseCase,
+    AdminCloseRoomUseCase,
+    AdminDeleteRoomUseCase,
+    AdminTakeoverRoomUseCase,
+    AdminBulkCloseRoomsUseCase,
+    AdminBulkDeleteRoomsUseCase,
     RoomGateway,
   ],
   exports: [
@@ -53,6 +70,12 @@ import { RoomController } from './presentation/controllers/room.controller.js';
     SwitchRoleUseCase,
     UpdateRoomConfigUseCase,
     ManageTimerUseCase,
+    AdminGetRoomsUseCase,
+    AdminCloseRoomUseCase,
+    AdminDeleteRoomUseCase,
+    AdminTakeoverRoomUseCase,
+    AdminBulkCloseRoomsUseCase,
+    AdminBulkDeleteRoomsUseCase,
     RoomGateway,
   ],
 })

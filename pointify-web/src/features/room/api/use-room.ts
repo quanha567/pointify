@@ -30,7 +30,7 @@ export function useRoomQuery(roomId: string, viewerId?: string) {
 export function useCreateRoomMutation(options?: { onSuccess?: () => void }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['room', 'common']);
   const { addRecentRoom } = useAppStore();
 
   return useMutation({
@@ -67,7 +67,7 @@ export function useCreateRoomMutation(options?: { onSuccess?: () => void }) {
       });
     },
     onError: (err: Error) => {
-      toast.error(err?.message || t('common.error'));
+      toast.error(err?.message || t('common:common.error'));
     },
   });
 }

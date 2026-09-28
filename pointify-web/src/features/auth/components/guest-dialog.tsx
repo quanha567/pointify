@@ -27,7 +27,7 @@ interface GuestDialogProps {
 }
 
 export function GuestDialog({ ref, redirectTo = '/' }: GuestDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const { continueAsGuest } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);

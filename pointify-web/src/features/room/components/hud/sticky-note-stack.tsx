@@ -6,7 +6,7 @@ import { STICKY_NOTE_COLORS } from '../../constants/sticky-note-colors';
 import type { StickyNoteColor } from '../../types/room.types';
 
 export function StickyNoteStack() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const { createStickyNote } = useStickyNotes();
   const [selectedColor, setSelectedColor] = useState<StickyNoteColor>('yellow');
   const [isHovered, setIsHovered] = useState(false);
@@ -65,7 +65,7 @@ export function StickyNoteStack() {
         draggable
         onDragStart={handleDragStart}
         onClick={handleQuickAdd}
-        title={t('room.stickyNote.stackTooltip', 'Kéo thả ra bảng hoặc click để thêm thẻ ghi chú')}
+        title={t('room.stickyNote.stackTooltip')}
         className="group relative size-17 cursor-grab active:cursor-grabbing transition-transform duration-200 hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.12)]"
       >
         <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">

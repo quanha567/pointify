@@ -31,7 +31,7 @@ import { getInitials } from '@/lib/utils';
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, logout } = useAuthStore();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['admin', 'auth']);
 
   return (
     <SidebarMenu>
@@ -62,20 +62,20 @@ export function NavUser() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-2xl p-1.5 shadow-xl border-border bg-popover/95 backdrop-blur-xl"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-lg p-1.5 shadow-xl border-border bg-popover/95 backdrop-blur-xl"
             side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={8}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/40 border border-border/60">
-                <Avatar className="size-10 rounded-xl border border-border/80 shadow-2xs shrink-0">
+              <div className="flex items-center gap-3 p-2.5 rounded-md bg-muted/40 border border-border/60">
+                <Avatar className="size-10 rounded-md border border-border/80 shadow-2xs shrink-0">
                   <AvatarImage
                     src={user?.photoURL || undefined}
                     alt={user?.displayName || ''}
-                    className="rounded-xl object-cover"
+                    className="rounded-md object-cover"
                   />
-                  <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-xs">
+                  <AvatarFallback className="rounded-md bg-primary/10 text-primary font-bold text-xs">
                     {getInitials(user?.displayName)}
                   </AvatarFallback>
                 </Avatar>
@@ -96,29 +96,29 @@ export function NavUser() {
             <DropdownMenuGroup>
               <DropdownMenuItem
                 asChild
-                className="cursor-pointer text-sm font-medium rounded-xl px-2.5 py-2"
+                className="cursor-pointer text-sm font-medium rounded-md px-2.5 py-2"
               >
                 <Link to="/profile" className="flex items-center gap-2.5">
                   <UserIcon className="size-4 text-primary" />
-                  <span>{t('account.profile')}</span>
+                  <span>{t('auth:account.profile')}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 asChild
-                className="cursor-pointer text-sm font-medium rounded-xl px-2.5 py-2"
+                className="cursor-pointer text-sm font-medium rounded-md px-2.5 py-2"
               >
                 <Link to="/admin" className="flex items-center gap-2.5">
                   <SparklesIcon className="size-4 text-violet-500" />
-                  <span>{t('account.adminDashboard')}</span>
+                  <span>{t('auth:account.adminDashboard')}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 asChild
-                className="cursor-pointer text-sm font-medium rounded-xl px-2.5 py-2"
+                className="cursor-pointer text-sm font-medium rounded-md px-2.5 py-2"
               >
                 <Link to="/" className="flex items-center gap-2.5">
                   <HomeIcon className="size-4 text-emerald-500" />
-                  <span>{t('account.backToHome')}</span>
+                  <span>{t('auth:account.backToHome')}</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -127,10 +127,10 @@ export function NavUser() {
               onClick={() => {
                 void logout();
               }}
-              className="cursor-pointer text-sm font-medium rounded-xl px-2.5 py-2 text-destructive focus:text-destructive focus:bg-destructive/10 flex items-center gap-2.5"
+              className="cursor-pointer text-sm font-medium rounded-md px-2.5 py-2 text-destructive focus:text-destructive focus:bg-destructive/10 flex items-center gap-2.5"
             >
               <LogOutIcon className="size-4" />
-              <span>{t('account.signOut')}</span>
+              <span>{t('auth:account.signOut')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

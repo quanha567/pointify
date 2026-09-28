@@ -14,7 +14,7 @@ interface ProfileInfoFormProps {
 }
 
 export function ProfileInfoForm({ user, onUpdateProfile }: ProfileInfoFormProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'common']);
 
   const profileSchema = z.object({
     displayName: z
@@ -77,7 +77,7 @@ export function ProfileInfoForm({ user, onUpdateProfile }: ProfileInfoFormProps)
                 disabled={!isDirty || isSubmitting}
                 className="h-10 px-4 text-sm font-medium w-full sm:w-auto"
               >
-                {t('common.cancel')}
+                {t('common:common.cancel')}
               </Button>
 
               <Button

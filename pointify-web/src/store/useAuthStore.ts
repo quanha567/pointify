@@ -11,6 +11,9 @@ import {
   EmailAuthProvider,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
@@ -40,9 +43,14 @@ interface AuthState {
 
   // Actions
   initAuthListener: () => () => void;
-  loginWithEmail: (email: string, pass: string) => Promise<void>;
-  registerWithEmail: (email: string, pass: string, displayName: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string, pass: string, rememberMe?: boolean) => Promise<void>;
+  registerWithEmail: (
+    email: string,
+    pass: string,
+    displayName: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
+  loginWithGoogle: (rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   continueAsGuest: (name: string) => void;
   clearError: () => void;
@@ -116,9 +124,15 @@ export const useAuthStore = create<AuthState>()(
         return unsubscribe;
       },
 
-      loginWithEmail: async (email: string, pass: string) => {
+      loginWithEmail: async (email: string, pass: string, rememberMe?: boolean) => {
         set({ isLoading: true, error: null });
         try {
+          if (typeof rememberMe === 'boolean') {
+            await setPersistence(
+              auth,
+              rememberMe ? browserLocalPersistence : browserSessionPersistence,
+            );
+          }
           const result = await signInWithEmailAndPassword(auth, email.trim(), pass);
           const profile: AuthUserProfile = {
             uid: result.user.uid,
@@ -143,9 +157,20 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      registerWithEmail: async (email: string, pass: string, displayName: string) => {
+      registerWithEmail: async (
+        email: string,
+        pass: string,
+        displayName: string,
+        rememberMe?: boolean,
+      ) => {
         set({ isLoading: true, error: null });
         try {
+          if (typeof rememberMe === 'boolean') {
+            await setPersistence(
+              auth,
+              rememberMe ? browserLocalPersistence : browserSessionPersistence,
+            );
+          }
           const result = await createUserWithEmailAndPassword(auth, email.trim(), pass);
           if (displayName.trim()) {
             await updateProfile(result.user, { displayName: displayName.trim() });
@@ -173,9 +198,15 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      loginWithGoogle: async () => {
+      loginWithGoogle: async (rememberMe?: boolean) => {
         set({ isLoading: true, error: null });
         try {
+          if (typeof rememberMe === 'boolean') {
+            await setPersistence(
+              auth,
+              rememberMe ? browserLocalPersistence : browserSessionPersistence,
+            );
+          }
           const result = await signInWithPopup(auth, googleProvider);
           const profile: AuthUserProfile = {
             uid: result.user.uid,

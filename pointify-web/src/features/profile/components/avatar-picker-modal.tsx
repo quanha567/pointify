@@ -34,7 +34,7 @@ export function AvatarPickerModal({
   currentPhotoURL,
   onSelectAvatar,
 }: AvatarPickerModalProps) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['auth', 'common']);
   const isVi = i18n.language === 'vi';
 
   const initialMascot = useMemo(() => {
@@ -206,7 +206,7 @@ export function AvatarPickerModal({
               disabled={isSaving}
               className="h-9 sm:h-10 px-4 text-sm font-medium"
             >
-              {t('common.cancel')}
+              {t('common:common.cancel')}
             </Button>
             <Button
               type="button"

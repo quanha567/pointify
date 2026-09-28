@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import { Room } from '../../domain/room.aggregate.js';
 import { Participant } from '../../domain/entities/participant.entity.js';
 import { StickyNote } from '../../domain/entities/sticky-note.entity.js';
@@ -29,6 +29,10 @@ describe('RoomMapper', () => {
       authorId: 'user-1',
       authorName: 'Alice',
       isPinned: true,
+      jiraKey: 'PROJ-123',
+      jiraUrl: 'https://jira.example.com/PROJ-123',
+      issueType: 'Story',
+      storyPoints: 5,
     });
     const unpinnedNote = StickyNote.create('note-2', {
       roomId: 'room-123',
@@ -71,6 +75,8 @@ describe('RoomMapper', () => {
     expect(reconstructedRoom.stickyNotes.size).toBe(2);
     expect(reconstructedRoom.stickyNotes.get('note-1')?.text).toBe('DoD: Code Review Required');
     expect(reconstructedRoom.stickyNotes.get('note-1')?.isPinned).toBe(true);
+    expect(reconstructedRoom.stickyNotes.get('note-1')?.jiraKey).toBe('PROJ-123');
+    expect(reconstructedRoom.stickyNotes.get('note-1')?.toProjection().storyPoints).toBe(5);
     expect(reconstructedRoom.stickyNotes.get('note-3')?.text).toBe('Live note in Round 2');
 
     expect(reconstructedRoom.roundsHistory[0].archivedStickyNotes.length).toBe(1);

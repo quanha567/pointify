@@ -28,12 +28,14 @@ export interface UserMenuDropdownProps {
   isGuest?: boolean;
   guestName?: string | null;
   onLogout?: () => void;
+  variant?: 'default' | 'admin';
 }
 
 export function UserMenuDropdown(props?: UserMenuDropdownProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'auth']);
   const navigate = useNavigate();
   const store = useAuthStore();
+  const variant = props?.variant || 'default';
 
   const user = props?.user !== undefined ? props.user : store.user;
   const isGuest = props?.isGuest !== undefined ? props.isGuest : store.isGuest;
@@ -52,25 +54,52 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full border border-border/80 bg-background/80 hover:bg-accent/80 hover:border-border backdrop-blur transition-all cursor-pointer shadow-2xs group"
-          >
-            <Avatar className="size-7 border border-border/70 shadow-2xs group-hover:scale-105 transition-transform">
-              <AvatarImage
-                src={user.photoURL || undefined}
-                alt={user.displayName || ''}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-                {getInitials(user.displayName || 'User')}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm font-medium max-w-[130px] truncate hidden sm:inline text-foreground">
-              {user.displayName}
-            </span>
-            <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </button>
+          {variant === 'admin' ? (
+            <button
+              type="button"
+              className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer group select-none"
+            >
+              <Avatar className="size-9 border-2 border-primary/20 shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <AvatarImage
+                  src={user.photoURL || undefined}
+                  alt={user.displayName || ''}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">
+                  {getInitials(user.displayName || 'Summer Hello')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden sm:flex flex-col text-left leading-none gap-1">
+                <span className="text-xs font-bold text-foreground tracking-tight">
+                  {user.displayName || 'Summer Hello'}
+                </span>
+                <span className="text-[11px] text-muted-foreground font-medium">
+                  {user.role === 'admin' ? 'Frontend Developer' : 'Member'}
+                </span>
+              </div>
+              <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors ml-0.5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full border border-border/80 bg-background/80 hover:bg-accent/80 hover:border-border backdrop-blur transition-all cursor-pointer shadow-2xs group"
+            >
+              <Avatar className="size-7 border border-border/70 shadow-2xs group-hover:scale-105 transition-transform">
+                <AvatarImage
+                  src={user.photoURL || undefined}
+                  alt={user.displayName || ''}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                  {getInitials(user.displayName || 'User')}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium max-w-[130px] truncate hidden sm:inline text-foreground">
+                {user.displayName}
+              </span>
+              <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -91,7 +120,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
               <div className="grid flex-1 min-w-0 text-left leading-tight">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-semibold text-foreground truncate">
-                    {user.displayName || t('profile.anonymousUser')}
+                    {user.displayName || t('auth:profile.anonymousUser')}
                   </span>
                   {user.role === 'admin' && (
                     <ShieldCheckIcon className="size-4 text-indigo-500 shrink-0" />
@@ -111,7 +140,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
             >
               <Link to="/profile" className="flex items-center gap-2.5">
                 <UserIcon className="size-4 text-primary" />
-                <span>{t('account.profile')}</span>
+                <span>{t('auth:account.profile')}</span>
               </Link>
             </DropdownMenuItem>
             {user.role === 'admin' && (
@@ -121,7 +150,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
               >
                 <Link to="/admin" className="flex items-center gap-2.5">
                   <SparklesIcon className="size-4 text-violet-500" />
-                  <span>{t('account.adminDashboard')}</span>
+                  <span>{t('auth:account.adminDashboard')}</span>
                 </Link>
               </DropdownMenuItem>
             )}
@@ -131,7 +160,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
             >
               <Link to="/" className="flex items-center gap-2.5">
                 <HomeIcon className="size-4 text-emerald-500" />
-                <span>{t('account.backToHome')}</span>
+                <span>{t('auth:account.backToHome')}</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -141,7 +170,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
             className="px-2.5 py-2 rounded-xl text-sm font-medium text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5"
           >
             <LogOutIcon className="size-4" />
-            <span>{t('account.signOut')}</span>
+            <span>{t('auth:account.signOut')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -157,7 +186,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
             className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 backdrop-blur transition-all cursor-pointer shadow-2xs group"
           >
             <span className="h-5 px-2 text-xs font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-full flex items-center">
-              {t('account.guestBadge')}
+              {t('auth:account.guestBadge')}
             </span>
             <span className="text-sm font-medium text-foreground max-w-[110px] truncate">
               {guestName}
@@ -179,14 +208,14 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
               <div className="grid flex-1 min-w-0 text-left leading-tight">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-semibold text-foreground truncate">
-                    {guestName || t('profile.anonymousUser')}
+                    {guestName || t('auth:profile.anonymousUser')}
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-xs font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0">
-                    {t('account.guestBadge')}
+                    {t('auth:account.guestBadge')}
                   </span>
                 </div>
                 <span className="text-xs text-amber-600 dark:text-amber-400 font-medium truncate mt-0.5">
-                  {t('account.temporarySession')}
+                  {t('auth:account.temporarySession')}
                 </span>
               </div>
             </div>
@@ -203,7 +232,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
                 className="flex items-center gap-2.5 text-primary font-semibold"
               >
                 <SparklesIcon className="size-4" />
-                <span>{t('account.upgradeToAccount')}</span>
+                <span>{t('auth:account.upgradeToAccount')}</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -213,7 +242,7 @@ export function UserMenuDropdown(props?: UserMenuDropdownProps) {
             className="px-2.5 py-2 rounded-xl text-sm font-medium text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5"
           >
             <LogOutIcon className="size-4" />
-            <span>{t('account.signOut')}</span>
+            <span>{t('auth:account.signOut')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

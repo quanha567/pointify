@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Room } from './room.aggregate.js';
 import { Participant } from './entities/participant.entity.js';
+import { StickyNote } from './entities/sticky-note.entity.js';
 import { Deck } from './value-objects/deck.vo.js';
 import { FacilitatorKey } from './value-objects/facilitator-key.vo.js';
 
@@ -87,6 +88,19 @@ describe('Room Aggregate Root', () => {
     expect(bobAfterReveal?.estimatedValue).toBe(5); // Now unmasked!
     expect(charlieViewAfterReveal.currentRound.statistics?.average).toBe(6.5);
     expect(charlieViewAfterReveal.currentRound.statistics?.consensus).toBe(false);
+  });
+
+  it('should correctly calculate statistics with string card values and single voter consensus', () => {
+    const { room } = createTestRoom();
+    room.submitEstimate('user-1', '13');
+    room.revealCards('secret-key-123');
+
+    const proj = room.toProjection('user-1');
+    expect(proj.currentRound.statistics?.average).toBe(13);
+    expect(proj.currentRound.statistics?.consensus).toBe(true);
+    expect(proj.currentRound.statistics?.agreementScore).toBe(100);
+    expect(proj.currentRound.statistics?.min).toBe(13);
+    expect(proj.currentRound.statistics?.max).toBe(13);
   });
 
   it('should advance to next round and archive past rounds', () => {
@@ -242,9 +256,6 @@ describe('Room Aggregate Root', () => {
   it('should support collaborative sticky notes with pinning, editing, moving, and round archiving', () => {
     const { room, key } = createTestRoom();
 
-    // Import StickyNote
-    const { StickyNote } = require('./entities/sticky-note.entity.js');
-
     // Add unpinned sticky note
     const note1 = StickyNote.create('note-1', {
       roomId: room.id,
@@ -315,5 +326,21 @@ describe('Room Aggregate Root', () => {
     const deleted = room.deleteStickyNote('note-2');
     expect(deleted).toBe(true);
     expect(room.stickyNotes.size).toBe(0);
+  });
+
+  it('should manage room status lifecycle and close correctly', () => {
+    const { room } = createTestRoom();
+    expect(room.status).toBe('active');
+    expect(room.toProjection().status).toBe('active');
+
+    const closeRes = room.close();
+    expect(closeRes.isOk).toBe(true);
+    expect(room.status).toBe('closed');
+    expect(room.toProjection().status).toBe('closed');
+
+    // Closing again should be idempotent
+    const closeAgainRes = room.close();
+    expect(closeAgainRes.isOk).toBe(true);
+    expect(room.status).toBe('closed');
   });
 });

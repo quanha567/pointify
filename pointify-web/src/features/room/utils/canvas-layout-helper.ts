@@ -17,14 +17,19 @@ export const NODE_TYPES = {
 /**
  * Calculates positions and generates React Flow nodes for table and participants
  */
-export function generateRoomNodes(room: RoomProjection, currentUserId?: string): Node[] {
+export function generateRoomNodes(
+  room: RoomProjection,
+  currentUserId?: string,
+  isFacilitator?: boolean,
+): Node[] {
   const nodes: Node[] = [];
+  const effectiveIsFacilitator = isFacilitator ?? room.facilitatorId === currentUserId;
 
-  // 1. Center Table Arena Node (600x320px, center at (0, 0))
+  // 1. Center Table Arena Node (620x340px, center at (0, 0))
   nodes.push({
     id: 'table-arena-node',
     type: NODE_TYPES.TABLE_ARENA,
-    position: { x: -300, y: -160 },
+    position: { x: -310, y: -170 },
     data: {
       room,
     },
@@ -36,11 +41,11 @@ export function generateRoomNodes(room: RoomProjection, currentUserId?: string):
   const spectators = room.participants.filter((p) => p.isSpectator);
 
   // 2. Compute ellipse coordinates for Estimator Participants
-  // Table half-size is 300×160; orbit must clear it + participant node (~56×100)
+  // Table half-size is 310×170; orbit must clear it + participant node (~64×110)
   const count = estimators.length;
   if (count > 0) {
-    const rx = Math.max(440, 360 + count * 24);
-    const ry = Math.max(280, 220 + count * 16);
+    const rx = Math.max(450, 370 + count * 24);
+    const ry = Math.max(290, 230 + count * 16);
 
     estimators.forEach((participant, index) => {
       // Distribute evenly along ellipse, starting from bottom
@@ -84,9 +89,14 @@ export function generateRoomNodes(room: RoomProjection, currentUserId?: string):
     });
   }
 
-  // 4. Generate Sticky Note Nodes
+  // 4. Generate Sticky Note Nodes (only free collaborative notes; Jira User Stories are housed in StoryBacklogDrawer)
   if (room.stickyNotes && room.stickyNotes.length > 0) {
-    room.stickyNotes.forEach((note) => {
+    const isJiraStoryNote = (n: (typeof room.stickyNotes)[0]) =>
+      Boolean(n.jiraKey || n.text?.trim().match(/^[A-Z][A-Z0-9]+-\d+/i));
+
+    const generalNotes = room.stickyNotes.filter((note) => !isJiraStoryNote(note));
+
+    generalNotes.forEach((note) => {
       nodes.push({
         id: `sticky-note-${note.id}`,
         type: NODE_TYPES.STICKY_NOTE,
@@ -95,6 +105,9 @@ export function generateRoomNodes(room: RoomProjection, currentUserId?: string):
           note,
           currentUserId,
           isCurrentAuthor: currentUserId === note.authorId,
+          isFacilitator: effectiveIsFacilitator,
+          roomId: room.id,
+          isEstimating: false,
         },
         draggable: true,
         selectable: true,

@@ -6,6 +6,8 @@ export interface CreateRoomInputDto {
   name: string;
   deckType?: DeckType;
   customCards?: CardValue[];
+  jiraCloudId?: string;
+  jiraSprintId?: string;
   facilitator: {
     id?: string;
     displayName: string;

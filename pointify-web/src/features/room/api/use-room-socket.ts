@@ -22,7 +22,7 @@ export interface UseRoomSocketProps {
 
 export function useRoomSocket({ roomId, participant, onParticipantJoined }: UseRoomSocketProps) {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['room', 'common']);
 
   // Keep participant ref in sync without triggering socket teardown
   const participantRef = useRef(participant);
@@ -65,7 +65,7 @@ export function useRoomSocket({ roomId, participant, onParticipantJoined }: UseR
     const handleRoomError = (error: { message: string }) => {
       facilitator.unlockAction();
       estimator.unlockSwitchRole();
-      toast.error(error?.message || t('common.error', 'Có lỗi xảy ra'));
+      toast.error(error?.message || t('common:common.error'));
     };
 
     socket.on('room:state', handleRoomState);
@@ -133,6 +133,7 @@ export function useRoomSocket({ roomId, participant, onParticipantJoined }: UseR
     deleteStickyNote: stickyNotes.deleteStickyNote,
     startEditingStickyNote: stickyNotes.startEditingStickyNote,
     stopEditingStickyNote: stickyNotes.stopEditingStickyNote,
+    syncJiraPoints: facilitator.syncJiraPoints,
     leaveRoom,
   };
 }

@@ -7,6 +7,7 @@ export interface CardVisualMeta {
   defaultSubtitleVi: string;
   containerCount: number;
   specialIcon?: 'coffee' | 'question' | 'pallet' | 'infinite' | 'warning';
+  imagePath?: string;
 }
 
 export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
@@ -17,6 +18,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleVi: 'Không đáng kể',
     containerCount: 0,
     specialIcon: 'pallet',
+    imagePath: '/images/cards/card-0-pallet.png',
   },
   '1': {
     value: 1,
@@ -24,6 +26,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Tiny',
     defaultSubtitleVi: 'Cực đơn giản',
     containerCount: 1,
+    imagePath: '/images/cards/card-1-container.png',
   },
   '2': {
     value: 2,
@@ -31,6 +34,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Small',
     defaultSubtitleVi: 'Nhỏ, rõ ràng',
     containerCount: 2,
+    imagePath: '/images/cards/card-2-containers.png',
   },
   '3': {
     value: 3,
@@ -38,6 +42,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Medium',
     defaultSubtitleVi: 'Trung bình',
     containerCount: 3,
+    imagePath: '/images/cards/card-3-truck.png',
   },
   '5': {
     value: 5,
@@ -45,6 +50,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Large',
     defaultSubtitleVi: 'Lớn, cần chú ý',
     containerCount: 5,
+    imagePath: '/images/cards/card-5-crane.png',
   },
   '8': {
     value: 8,
@@ -52,6 +58,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Complex',
     defaultSubtitleVi: 'Khá phức tạp',
     containerCount: 8,
+    imagePath: '/images/cards/card-8-barge.png',
   },
   '13': {
     value: 13,
@@ -59,6 +66,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Risk & big story',
     defaultSubtitleVi: 'Rủi ro & việc lớn',
     containerCount: 13,
+    imagePath: '/images/cards/card-13-feeder.png',
   },
   '21': {
     value: 21,
@@ -67,6 +75,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleVi: 'Quá lớn, chia nhỏ',
     containerCount: 21,
     specialIcon: 'warning',
+    imagePath: '/images/cards/card-21-megaship.png',
   },
   '34': {
     value: 34,
@@ -74,6 +83,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Massive',
     defaultSubtitleVi: 'Khổng lồ',
     containerCount: 28,
+    imagePath: '/images/cards/card-34-massive.png',
   },
   '55': {
     value: 55,
@@ -81,6 +91,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleEn: 'Epic',
     defaultSubtitleVi: 'Sử thi (Epic)',
     containerCount: 35,
+    imagePath: '/images/cards/card-55-epic.png',
   },
   '89': {
     value: 89,
@@ -89,6 +100,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleVi: 'Bất khả thi',
     containerCount: 45,
     specialIcon: 'infinite',
+    imagePath: '/images/cards/card-89-impossible.png',
   },
   '?': {
     value: '?',
@@ -97,6 +109,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleVi: 'Chưa rõ',
     containerCount: 0,
     specialIcon: 'question',
+    imagePath: '/images/cards/card-question.png',
   },
   '☕': {
     value: '☕',
@@ -105,6 +118,7 @@ export const FIBONACCI_CARD_METADATA: Record<string, CardVisualMeta> = {
     defaultSubtitleVi: 'Giải lao',
     containerCount: 0,
     specialIcon: 'coffee',
+    imagePath: '/images/cards/card-coffee.png',
   },
 };
 

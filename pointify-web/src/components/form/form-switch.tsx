@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useField, type AnyFieldApi } from '@tanstack/react-form';
-import { useTranslation } from 'react-i18next';
 import { useFormContext } from './form';
 import {
   Field,
@@ -36,7 +35,6 @@ export function FormSwitch({
   disabled,
   ...props
 }: FormSwitchProps) {
-  const { t } = useTranslation();
   const form = useFormContext();
   const field = useField({ form, name }) as AnyFieldApi;
 
@@ -44,7 +42,7 @@ export function FormSwitch({
   const errors = rawErrors?.map((err: any) => {
     const rawMsg = typeof err === 'string' ? err : err?.message;
     if (!rawMsg) return err;
-    return { message: t(rawMsg, { defaultValue: rawMsg }) };
+    return { message: rawMsg };
   });
   const isInvalid = Boolean(field.state.meta.isTouched && errors?.length);
   const isChecked = Boolean(field.state.value);

@@ -1,4 +1,4 @@
-import { Room, type RoomProps } from '../../domain/room.aggregate.js';
+import { Room, type RoomProps, type RoomStatus } from '../../domain/room.aggregate.js';
 import { Participant } from '../../domain/entities/participant.entity.js';
 import { Round, type RoundStatus, type RoundTimer } from '../../domain/entities/round.entity.js';
 import {
@@ -11,6 +11,8 @@ import { Deck, type DeckType } from '../../domain/value-objects/deck.vo.js';
 import { FacilitatorKey } from '../../domain/value-objects/facilitator-key.vo.js';
 import { Estimate } from '../../domain/value-objects/estimate.vo.js';
 import type { CardValue } from '../../domain/value-objects/card.vo.js';
+import type { RoomStoryBacklogItem } from '../../domain/room.aggregate.js';
+import type { LinkedJiraIssue } from '../../domain/entities/round.entity.js';
 
 export interface FirestoreParticipantDoc {
   id: string;
@@ -38,6 +40,10 @@ export interface FirestoreStickyNoteDoc {
   authorId: string;
   authorName: string;
   isPinned: boolean;
+  jiraKey?: string;
+  jiraUrl?: string;
+  issueType?: string;
+  storyPoints?: number | string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -51,6 +57,7 @@ export interface FirestoreRoundDoc {
   revealedAt: number | null;
   timer?: RoundTimer | null;
   archivedStickyNotes?: FirestoreStickyNoteDoc[];
+  linkedJiraIssue?: LinkedJiraIssue | null;
 }
 
 export interface FirestoreRoomDoc {
@@ -64,8 +71,12 @@ export interface FirestoreRoomDoc {
   };
   participants: FirestoreParticipantDoc[];
   stickyNotes?: FirestoreStickyNoteDoc[];
+  storyBacklog?: RoomStoryBacklogItem[];
+  activeJiraSiteUrl?: string | null;
+  activeJiraSprintName?: string | null;
   currentRound: FirestoreRoundDoc;
   roundsHistory: FirestoreRoundDoc[];
+  status?: RoomStatus;
   version: number;
   createdAt: number;
   updatedAt: number;
@@ -95,6 +106,10 @@ export class RoomMapper {
       authorId: n.authorId,
       authorName: n.authorName,
       isPinned: n.isPinned,
+      jiraKey: n.jiraKey,
+      jiraUrl: n.jiraUrl,
+      issueType: n.issueType,
+      storyPoints: n.storyPoints,
       createdAt: n.createdAt,
       updatedAt: n.updatedAt,
     });
@@ -120,9 +135,14 @@ export class RoomMapper {
         authorId: sn.authorId,
         authorName: sn.authorName,
         isPinned: sn.isPinned,
+        jiraKey: sn.jiraKey,
+        jiraUrl: sn.jiraUrl,
+        issueType: sn.issueType,
+        storyPoints: sn.storyPoints,
         createdAt: sn.createdAt,
         updatedAt: sn.updatedAt,
       })),
+      linkedJiraIssue: r.linkedJiraIssue || null,
     });
 
     return {
@@ -136,8 +156,12 @@ export class RoomMapper {
       },
       participants,
       stickyNotes: Array.from(room.stickyNotes.values()).map(mapStickyNote),
+      storyBacklog: room.storyBacklog ? [...room.storyBacklog] : [],
+      activeJiraSiteUrl: room.activeJiraSiteUrl ?? null,
+      activeJiraSprintName: room.activeJiraSprintName ?? null,
       currentRound: mapRound(room.currentRound),
       roundsHistory: room.roundsHistory.map((r) => mapRound(r)),
+      status: room.status,
       version: room.version,
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
@@ -171,6 +195,10 @@ export class RoomMapper {
         authorName: docNote.authorName,
         isPinned: docNote.isPinned ?? false,
         editingBy: null,
+        jiraKey: docNote.jiraKey,
+        jiraUrl: docNote.jiraUrl,
+        issueType: docNote.issueType,
+        storyPoints: docNote.storyPoints,
         createdAt: docNote.createdAt,
         updatedAt: docNote.updatedAt,
       });
@@ -207,10 +235,15 @@ export class RoomMapper {
             authorName: sn.authorName,
             isPinned: sn.isPinned,
             editingBy: null,
+            jiraKey: sn.jiraKey,
+            jiraUrl: sn.jiraUrl,
+            issueType: sn.issueType,
+            storyPoints: sn.storyPoints,
             createdAt: sn.createdAt,
             updatedAt: sn.updatedAt,
           }),
         ),
+        linkedJiraIssue: rd.linkedJiraIssue ?? null,
       });
     };
 
@@ -228,6 +261,10 @@ export class RoomMapper {
       stickyNotes: stickyNotesMap,
       currentRound,
       roundsHistory,
+      storyBacklog: doc.storyBacklog || [],
+      activeJiraSiteUrl: doc.activeJiraSiteUrl ?? null,
+      activeJiraSprintName: doc.activeJiraSprintName ?? null,
+      status: doc.status ?? 'active',
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };

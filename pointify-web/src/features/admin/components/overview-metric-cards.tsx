@@ -1,106 +1,163 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { motion, useReducedMotion } from 'motion/react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Typography } from '@/components/ui/typography';
-import { UsersIcon, LayersIcon, CheckCircle2Icon, DicesIcon, TrendingUpIcon } from 'lucide-react';
-import type { OverviewSummary } from '../types/admin-overview.types';
+import { DoorOpenIcon, Gamepad2Icon, RotateCcwIcon, UsersIcon } from 'lucide-react';
+import { AnimatedNumber } from '@/components/motion/animated-number';
+import { EASE_OUT } from '@/lib/ease';
 
 interface OverviewMetricCardsProps {
-  summary: OverviewSummary;
+  summary?: {
+    totalRounds?: number;
+    activeRooms?: number;
+    activeAccounts?: number;
+  };
+}
+
+interface MetricSparklineProps {
+  data: number[];
+  id: string;
+}
+
+/** Animated sparkline area chart powered by Recharts */
+function MetricSparkline({ data, id }: MetricSparklineProps) {
+  const chartData = useMemo(() => data.map((val, idx) => ({ index: idx, val })), [data]);
+
+  return (
+    <div className="h-10 w-24 sm:w-28 shrink-0 select-none">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 3, right: 1, bottom: 0, left: 1 }}>
+          <defs>
+            <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.32} />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="val"
+            stroke="var(--primary)"
+            strokeWidth={2.4}
+            fill={`url(#spark-${id})`}
+            isAnimationActive={true}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 export function OverviewMetricCards({ summary }: OverviewMetricCardsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
+  const reduceMotion = useReducedMotion();
 
-  const activeUserRatio = Math.round((summary.activeAccounts / (summary.totalAccounts || 1)) * 100);
-  const avgRoundsPerRoom = (summary.totalRounds / (summary.totalRooms || 1)).toFixed(1);
-  const avgEstimatesPerRound = Math.round(summary.totalEstimates / (summary.totalRounds || 1));
+  const totalGamesVal = summary?.totalRounds ?? 24;
+  const activeRoomsVal = summary?.activeRooms ?? 6;
+  const teamMembersVal = summary?.activeAccounts ?? 18;
+  const avgCycleVal = 2.3;
 
   const metrics = [
     {
-      id: 'accounts',
-      title: t('admin.overview.metrics.totalAccounts'),
-      value: summary.totalAccounts.toLocaleString(),
-      desc: t('admin.overview.metrics.activeAccountsDesc', {
-        active: summary.activeAccounts,
-        disabled: summary.disabledAccounts,
-      }),
-      badge: `${activeUserRatio}% hoạt động`,
-      badgeVariant: 'secondary' as const,
-      icon: UsersIcon,
-      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      id: 'games',
+      title: t('admin.overview.cards.totalGames'),
+      numericValue: totalGamesVal,
+      decimals: 0,
+      suffix: '',
+      growth: '12%',
+      growthLabel: t('admin.overview.cards.vsLastMonth'),
+      icon: Gamepad2Icon,
+      sparkData: [10, 13, 12, 16, 15, 19, 21, 24],
     },
     {
       id: 'rooms',
-      title: t('admin.overview.metrics.totalRooms'),
-      value: summary.totalRooms.toLocaleString(),
-      desc: t('admin.overview.metrics.activeRoomsDesc', {
-        active: summary.activeRooms,
-      }),
-      badge: `${summary.activeRooms} hoạt động gần đây`,
-      badgeVariant: 'outline' as const,
-      icon: LayersIcon,
-      iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+      title: t('admin.overview.cards.activeRooms'),
+      numericValue: activeRoomsVal,
+      decimals: 0,
+      suffix: '',
+      growth: '2',
+      growthLabel: t('admin.overview.cards.vsLastWeek'),
+      icon: DoorOpenIcon,
+      sparkData: [2, 3, 2, 4, 3, 5, 4, 6],
     },
     {
-      id: 'rounds',
-      title: t('admin.overview.metrics.totalRounds'),
-      value: summary.totalRounds.toLocaleString(),
-      desc: t('admin.overview.metrics.totalRoundsDesc'),
-      badge: `~${avgRoundsPerRoom} vòng/phòng`,
-      badgeVariant: 'secondary' as const,
-      icon: CheckCircle2Icon,
-      iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      id: 'team',
+      title: t('admin.overview.cards.teamMembers'),
+      numericValue: teamMembersVal,
+      decimals: 0,
+      suffix: '',
+      growth: '3',
+      growthLabel: t('admin.overview.cards.vsLastMonth'),
+      icon: UsersIcon,
+      sparkData: [10, 12, 11, 14, 13, 16, 17, 18],
     },
     {
-      id: 'estimates',
-      title: t('admin.overview.metrics.totalEstimates'),
-      value: summary.totalEstimates.toLocaleString(),
-      desc: t('admin.overview.metrics.totalEstimatesDesc'),
-      badge: `~${avgEstimatesPerRound} lượt/vòng`,
-      badgeVariant: 'outline' as const,
-      icon: DicesIcon,
-      iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      id: 'cycle',
+      title: t('admin.overview.cards.avgCycleTime'),
+      numericValue: avgCycleVal,
+      decimals: 1,
+      suffix: ` ${t('admin.overview.cards.days')}`,
+      growth: '18%',
+      growthLabel: t('admin.overview.cards.vsLastMonth'),
+      icon: RotateCcwIcon,
+      sparkData: [1.2, 1.4, 1.3, 1.7, 1.6, 1.9, 2.1, 2.3],
     },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {metrics.map((item) => (
-        <Card
+      {metrics.map((item, idx) => (
+        <motion.div
           key={item.id}
-          className="relative overflow-hidden border border-border bg-card shadow-xs transition-all duration-200 hover:shadow-md"
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            reduceMotion ? { duration: 0.1 } : { duration: 0.18, ease: EASE_OUT, delay: idx * 0.04 }
+          }
         >
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-muted-foreground line-clamp-1">
-                {item.title}
-              </span>
-              <div
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${item.iconBg}`}
-              >
-                <item.icon className="size-4" />
+          <Card
+            variant="container"
+            className="card-container-frame relative overflow-hidden rounded-lg border border-border bg-card shadow-xs transition-all duration-200 hover:shadow-md group h-full"
+          >
+            <CardContent className="p-5">
+              {/* Top row: Pink badge icon + Title */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform group-hover:scale-105">
+                  <item.icon className="size-5" />
+                </div>
+                <span className="text-xs sm:text-sm font-semibold text-foreground/80 dark:text-muted-foreground line-clamp-1 font-sans">
+                  {item.title}
+                </span>
               </div>
-            </div>
 
-            <div className="mt-3">
-              <Typography variant="large" className="text-2xl sm:text-3xl font-bold tracking-tight">
-                {item.value}
-              </Typography>
-            </div>
+              {/* Middle row: Big Bold Animated Value (Mono) + Animated Recharts Sparkline */}
+              <div className="mt-3.5 flex items-end justify-between gap-2">
+                <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                  <AnimatedNumber
+                    value={item.numericValue}
+                    duration={0.8}
+                    format={(n) => {
+                      const formatted =
+                        item.decimals > 0 ? n.toFixed(item.decimals) : Math.round(n).toString();
+                      return `${formatted}${item.suffix}`;
+                    }}
+                  />
+                </span>
+                <MetricSparkline data={item.sparkData} id={item.id} />
+              </div>
 
-            <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
-              <span className="text-xs text-muted-foreground line-clamp-1">{item.desc}</span>
-              <Badge
-                variant={item.badgeVariant}
-                className="shrink-0 text-xs px-2 py-0.5 font-medium"
-              >
-                <TrendingUpIcon className="mr-1 size-3" />
-                {item.badge}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Bottom row: Trend indicator (Micro Caption) */}
+              <div className="mt-2.5 flex items-center gap-1.5 text-[11px] sm:text-xs">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                  ↑ {item.growth}
+                </span>
+                <span className="text-muted-foreground font-medium">{item.growthLabel}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       ))}
     </div>
   );

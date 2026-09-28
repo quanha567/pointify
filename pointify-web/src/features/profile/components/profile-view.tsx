@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
-import { AlertTriangle, ArrowRight, Shield, Sparkles, User } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Link2, Shield, Sparkles, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,13 +11,27 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { ProfileHeaderCard } from './profile-header-card';
 import { ProfileInfoForm } from './profile-info-form';
 import { SecuritySettingsCard } from './security-settings-card';
+import { JiraIntegrationCard } from './jira-integration-card';
 import { AvatarPickerModal } from './avatar-picker-modal';
 
 export function ProfileView() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'common']);
   const { user, isGuest, updateProfileData, changePassword, sendPasswordReset } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const searchParams =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isJiraRedirect = Boolean(
+    searchParams && (searchParams.get('jira') === 'callback' || Boolean(searchParams.get('code'))),
+  );
+  const tabParam = searchParams?.get('tab');
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'integrations'>(
+    tabParam === 'integrations' || isJiraRedirect
+      ? 'integrations'
+      : tabParam === 'security'
+        ? 'security'
+        : 'profile',
+  );
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
 
   // Handle Guest Participant case
@@ -46,7 +60,7 @@ export function ProfileView() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full sm:w-auto text-sm h-10 px-4">
-              <Link to="/">{t('common.backToHome')}</Link>
+              <Link to="/">{t('common:common.backToHome')}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -82,19 +96,25 @@ export function ProfileView() {
             <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden">
               <Tabs
                 value={activeTab}
-                onValueChange={(val) => setActiveTab(val as 'profile' | 'security')}
+                onValueChange={(val) =>
+                  setActiveTab(val as 'profile' | 'security' | 'integrations')
+                }
                 className="w-full"
               >
                 {/* Tab Navigation inside Card Header */}
-                <div className="border-b border-border p-4 px-6 bg-muted/20">
-                  <TabsList className="grid grid-cols-2 w-full sm:w-96 h-10 p-1">
-                    <TabsTrigger value="profile" className="gap-2 text-sm font-medium h-full">
-                      <User className="size-4 text-primary" />
+                <div className="border-b border-border px-6 py-3.5 bg-muted/20">
+                  <TabsList className="inline-flex h-10 p-1 w-auto max-w-full overflow-x-auto">
+                    <TabsTrigger value="profile" className="gap-2 text-sm font-medium px-4">
+                      <User className="size-4" />
                       <span>{t('profile.tabProfile')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="security" className="gap-2 text-sm font-medium h-full">
-                      <Shield className="size-4 text-primary" />
+                    <TabsTrigger value="security" className="gap-2 text-sm font-medium px-4">
+                      <Shield className="size-4" />
                       <span>{t('profile.tabSecurity')}</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="integrations" className="gap-2 text-sm font-medium px-4">
+                      <Link2 className="size-4" />
+                      <span>{t('profile.tabIntegrations')}</span>
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -116,6 +136,11 @@ export function ProfileView() {
                     onChangePassword={changePassword}
                     onSendPasswordReset={sendPasswordReset}
                   />
+                </TabsContent>
+
+                {/* Tab 3: External Integrations */}
+                <TabsContent value="integrations" className="mt-0 focus-visible:outline-none">
+                  <JiraIntegrationCard />
                 </TabsContent>
               </Tabs>
             </Card>

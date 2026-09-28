@@ -14,6 +14,8 @@ import { Route as AdminRouteImport } from './routes/admin';
 import { Route as AuthRouteImport } from './routes/auth';
 import { Route as ProfileRouteImport } from './routes/profile';
 import { Route as AdminIndexRouteImport } from './routes/admin.index';
+import { Route as AdminGamesRouteImport } from './routes/admin.games';
+import { Route as AdminRoomsRouteImport } from './routes/admin.rooms';
 import { Route as AdminUsersRouteImport } from './routes/admin.users';
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId';
 
@@ -42,6 +44,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any);
+const AdminGamesRoute = AdminGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminRoomsRoute = AdminRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => AdminRoute,
+} as any);
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -58,6 +70,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
   '/profile': typeof ProfileRoute;
+  '/admin/games': typeof AdminGamesRoute;
+  '/admin/rooms': typeof AdminRoomsRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
@@ -66,6 +80,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute;
   '/auth': typeof AuthRoute;
   '/profile': typeof ProfileRoute;
+  '/admin/games': typeof AdminGamesRoute;
+  '/admin/rooms': typeof AdminRoomsRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin': typeof AdminIndexRoute;
@@ -76,6 +92,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren;
   '/auth': typeof AuthRoute;
   '/profile': typeof ProfileRoute;
+  '/admin/games': typeof AdminGamesRoute;
+  '/admin/rooms': typeof AdminRoomsRoute;
   '/admin/users': typeof AdminUsersRoute;
   '/rooms/$roomId': typeof RoomsRoomIdRoute;
   '/admin/': typeof AdminIndexRoute;
@@ -87,17 +105,29 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/profile'
+    | '/admin/games'
+    | '/admin/rooms'
     | '/admin/users'
     | '/rooms/$roomId'
     | '/admin/';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/auth' | '/profile' | '/admin/users' | '/rooms/$roomId' | '/admin';
+  to:
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/admin/games'
+    | '/admin/rooms'
+    | '/admin/users'
+    | '/rooms/$roomId'
+    | '/admin';
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
     | '/profile'
+    | '/admin/games'
+    | '/admin/rooms'
     | '/admin/users'
     | '/rooms/$roomId'
     | '/admin/';
@@ -148,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport;
       parentRoute: typeof AdminRoute;
     };
+    '/admin/games': {
+      id: '/admin/games';
+      path: '/games';
+      fullPath: '/admin/games';
+      preLoaderRoute: typeof AdminGamesRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    '/admin/rooms': {
+      id: '/admin/rooms';
+      path: '/rooms';
+      fullPath: '/admin/rooms';
+      preLoaderRoute: typeof AdminRoomsRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
     '/admin/users': {
       id: '/admin/users';
       path: '/users';
@@ -166,11 +210,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminGamesRoute: typeof AdminGamesRoute;
+  AdminRoomsRoute: typeof AdminRoomsRoute;
   AdminUsersRoute: typeof AdminUsersRoute;
   AdminIndexRoute: typeof AdminIndexRoute;
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminGamesRoute: AdminGamesRoute,
+  AdminRoomsRoute: AdminRoomsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 };

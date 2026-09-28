@@ -7,6 +7,12 @@
       "skillPath": "skills/engineering/ask-matt/SKILL.md",
       "computedHash": "e5404aef8525ca0c8fc76692567a38dfdd5d0cc1a9f8d47c02c18f29f60d92a6"
     },
+    "beui": {
+      "source": "starc007/ui-components",
+      "sourceType": "github",
+      "skillPath": "skills/beui/SKILL.md",
+      "computedHash": "bff7df8f18d41d96fb1ba26adfed7354c3de9f0bc11669e6e03c9f2b0384b997"
+    },
     "claude-handoff": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -67,6 +73,12 @@
       "skillPath": "skills/productivity/handoff/SKILL.md",
       "computedHash": "9ea2a5de5ca2d717f913356de982fdc4fe27d28a300c16598cd43a4865491008"
     },
+    "humanizer": {
+      "source": "blader/humanizer",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "d1a90f19fa4c39cb8105998bf38a6e6a41788e3b4329be086952efa6a3aa362c"
+    },
     "implement": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -125,7 +137,7 @@
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/in-progress/retro/SKILL.md",
-      "computedHash": "371bfc87b0fbb221e2e802e51385b5e1461c052cfa1186b18d4b441c00383eb5"
+      "computedHash": "e63bb774fba4e601edfffc56bbd5c938d76c8faa2dff49456dff3b1e679cd3b6"
     },
     "scaffold-exercises": {
       "source": "mattpocock/skills",
@@ -155,7 +167,7 @@
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
-      "computedHash": "9b5a0bc8d34287ac67d8e59a84ce3beb0cc29d2bfc50159804600d79cfc2a549"
+      "computedHash": "d04e43ec01e921558b93bb8046c14a42a22556689a2827243df900825a4e1604"
     },
     "tdd": {
       "source": "mattpocock/skills",

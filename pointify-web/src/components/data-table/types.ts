@@ -93,14 +93,14 @@ export const DENSITY_CONFIGS: Record<TableDensity, DataTableDensityConfig> = {
     fontSize: 'text-xs',
   },
   normal: {
-    rowHeight: 46,
+    rowHeight: 44,
     cellPadding: 'py-2 px-3',
-    fontSize: 'text-sm',
+    fontSize: 'text-xs sm:text-sm',
   },
   comfortable: {
-    rowHeight: 58,
-    cellPadding: 'py-3 px-4',
-    fontSize: 'text-sm',
+    rowHeight: 52,
+    cellPadding: 'py-2.5 px-3.5',
+    fontSize: 'text-xs sm:text-sm',
   },
 };
 
@@ -111,17 +111,20 @@ export interface DataTableFilterOption {
   count?: number;
 }
 
+export interface DataTableFacetedFilterConfig {
+  columnId: string;
+  title: string;
+  options: DataTableFilterOption[];
+  singleSelect?: boolean;
+}
+
 export interface DataTableToolbarProps<TData extends RowData = any> {
   table: DataTableInstance<TData>;
   searchPlaceholder?: string;
   searchColumnId?: string;
   density: TableDensity;
   onDensityChange: (density: TableDensity) => void;
-  facetedFilters?: {
-    columnId: string;
-    title: string;
-    options: DataTableFilterOption[];
-  }[];
+  facetedFilters?: DataTableFacetedFilterConfig[];
   onExportCsv?: () => void;
   extraActions?: React.ReactNode;
 }

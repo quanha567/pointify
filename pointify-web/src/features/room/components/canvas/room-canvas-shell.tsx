@@ -32,15 +32,19 @@ const nodeTypes = {
 interface RoomCanvasContentProps {
   room: RoomProjection;
   currentUserId?: string;
+  isFacilitator?: boolean;
 }
 
-function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
+function RoomCanvasContent({ room, currentUserId, isFacilitator }: RoomCanvasContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingNoteIdRef = useRef<string | null>(null);
   const { fitView, screenToFlowPosition } = useReactFlow();
   const { moveStickyNote, createStickyNote } = useStickyNotes();
 
-  const initialNodes = useMemo(() => generateRoomNodes(room, currentUserId), [room, currentUserId]);
+  const initialNodes = useMemo(
+    () => generateRoomNodes(room, currentUserId, isFacilitator),
+    [room, currentUserId, isFacilitator],
+  );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
@@ -84,7 +88,7 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
 
   // Update nodes when room data changes, preserving reference equality, selection & drag position
   useEffect(() => {
-    const updatedNodes = generateRoomNodes(room, currentUserId);
+    const updatedNodes = generateRoomNodes(room, currentUserId, isFacilitator);
     setNodes((prevNodes) => {
       const prevMap = new Map(prevNodes.map((n) => [n.id, n]));
       return updatedNodes.map((n) => {
@@ -120,7 +124,7 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
           return isIdentical ? prev : n;
         }
 
-        // 4. Sticky Note Node: handle active local drag, clamping, and reference equality
+        // 4. Sticky Note Node: handle active local drag and reference equality
         if (n.type === NODE_TYPES.STICKY_NOTE) {
           const noteId = n.id.replace('sticky-note-', '');
           const selected = prev.selected ?? n.selected;
@@ -133,18 +137,18 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
             };
           }
 
-          const clampedPos = clampToViewport(n.position);
           const isIdentical =
             prev.data?.note === n.data?.note &&
-            prev.position.x === clampedPos.x &&
-            prev.position.y === clampedPos.y &&
+            prev.data?.isEstimating === n.data?.isEstimating &&
+            prev.position.x === n.position.x &&
+            prev.position.y === n.position.y &&
             prev.selected === selected;
 
           return isIdentical
             ? prev
             : {
                 ...n,
-                position: clampedPos,
+                position: n.position,
                 selected,
               };
         }
@@ -152,7 +156,7 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
         return n;
       });
     });
-  }, [room, currentUserId, setNodes, clampToViewport]);
+  }, [room, currentUserId, isFacilitator, setNodes]);
 
   // Fingerprint participants to ensure arenaNodeIds only changes when membership changes
   const participantFingerprint = useMemo(
@@ -272,10 +276,6 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
       onDrop={handleDrop}
       className="w-full h-full relative overflow-hidden bg-background pb-32"
     >
-      {/* Subtle dual-layer ambient focal glow behind the table */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08)_0%,hsl(var(--primary)/0.02)_40%,transparent_70%)]" />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_40%,hsl(var(--background))_100%)] opacity-60" />
-
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
@@ -309,17 +309,67 @@ function RoomCanvasContent({ room, currentUserId }: RoomCanvasContentProps) {
   );
 }
 
-interface RoomCanvasShellProps {
-  room: RoomProjection;
+import { useActiveRoom } from '../../hooks/use-active-room';
+import { useRoomStore } from '../../context/room-store-context';
+
+export interface RoomCanvasShellProps {
+  room?: RoomProjection;
   currentUserId?: string;
-  stickyNoteActions: StickyNotesContextValue;
+  isFacilitator?: boolean;
+  stickyNoteActions?: StickyNotesContextValue;
 }
 
-export function RoomCanvasShell({ room, currentUserId, stickyNoteActions }: RoomCanvasShellProps) {
+export function RoomCanvasShell(props: RoomCanvasShellProps = {}) {
+  const active = useActiveRoom();
+  const room = props.room || active.room;
+  const isFacilitator =
+    props.isFacilitator !== undefined ? props.isFacilitator : active.isFacilitator;
+  const currentUserId = props.currentUserId || useRoomStore((s) => s.participant?.id || '');
+
+  const createStickyNote = useRoomStore((s) => s.createStickyNote);
+  const moveStickyNote = useRoomStore((s) => s.moveStickyNote);
+  const editStickyNote = useRoomStore((s) => s.editStickyNote);
+  const togglePinStickyNote = useRoomStore((s) => s.togglePinStickyNote);
+  const deleteStickyNote = useRoomStore((s) => s.deleteStickyNote);
+  const startEditingStickyNote = useRoomStore((s) => s.startEditingStickyNote);
+  const stopEditingStickyNote = useRoomStore((s) => s.stopEditingStickyNote);
+  const estimateStory = useRoomStore((s) => s.estimateStory);
+
+  const stickyNoteActions: StickyNotesContextValue = useMemo(
+    () =>
+      props.stickyNoteActions || {
+        createStickyNote,
+        moveStickyNote,
+        editStickyNote,
+        togglePinStickyNote,
+        deleteStickyNote,
+        startEditingStickyNote,
+        stopEditingStickyNote,
+        estimateStory,
+      },
+    [
+      props.stickyNoteActions,
+      createStickyNote,
+      moveStickyNote,
+      editStickyNote,
+      togglePinStickyNote,
+      deleteStickyNote,
+      startEditingStickyNote,
+      stopEditingStickyNote,
+      estimateStory,
+    ],
+  );
+
+  if (!room) return null;
+
   return (
     <StickyNotesContext.Provider value={stickyNoteActions}>
       <ReactFlowProvider>
-        <RoomCanvasContent room={room} currentUserId={currentUserId} />
+        <RoomCanvasContent
+          room={room}
+          currentUserId={currentUserId}
+          isFacilitator={isFacilitator}
+        />
       </ReactFlowProvider>
     </StickyNotesContext.Provider>
   );

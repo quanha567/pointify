@@ -26,7 +26,7 @@ export function InviteParticipantDialog({
   onOpenChange,
   room,
 }: InviteParticipantDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const [copied, setCopied] = useState(false);
 
   const roomUrl = useMemo(() => {
@@ -46,10 +46,10 @@ export function InviteParticipantDialog({
     try {
       await navigator.clipboard.writeText(inviteMessage);
       setCopied(true);
-      toast.success(t('room.inviteDialog.linkCopied', 'Đã sao chép link mời!'));
+      toast.success(t('room.inviteDialog.linkCopied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error(t('room.failedCopy', 'Không thể sao chép'));
+      toast.error(t('room.failedCopy'));
     }
   };
 
@@ -61,13 +61,10 @@ export function InviteParticipantDialog({
             <div className="flex items-center justify-center size-8 rounded-xl bg-primary/10 text-primary">
               <Share2 className="size-4" />
             </div>
-            <span>{t('room.inviteDialog.title', 'Mời vào phòng')}</span>
+            <span>{t('room.inviteDialog.title')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed pt-0.5">
-            {t(
-              'room.inviteDialog.description',
-              'Quét mã QR hoặc gửi link để mời mọi người vào phòng.',
-            )}
+            {t('room.inviteDialog.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,7 +81,7 @@ export function InviteParticipantDialog({
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-foreground flex items-center gap-1.5">
               <Link2 className="size-4 text-primary" />
-              <span>{t('room.inviteDialog.roomUrl', 'Link phòng')}</span>
+              <span>{t('room.inviteDialog.roomUrl')}</span>
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -99,12 +96,12 @@ export function InviteParticipantDialog({
                 {copied ? (
                   <>
                     <Check className="size-4" />
-                    <span>{t('room.inviteDialog.copied', 'Đã chép')}</span>
+                    <span>{t('room.inviteDialog.copied')}</span>
                   </>
                 ) : (
                   <>
                     <Copy className="size-4" />
-                    <span>{t('room.inviteDialog.copyUrl', 'Sao chép link')}</span>
+                    <span>{t('room.inviteDialog.copyUrl')}</span>
                   </>
                 )}
               </Button>

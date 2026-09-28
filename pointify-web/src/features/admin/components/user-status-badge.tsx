@@ -9,14 +9,14 @@ export interface UserStatusBadgeProps {
 }
 
 export function UserStatusBadge({ status, className }: UserStatusBadgeProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   if (status === 'active') {
     return (
       <Badge
         variant="outline"
         className={cn(
-          'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-md transition-colors',
+          'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-sm transition-colors',
           'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
           className,
         )}
@@ -34,7 +34,7 @@ export function UserStatusBadge({ status, className }: UserStatusBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-md transition-colors',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-sm transition-colors',
         'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25',
         className,
       )}

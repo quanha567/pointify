@@ -20,7 +20,7 @@ function guardFacilitatorKey(
 ): string | null {
   const key = getFacilitatorKey(roomId);
   if (!key) {
-    toast.error(t('room.noFacilitatorKey', 'Bạn không có khóa điều phối của phòng này'));
+    toast.error(t('room.noFacilitatorKey'));
     return null;
   }
   return key;
@@ -62,7 +62,7 @@ export function useFacilitatorActions(
   participant: StoredParticipant | null,
 ) {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const { isLoading: isActionLoading, lock, unlock, cleanup } = useActionLock();
 
   const revealCards = useCallback(() => {
@@ -131,11 +131,26 @@ export function useFacilitatorActions(
       if (data?.facilitatorKey) {
         saveFacilitatorKey(roomId, data.facilitatorKey);
         unlock();
-        toast.success(t('room.claimFacilitatorSuccess', 'Bạn đã nhận quyền Điều phối viên phòng!'));
+        toast.success(t('room.claimFacilitatorSuccess'));
         void queryClient.invalidateQueries({ queryKey: roomKeys.detail(roomId) });
       }
     },
     [roomId, queryClient, t, unlock],
+  );
+
+  const syncJiraPoints = useCallback(
+    (storyKey: string, points: number | string) => {
+      const key = guardFacilitatorKey(roomId, t);
+      if (!key) return;
+
+      getSocket().emit('room:jira-sync-points', {
+        roomId,
+        facilitatorKey: key,
+        storyKey,
+        points,
+      });
+    },
+    [roomId, getSocket, t],
   );
 
   return {
@@ -146,6 +161,7 @@ export function useFacilitatorActions(
     claimFacilitator,
     updateRoomConfig,
     handleClaimedFacilitator,
+    syncJiraPoints,
     unlockAction: unlock,
     cleanupAction: cleanup,
   };

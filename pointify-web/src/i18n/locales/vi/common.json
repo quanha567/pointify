@@ -1,0 +1,51 @@
+{
+  "app": {
+    "title": "Pointify",
+    "morphingTexts": [
+      "Ước lượng cùng nhau, ngay lập tức.",
+      "Đồng thuận cùng nhau, ngay lập tức.",
+      "Quyết định cùng nhau, ngay lập tức.",
+      "Triển khai cùng nhau, ngay lập tức."
+    ],
+    "subtitle": "Tạo phòng ước lượng trong vài giây. Chia sẻ mã phòng. Cả nhóm đồng bộ tức thì.",
+    "brandSubtitle": "Planning Poker thời gian thực cho nhóm Agile"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "language": "Ngôn ngữ",
+    "theme": "Giao diện",
+    "signIn": "Đăng nhập"
+  },
+  "common": {
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "edit": "Đổi",
+    "reset": "Khôi phục",
+    "loading": "Đang tải...",
+    "processing": "Đang xử lý...",
+    "backToHome": "Về trang chủ",
+    "hide": "Ẩn",
+    "show": "Hiện",
+    "table": {
+      "filter": "Tìm",
+      "noResults": "Không tìm thấy kết quả.",
+      "selectedCount": "{{count}} đã chọn",
+      "clearFilter": "Xóa bộ lọc",
+      "reset": "Đặt lại",
+      "exportCsv": "Xuất CSV",
+      "customizeColumns": "Tùy chỉnh cột"
+    },
+    "back": "Quay lại",
+    "viewAll": "Xem tất cả",
+    "error": "Có lỗi xảy ra"
+  },
+  "footer": {
+    "brand": "Pointify • Agile Scrum Poker",
+    "tagline": "Xây dựng cho trải nghiệm ước lượng sprint thời gian thực mượt mà."
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn đang tìm không tồn tại hoặc đã được di chuyển.",
+    "backHome": "Về trang chủ"
+  }
+}

@@ -15,6 +15,7 @@ export interface StickyNotesContextValue {
   deleteStickyNote: (noteId: string) => void;
   startEditingStickyNote: (noteId: string) => void;
   stopEditingStickyNote: (noteId: string) => void;
+  estimateStory?: (storyKey: string, summary: string) => void;
 }
 
 export const StickyNotesContext = createContext<StickyNotesContextValue | null>(null);

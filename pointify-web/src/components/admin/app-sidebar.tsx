@@ -1,235 +1,184 @@
-import { NavUser } from '@/components/admin/nav-user';
-import { Logo } from '@/components/logo';
-import { Badge } from '@/components/ui/badge';
-import { Typography } from '@/components/ui/typography';
+import otsEmblem from '@/assets/ots-emblem.png';
+import { SidebarVesselWidget } from '@/components/admin/sidebar-vessel-widget';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from '@/components/ui/sidebar';
+  AnimatedSidebar,
+  AnimatedSidebarContent,
+  AnimatedSidebarFooter,
+  AnimatedSidebarHeader,
+  AnimatedSidebarMenuButton,
+  AnimatedSidebarMenuItem,
+  AnimatedSidebarRail,
+  useAnimatedSidebarPanel,
+} from '@/components/motion/animated-sidebar';
+import { SharedLayoutBg } from '@/components/motion/shared-layout-bg';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  DicesIcon,
-  LayersIcon,
-  LayoutDashboardIcon,
-  ScrollTextIcon,
-  SettingsIcon,
-  UsersIcon,
-} from 'lucide-react';
-import { motion } from 'motion/react';
+import { BarChart3Icon, HomeIcon, LayersIcon, ListChecksIcon, UsersIcon } from 'lucide-react';
 
 interface NavItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  disabled?: boolean;
   exact?: boolean;
 }
 
-interface NavGroup {
-  label: string;
-  items: NavItem[];
+function AppSidebarHeader() {
+  const { t } = useTranslation('admin');
+  const { collapsed } = useAnimatedSidebarPanel();
+
+  return (
+    <AnimatedSidebarHeader
+      className={cn(
+        'p-4 pt-5 pb-3 border-b border-sidebar-border/30 transition-all duration-150',
+        collapsed && 'p-2 py-4 flex items-center justify-center',
+      )}
+    >
+      <Link
+        to="/admin"
+        className={cn(
+          'flex flex-col items-start gap-2 w-full text-left transition-all duration-150 outline-none select-none cursor-pointer',
+          collapsed && 'items-center justify-center',
+        )}
+      >
+        {collapsed ? (
+          <div className="flex items-center justify-center transition-all duration-150 h-8 w-full">
+            <img
+              src={otsEmblem}
+              alt="ONE Tech Stop"
+              className="size-8 object-contain select-none transition-all duration-150 drop-shadow-sm"
+            />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5 transition-all duration-150">
+            <img
+              src={otsEmblem}
+              alt="ONE Tech Stop"
+              className="size-8.5 shrink-0 object-contain select-none drop-shadow-sm transition-all duration-150"
+            />
+            <div className="flex flex-col text-left leading-tight overflow-hidden">
+              <span className="text-sm font-black text-white tracking-tight truncate">
+                ONE TECH STOP
+              </span>
+              <span className="text-[11px] font-bold tracking-[0.14em] text-sidebar-foreground/75 uppercase select-none truncate">
+                {t('admin.brand.motto')}
+              </span>
+            </div>
+          </div>
+        )}
+      </Link>
+    </AnimatedSidebarHeader>
+  );
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function AppSidebarContentItems() {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
+  const { collapsed } = useAnimatedSidebarPanel();
 
-  const navGroups: NavGroup[] = [
+  const navItems: NavItem[] = [
     {
-      label: t('admin.nav.overview'),
-      items: [
-        {
-          title: t('admin.nav.dashboard'),
-          url: '/admin',
-          icon: LayoutDashboardIcon,
-          exact: true,
-        },
-      ],
+      title: t('admin.nav.home'),
+      url: '/admin',
+      icon: HomeIcon,
+      exact: true,
     },
     {
-      label: t('admin.nav.management'),
-      items: [
-        {
-          title: t('admin.nav.users'),
-          url: '/admin/users',
-          icon: UsersIcon,
-        },
-        {
-          title: t('admin.nav.rooms'),
-          url: '/admin/rooms',
-          icon: LayersIcon,
-          badge: t('admin.nav.comingSoon'),
-          disabled: true,
-        },
-        {
-          title: t('admin.nav.decks'),
-          url: '/admin/decks',
-          icon: DicesIcon,
-          badge: t('admin.nav.comingSoon'),
-          disabled: true,
-        },
-      ],
+      title: t('admin.nav.rooms'),
+      url: '/admin/rooms',
+      icon: LayersIcon,
     },
     {
-      label: t('admin.nav.system'),
-      items: [
-        {
-          title: t('admin.nav.settings'),
-          url: '/admin/settings',
-          icon: SettingsIcon,
-          badge: t('admin.nav.comingSoon'),
-          disabled: true,
-        },
-        {
-          title: t('admin.nav.logs'),
-          url: '/admin/logs',
-          icon: ScrollTextIcon,
-          badge: t('admin.nav.comingSoon'),
-          disabled: true,
-        },
-      ],
+      title: t('admin.nav.backlog'),
+      url: '/admin/decks',
+      icon: ListChecksIcon,
+    },
+    {
+      title: t('admin.nav.team'),
+      url: '/admin/users',
+      icon: UsersIcon,
+    },
+    {
+      title: t('admin.nav.reports'),
+      url: '/admin/logs',
+      icon: BarChart3Icon,
     },
   ];
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r border-border bg-card">
-      {/* Brand Header */}
-      <SidebarHeader className="border-b border-border/80 p-3">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin" className="flex items-center gap-3">
-                <div className="flex aspect-square size-8.5 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
-                  <Logo variant="icon" size={22} animated={false} />
-                </div>
-                <div className="grid flex-1 text-left text-xs leading-tight">
-                  <Typography variant="navTitle">{t('admin.brand.title')}</Typography>
-                  <Typography variant="navSubtitle">{t('admin.brand.subtitle')}</Typography>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+    <AnimatedSidebarContent className={cn('p-3 pb-0', collapsed && 'p-2 pb-0 items-center')}>
+      <SharedLayoutBg
+        as="ul"
+        className={cn('gap-1.5 list-none p-0 m-0 w-full', collapsed && 'items-center')}
+      >
+        {navItems.map((item) => {
+          const isActive = item.exact
+            ? location.pathname === item.url
+            : location.pathname.startsWith(item.url);
 
-      {/* Nav Groups */}
-      <SidebarContent className="gap-1 p-2">
-        {navGroups.map((group) => (
-          <SidebarGroup key={group.label} className="py-1.5">
-            <SidebarGroupLabel asChild>
-              <Typography variant="navGroupLabel" className="px-2">
-                {group.label}
-              </Typography>
-            </SidebarGroupLabel>
-            <SidebarMenu>
-              {group.items.map((item) => {
-                const isActive = item.exact
-                  ? location.pathname === item.url
-                  : location.pathname.startsWith(item.url);
+          return (
+            <AnimatedSidebarMenuItem key={item.title}>
+              <AnimatedSidebarMenuButton
+                to={item.url}
+                isActive={isActive}
+                icon={<item.icon className="size-5" />}
+              >
+                {item.title}
+              </AnimatedSidebarMenuButton>
+            </AnimatedSidebarMenuItem>
+          );
+        })}
+      </SharedLayoutBg>
+    </AnimatedSidebarContent>
+  );
+}
 
-                return (
-                  <SidebarMenuItem key={item.url} className="relative">
-                    {/* Left active vertical indicator bar with smooth spring animation */}
-                    {isActive ? (
-                      <motion.div
-                        layoutId="active-nav-indicator"
-                        className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-full rounded-r-full bg-primary z-20 group-data-[collapsible=icon]:hidden"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    ) : (
-                      !item.disabled && (
-                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-full rounded-r-full bg-primary/50 opacity-0 group-hover/menu-item:opacity-100 transition-opacity duration-150 z-20 group-data-[collapsible=icon]:hidden pointer-events-none" />
-                      )
-                    )}
+function AppSidebarFooterSection() {
+  const { collapsed } = useAnimatedSidebarPanel();
+  const { user } = useAuthStore();
+  const initials = (user?.displayName || user?.email || 'U').slice(0, 2).toUpperCase();
 
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.title}
-                      className={cn(
-                        'relative cursor-pointer text-sm font-medium transition-colors duration-150 h-9.5 px-3 data-active:bg-transparent data-active:text-primary-foreground',
-                        isActive
-                          ? 'text-primary-foreground hover:text-primary-foreground hover:bg-transparent font-semibold'
-                          : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground',
-                        item.disabled && 'opacity-50 pointer-events-none cursor-not-allowed',
-                      )}
-                    >
-                      <Link
-                        to={item.disabled ? undefined : item.url}
-                        className="relative flex items-center gap-2.5 z-10 w-full"
-                      >
-                        {/* Animated background pill with motion layoutId */}
-                        {isActive && (
-                          <motion.div
-                            layoutId="active-nav-bg"
-                            className="absolute inset-0 rounded-lg bg-primary -z-10"
-                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                          />
-                        )}
+  if (collapsed) {
+    return (
+      <AnimatedSidebarFooter className="p-2 pb-4 flex items-center justify-center mt-auto">
+        <Link
+          to="/profile"
+          title={user?.displayName || user?.email || 'Admin Profile'}
+          className="cursor-pointer rounded-full ring-2 ring-primary/40 hover:ring-primary transition-all p-0.5"
+        >
+          <Avatar size="sm" className="size-8">
+            {user?.photoURL && (
+              <AvatarImage src={user.photoURL} alt={user.displayName || 'Admin'} />
+            )}
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+      </AnimatedSidebarFooter>
+    );
+  }
 
-                        <item.icon
-                          className={cn(
-                            'size-4 shrink-0 transition-colors z-10',
-                            isActive
-                              ? 'text-primary-foreground'
-                              : 'text-muted-foreground group-hover/menu-button:text-foreground',
-                          )}
-                        />
-                        <Typography
-                          variant="navItem"
-                          className={cn(
-                            'z-10',
-                            isActive
-                              ? 'text-primary-foreground font-semibold'
-                              : 'text-muted-foreground group-hover/menu-button:text-foreground',
-                          )}
-                        >
-                          {item.title}
-                        </Typography>
-                      </Link>
-                    </SidebarMenuButton>
+  return (
+    <AnimatedSidebarFooter className="p-0 border-t-0 bg-transparent space-y-0 relative overflow-hidden mt-auto">
+      <SidebarVesselWidget />
+    </AnimatedSidebarFooter>
+  );
+}
 
-                    {item.badge && (
-                      <SidebarMenuBadge className="pointer-events-none z-10">
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            'text-xs px-2 py-0.5 font-medium rounded-md border-0 transition-colors',
-                            isActive
-                              ? 'bg-primary-foreground/20 text-primary-foreground'
-                              : 'bg-muted text-muted-foreground',
-                          )}
-                        >
-                          {item.badge}
-                        </Badge>
-                      </SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-
-      {/* Footer User */}
-      <SidebarFooter className="border-t border-border/80 p-2">
-        <NavUser />
-      </SidebarFooter>
-
-      <SidebarRail />
-    </Sidebar>
+export function AppSidebar(props: React.ComponentProps<typeof AnimatedSidebar>) {
+  return (
+    <AnimatedSidebar
+      collapsible="icon"
+      {...props}
+      className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm"
+    >
+      <AppSidebarHeader />
+      <AppSidebarContentItems />
+      <AppSidebarFooterSection />
+      <AnimatedSidebarRail />
+    </AnimatedSidebar>
   );
 }

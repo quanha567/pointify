@@ -10,9 +10,18 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Typography } from '@/components/ui/typography';
 
+type AdminBreadcrumbKey =
+  | 'admin.breadcrumbs.admin'
+  | 'admin.breadcrumbs.overview'
+  | 'admin.breadcrumbs.management'
+  | 'admin.breadcrumbs.system'
+  | 'admin.breadcrumbs.users'
+  | 'admin.breadcrumbs.rooms'
+  | 'admin.breadcrumbs.settings';
+
 interface BreadcrumbRouteConfig {
-  sectionKey?: string;
-  pageKey: string;
+  sectionKey?: AdminBreadcrumbKey;
+  pageKey: AdminBreadcrumbKey;
 }
 
 const ADMIN_BREADCRUMBS_MAP: Record<string, BreadcrumbRouteConfig> = {
@@ -35,7 +44,7 @@ const ADMIN_BREADCRUMBS_MAP: Record<string, BreadcrumbRouteConfig> = {
 
 export function AdminBreadcrumbs() {
   const { pathname } = useLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   const currentRoute = ADMIN_BREADCRUMBS_MAP[pathname] ?? {
     pageKey: 'admin.breadcrumbs.overview',

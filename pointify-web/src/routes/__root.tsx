@@ -17,12 +17,13 @@ export const Route = createRootRoute({
 });
 
 function RootLayout() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'auth']);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isGuest, guestName, logout, initAuthListener } = useAuthStore();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isRoomRoute = location.pathname.startsWith('/rooms/');
+  const isAuthRoute = location.pathname.startsWith('/auth');
 
   useEffect(() => {
     const unsubscribe = initAuthListener();
@@ -36,14 +37,14 @@ function RootLayout() {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success(t('auth.logoutToast'));
+      toast.success(t('auth:auth.logoutToast'));
       void navigate({ to: '/' });
     } catch {
-      toast.error(t('auth.failedSignOut'));
+      toast.error(t('auth:auth.failedSignOut'));
     }
   };
 
-  if (isAdminRoute || isRoomRoute) {
+  if (isAdminRoute || isRoomRoute || isAuthRoute) {
     return (
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <TooltipProvider>

@@ -53,7 +53,7 @@ function getInitials(name: string): string {
 interface ParticipantRowProps {
   participant: ParticipantProjection;
   isSelf: boolean;
-  t: TFunction;
+  t: TFunction<'room'>;
   isVietnamese: boolean;
 }
 
@@ -149,10 +149,10 @@ const ParticipantRow = memo(function ParticipantRow({
             {p.isSpectator ? (
               <span className="inline-flex items-center gap-1 text-muted-foreground">
                 <Eye className="size-3 shrink-0" />
-                {t('roles.spectator', 'Quan sát viên')}
+                {t('roles.spectator')}
               </span>
             ) : (
-              <span>{t('roles.estimator', 'Người ước lượng')}</span>
+              <span>{t('roles.estimator')}</span>
             )}
           </div>
         </div>
@@ -165,7 +165,7 @@ const ParticipantRow = memo(function ParticipantRow({
             variant="outline"
             className="text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/25 gap-1 py-0.5 px-2"
           >
-            <span>{t('roles.facilitator', 'Điều phối')}</span>
+            <span>{t('roles.facilitator')}</span>
           </Badge>
         ) : p.isSpectator ? (
           <Badge
@@ -173,14 +173,14 @@ const ParticipantRow = memo(function ParticipantRow({
             className="text-xs font-normal text-muted-foreground bg-muted/40 border-border/60 py-0.5 px-2 gap-1"
           >
             <Eye className="size-3" />
-            <span>{t('room.spectatorBadge', 'Quan sát')}</span>
+            <span>{t('room.spectatorBadge')}</span>
           </Badge>
         ) : !p.isOnline ? (
           <Badge
             variant="outline"
             className="text-xs font-normal text-muted-foreground/70 border-dashed border-border/50 py-0.5 px-2"
           >
-            {t('room.offline', 'Ngoại tuyến')}
+            {t('room.offline')}
           </Badge>
         ) : null}
       </div>
@@ -195,7 +195,7 @@ interface ParticipantsSheetProps {
 }
 
 export function ParticipantsSheet({ room, currentUserId, trigger }: ParticipantsSheetProps) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('room');
   const [searchQuery, setSearchQuery] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -237,45 +237,47 @@ export function ParticipantsSheet({ room, currentUserId, trigger }: Participants
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl gap-1.5 text-xs font-semibold shadow-xs cursor-pointer h-8 px-2.5"
+            className="rounded-md gap-1.5 sm:gap-2 text-sm font-medium shadow-2xs cursor-pointer h-[34px] px-2.5 sm:px-3 border-border hover:bg-muted text-foreground transition-colors"
           >
-            <Users className="size-3.5 text-primary" />
-            <span className="hidden sm:inline">{t('room.members', 'Thành viên')}</span>
-            <span>
+            <div className="relative flex items-center">
+              <Users className="size-4 text-muted-foreground" />
+              <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+            </div>
+            <span className="hidden sm:inline">{t('room.members')}</span>
+            <span className="font-mono font-semibold text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
               {onlineCount}/{room.participants.length}
             </span>
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-[340px] sm:w-[400px] p-0 flex flex-col gap-0">
+      <SheetContent
+        side="right"
+        className="w-[340px] sm:w-[400px] p-0 flex flex-col gap-0 border-l border-border"
+      >
         {/* Header */}
-        <SheetHeader className="p-6 pb-4 border-b border-border/60 shrink-0">
-          <SheetTitle className="text-base font-bold flex items-center justify-between gap-2 pr-6">
+        <SheetHeader className="p-5 pb-3.5 border-b border-border shrink-0">
+          <SheetTitle className="text-base font-semibold flex items-center justify-between gap-2 pr-6">
             <div className="flex items-center gap-2 min-w-0">
               <Users className="size-4 text-primary shrink-0" />
-              <span className="whitespace-nowrap">
-                {t('room.participants', 'Thành viên tham gia')}
-              </span>
+              <span className="whitespace-nowrap">{t('room.participants')}</span>
             </div>
-            <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full tabular-nums shrink-0">
+            <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-sm tabular-nums shrink-0">
               {onlineCount}/{room.participants.length}
             </span>
           </SheetTitle>
-          <SheetDescription className="sr-only">
-            {t('room.participants', 'Thành viên tham gia')}
-          </SheetDescription>
+          <SheetDescription className="sr-only">{t('room.participants')}</SheetDescription>
         </SheetHeader>
 
         {/* Filter Input (shown when more than 5 participants) */}
         {room.participants.length > 5 && (
-          <div className="px-6 pt-3 shrink-0">
+          <div className="px-5 pt-3 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('room.searchParticipants', 'Tìm theo tên thành viên...')}
-                className="pl-8.5 pr-8 h-8 text-xs rounded-xl bg-muted/40 border-border/60 focus-visible:bg-background transition-colors"
+                placeholder={t('room.searchParticipants')}
+                className="pl-8.5 pr-8 h-8 text-xs rounded-md bg-muted/40 border-border focus-visible:bg-background transition-colors"
               />
               {searchQuery && (
                 <Button
@@ -303,7 +305,7 @@ export function ParticipantsSheet({ room, currentUserId, trigger }: Participants
                 transition={{ duration: 0.16 }}
                 className="text-center py-8 text-xs text-muted-foreground"
               >
-                {t('room.noParticipantsFound', 'Không tìm thấy thành viên nào')}
+                {t('room.noParticipantsFound')}
               </motion.div>
             ) : (
               filteredParticipants.map((p) => (

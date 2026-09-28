@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { createFileRoute, Outlet, useNavigate, redirect } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import {
+  AnimatedSidebarProvider,
+  AnimatedSidebarInset,
+} from '@/components/motion/animated-sidebar';
 import { AppSidebar } from '@/components/admin/app-sidebar';
 import { AdminHeader } from '@/components/admin/admin-header';
 import { NotFoundPage } from '@/components/feedback/not-found';
@@ -26,7 +29,7 @@ export const Route = createFileRoute('/admin')({
 });
 
 function AdminLayout() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
   const { user, isInitialized, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
@@ -58,14 +61,14 @@ function AdminLayout() {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <AnimatedSidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <SidebarInset className="flex h-screen flex-col overflow-hidden bg-muted dark:bg-zinc-950">
+      <AnimatedSidebarInset className="flex h-screen flex-col overflow-hidden bg-background">
         <AdminHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+      </AnimatedSidebarInset>
+    </AnimatedSidebarProvider>
   );
 }

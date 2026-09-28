@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Zap, History, Users, ShieldCheck, UserCheck } from 'lucide-react';
-import { Logo } from '@/components/logo';
-import { Button } from '@/components/ui/button';
 import { AuthFormCard } from './auth-form-card';
 import { ForgotPasswordDialog, type ForgotPasswordDialogHandle } from './forgot-password-dialog';
-import { GuestDialog, type GuestDialogHandle } from './guest-dialog';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { ThemeToggle } from '@/components/admin/theme-toggle';
+import oneSunsetShip from '@/assets/hero/one-auth-sunset-ship.png';
+import oneLogoWhite from '@/assets/one-logo-white.webp';
 import type { AuthSearchParams } from '../types/auth.types';
 
 interface AuthPageProps {
@@ -14,127 +14,143 @@ interface AuthPageProps {
 }
 
 export function AuthPage({ searchParams, onNavigateSearch }: AuthPageProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   const forgotRef = useRef<ForgotPasswordDialogHandle>(null);
-  const guestRef = useRef<GuestDialogHandle>(null);
-  const targetRedirect = searchParams.redirect || '/';
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-hidden">
-      {/* Dynamic ambient backgrounds */}
-      <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute -top-32 left-1/4 size-96 rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-32 right-1/4 size-96 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 blur-3xl" />
-        <div className="absolute top-1/3 right-10 size-64 rounded-full bg-blue-500/10 dark:bg-blue-500/10 blur-2xl" />
-      </div>
+    <div className="relative min-h-screen w-full flex select-none overflow-hidden">
+      {/* ─── Left Panel: Cinematic Background ─── */}
+      <div className="hidden lg:flex lg:w-[55%] xl:w-[58%] relative flex-col justify-between overflow-hidden">
+        {/* Background image — centered to show ship properly */}
+        <img
+          src={oneSunsetShip}
+          alt="Ocean Network Express Container Vessel at Sunset"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Protective gradient for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/25 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent pointer-events-none" />
 
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        {/* Left Column: Branding & Value Proposition Showcase (Desktop) */}
-        <div className="hidden lg:flex lg:col-span-6 flex-col justify-between space-y-8 pr-4">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary backdrop-blur-sm">
-              <Sparkles className="size-3.5 text-primary animate-spin" />
-              <span>{t('auth.showcaseBadge')}</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-foreground">
-              {t('auth.showcaseTitle')}
-            </h1>
-
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              {t('app.subtitle')}
-            </p>
-
-            {/* Feature List */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3.5 group">
-                <div className="size-8 rounded-lg bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
-                  <Zap className="size-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {t('auth.showcaseItem1')}
-                  </h4>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 group">
-                <div className="size-8 rounded-lg bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
-                  <History className="size-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {t('auth.showcaseItem2')}
-                  </h4>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 group">
-                <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                  <Users className="size-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {t('auth.showcaseItem3')}
-                  </h4>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mini Interactive Preview Card */}
-          <div className="p-4 rounded-xl border border-white/20 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-md shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Logo variant="icon" size={32} />
-              <div>
-                <p className="text-xs font-semibold text-foreground">Pointify Cloud Sync</p>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <ShieldCheck className="size-3 text-emerald-500" /> Secure Firebase Authentication
-                </p>
-              </div>
-            </div>
-            <div className="flex -space-x-2">
-              <div className="size-7 rounded-full bg-cyan-500/20 border-2 border-background flex items-center justify-center text-[10px] font-bold text-cyan-700 dark:text-cyan-300">
-                8
-              </div>
-              <div className="size-7 rounded-full bg-blue-500/20 border-2 border-background flex items-center justify-center text-[10px] font-bold text-blue-700 dark:text-blue-300">
-                5
-              </div>
-              <div className="size-7 rounded-full bg-indigo-500/20 border-2 border-background flex items-center justify-center text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
-                13
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Auth Form Card */}
-        <div className="lg:col-span-6 w-full max-w-md mx-auto">
-          <AuthFormCard
-            searchParams={searchParams}
-            onNavigateSearch={onNavigateSearch}
-            onForgotPassword={() => forgotRef.current?.open()}
+        {/* Top: ONE Logo + Slogan */}
+        <header className="relative z-10 px-10 xl:px-14 pt-8 xl:pt-10">
+          <img
+            src={oneLogoWhite}
+            alt="Ocean Network Express"
+            className="h-12 xl:h-14 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
           />
+          <p className="text-sm font-semibold tracking-[0.15em] uppercase text-white/90 mt-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]">
+            AS ONE, WE CAN
+          </p>
+        </header>
 
-          {/* Guest Quick Option */}
-          <div className="mt-6 pt-5 border-t border-border/60 text-center space-y-2.5">
-            <p className="text-[11px] text-muted-foreground">{t('auth.guestOption')}</p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full h-9 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer gap-2"
-              onClick={() => guestRef.current?.open()}
-            >
-              <UserCheck className="size-3.5 text-primary" />
-              <span>{t('auth.guestAction')}</span>
-            </Button>
+        {/* Center-left: Hero branding text */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center px-10 xl:px-14">
+          <h1 className="text-4xl xl:text-5xl 2xl:text-[3.5rem] font-black tracking-tight text-white drop-shadow-[0_3px_16px_rgba(0,0,0,0.55)] leading-[1.15]">
+            {t('auth.heroTitle')}
+          </h1>
+          <p className="text-base xl:text-lg text-white/85 font-normal mt-3 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] max-w-sm">
+            {t('auth.heroSubtitle')}
+          </p>
+        </div>
+
+        {/* Footer copyright on left panel */}
+        <footer className="relative z-10 px-10 xl:px-14 pb-5 text-xs text-white/60 drop-shadow-sm">
+          <p>© {new Date().getFullYear()} Ocean Network Express Pte. Ltd.</p>
+        </footer>
+      </div>
+
+      {/* ─── Right Panel: Auth Form ─── */}
+      <div className="w-full lg:w-[45%] xl:w-[42%] min-h-screen bg-white dark:bg-slate-950 flex flex-col relative overflow-hidden">
+        {/* ─── Bottom Decoration: Seigaiha Wave Band ─── */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none z-0"
+          aria-hidden="true"
+        >
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-seigaiha opacity-60 dark:opacity-20" />
+        </div>
+
+        {/* Top-right: AS ONE, WE CAN accent + Discreet controls */}
+        <div className="flex items-center justify-between px-8 sm:px-10 xl:px-12 pt-6 sm:pt-8 relative z-10">
+          {/* Mobile-only: ONE Logo */}
+          <div className="lg:hidden">
+            <img
+              src={oneLogoWhite}
+              alt="Ocean Network Express"
+              className="h-8 w-auto object-contain invert dark:invert-0 opacity-80"
+            />
+          </div>
+          <div className="hidden lg:block" />
+
+          <div className="flex items-center gap-4">
+            {/* Discreet controls for Language and Theme */}
+            <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+            {/* AS ONE, WE CAN text accent with circular swoosh */}
+            <div className="flex items-center gap-2">
+              {/* Circular arc swoosh */}
+              <svg viewBox="0 0 32 32" className="size-7" fill="none" aria-hidden="true">
+                <path
+                  d="M16 4 A12 12 0 1 1 4 16"
+                  stroke="#E31C79"
+                  strokeWidth="1.5"
+                  strokeOpacity="0.3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                {/* Small cherry blossom at the end of the arc */}
+                <g transform="translate(16,4)" opacity="0.4">
+                  <ellipse cx="0" cy="-2.5" rx="1.5" ry="3" fill="#E31C79" transform="rotate(0)" />
+                  <ellipse cx="0" cy="-2.5" rx="1.5" ry="3" fill="#E31C79" transform="rotate(72)" />
+                  <ellipse
+                    cx="0"
+                    cy="-2.5"
+                    rx="1.5"
+                    ry="3"
+                    fill="#E31C79"
+                    transform="rotate(144)"
+                  />
+                  <ellipse
+                    cx="0"
+                    cy="-2.5"
+                    rx="1.5"
+                    ry="3"
+                    fill="#E31C79"
+                    transform="rotate(216)"
+                  />
+                  <ellipse
+                    cx="0"
+                    cy="-2.5"
+                    rx="1.5"
+                    ry="3"
+                    fill="#E31C79"
+                    transform="rotate(288)"
+                  />
+                  <circle cx="0" cy="0" r="1.2" fill="#E31C79" opacity="0.5" />
+                </g>
+              </svg>
+              <span className="text-[11px] font-semibold tracking-[0.15em] uppercase text-[#E31C79]/50 dark:text-[#E31C79]/40 hidden sm:inline">
+                AS ONE, WE CAN
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Center: Auth Form */}
+        <div className="flex-1 flex items-center justify-center px-8 sm:px-10 xl:px-12 py-8 relative z-10">
+          <div className="w-full max-w-[420px]">
+            <AuthFormCard
+              searchParams={searchParams}
+              onNavigateSearch={onNavigateSearch}
+              onForgotPassword={() => forgotRef.current?.open()}
+            />
           </div>
         </div>
       </div>
 
-      {/* Encapsulated Dialogs */}
+      {/* Encapsulated Forgot Password Dialog */}
       <ForgotPasswordDialog ref={forgotRef} />
-      <GuestDialog ref={guestRef} redirectTo={targetRedirect} />
     </div>
   );
 }

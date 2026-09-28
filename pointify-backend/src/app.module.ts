@@ -5,9 +5,10 @@ import { FirebaseModule } from './firebase/firebase.module.js';
 import { IdentityModule } from './contexts/identity/identity.module.js';
 import { RoomModule } from './contexts/room/room.module.js';
 import { AnalyticsModule } from './contexts/analytics/analytics.module.js';
+import { JiraModule } from './contexts/jira/jira.module.js';
 
 @Module({
-  imports: [FirebaseModule, IdentityModule, RoomModule, AnalyticsModule],
+  imports: [FirebaseModule, IdentityModule, RoomModule, AnalyticsModule, JiraModule],
   controllers: [AppController],
   providers: [AppService],
 })

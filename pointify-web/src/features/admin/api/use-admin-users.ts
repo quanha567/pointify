@@ -39,7 +39,7 @@ export function useAdminUsersQuery(params: AdminUsersSearchParams) {
 
 export function useCreateAdminUserMutation() {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   return useMutation({
     mutationFn: (values: UserFormValues) =>
@@ -62,7 +62,7 @@ export function useCreateAdminUserMutation() {
 
 export function useUpdateAdminUserMutation() {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   return useMutation({
     mutationFn: ({ uid, data }: { uid: string; data: Partial<UserFormValues> }) =>
@@ -84,7 +84,7 @@ export function useUpdateAdminUserMutation() {
 
 export function useBulkUpdateStatusMutation() {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   return useMutation({
     mutationFn: ({ uids, status }: { uids: string[]; status: 'active' | 'disabled' }) =>

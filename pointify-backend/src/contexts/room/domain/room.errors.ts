@@ -48,3 +48,10 @@ export class ConcurrencyConflictError extends DomainError {
     super('Room state was modified by another concurrent operation. Please retry.');
   }
 }
+
+export class RoomClosedError extends DomainError {
+  readonly code = 'ROOM_CLOSED';
+  constructor(roomId: string) {
+    super(`Room '${roomId}' is closed`);
+  }
+}

@@ -21,6 +21,10 @@ export interface StickyNoteProps {
   authorName: string;
   isPinned: boolean;
   editingBy?: StickyNoteEditingUser | null;
+  jiraKey?: string;
+  jiraUrl?: string;
+  issueType?: string;
+  storyPoints?: number | string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -35,6 +39,10 @@ export interface StickyNoteProjection {
   authorName: string;
   isPinned: boolean;
   editingBy?: StickyNoteEditingUser | null;
+  jiraKey?: string;
+  jiraUrl?: string;
+  issueType?: string;
+  storyPoints?: number | string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -54,6 +62,10 @@ export class StickyNote extends Entity<StickyNoteProps, string> {
       authorId: string;
       authorName: string;
       isPinned?: boolean;
+      jiraKey?: string;
+      jiraUrl?: string;
+      issueType?: string;
+      storyPoints?: number | string | null;
     },
   ): StickyNote {
     const now = Date.now();
@@ -66,6 +78,10 @@ export class StickyNote extends Entity<StickyNoteProps, string> {
       authorName: props.authorName.trim() || 'Anonymous',
       isPinned: props.isPinned ?? false,
       editingBy: null,
+      jiraKey: props.jiraKey,
+      jiraUrl: props.jiraUrl,
+      issueType: props.issueType,
+      storyPoints: props.storyPoints,
       createdAt: now,
       updatedAt: now,
     });
@@ -146,6 +162,27 @@ export class StickyNote extends Entity<StickyNoteProps, string> {
     this.touch();
   }
 
+  public setStoryPoints(points: number | string | null): void {
+    this.props.storyPoints = points;
+    this.touch();
+  }
+
+  get jiraKey(): string | undefined {
+    return this.props.jiraKey;
+  }
+
+  get jiraUrl(): string | undefined {
+    return this.props.jiraUrl;
+  }
+
+  get issueType(): string | undefined {
+    return this.props.issueType;
+  }
+
+  get storyPoints(): number | string | null | undefined {
+    return this.props.storyPoints;
+  }
+
   public toProjection(): StickyNoteProjection {
     return {
       id: this._id,
@@ -157,6 +194,10 @@ export class StickyNote extends Entity<StickyNoteProps, string> {
       authorName: this.props.authorName,
       isPinned: this.props.isPinned,
       editingBy: this.props.editingBy ? { ...this.props.editingBy } : null,
+      jiraKey: this.props.jiraKey,
+      jiraUrl: this.props.jiraUrl,
+      issueType: this.props.issueType,
+      storyPoints: this.props.storyPoints,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };

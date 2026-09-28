@@ -133,21 +133,30 @@ const userSheetRef = useRef<UserFormSheetHandle>(null);
 
 ---
 
-## 5. Quy chuẩn UI, Styling, Typography & Shadcn Primitives
+## 5. Quy chuẩn UI, Styling, Typography & Shadcn Primitives (Tuân thủ ADR 0035 & DESIGN.md)
 
-1. **Semantic Design Tokens (Tailwind v4)**:
-   - 100% sử dụng token ngữ nghĩa định nghĩa trong `src/style.css` (`bg-background`, `text-foreground`, `bg-card`, `border-border`, `bg-primary`, `text-muted-foreground`).
-   - ❌ Tuyệt đối không hardcode mã màu bất biến dạng hex (ví dụ `bg-[#0f172a]`, `text-[#ffffff]`) làm hỏng Dark/Light mode.
-2. **Quy chuẩn Typography & Thang Cỡ Chữ (Tuân thủ `DESIGN.md` & ADR 0021)**:
-   - **Thang kích cỡ**: Page Title (`text-2xl sm:text-3xl`), Card/Modal Title (`text-lg sm:text-xl` hoặc `text-xl sm:text-2xl`), Form Label / Buttons / Tabs (`text-sm font-medium`), Body (`text-sm sm:text-base`), Helper / Muted (`text-xs sm:text-sm`), Badges/Meta (`text-xs font-medium`).
-   - ❌ **CẤM font dưới 12px**: Tuyệt đối không sử dụng `text-[9px]`, `text-[10px]`, `text-[11px]`. Kích cỡ tối thiểu toàn hệ thống là `text-xs` (12px).
-   - ❌ **CẤM `text-xs` cho Form Label & Main Buttons**: Nhãn nhập liệu và các nút bấm hành động chính phải đạt tối thiểu `text-sm` (14px).
-   - ✅ **Tối ưu tiếng Việt**: Kết hợp `leading-normal` (1.5) hoặc `leading-relaxed` để dấu thanh điệu (sắc, huyền, hỏi, ngã, nặng) không bị dính vào dòng trên.
-   - ✅ **Tương quan cỡ Icon**: Chữ 12px (`text-xs`) đi cùng icon `size-3.5`; chữ 14px (`text-sm`) đi cùng icon `size-4`; chữ 16px đi cùng icon `size-4.5`/`size-5`.
-3. **Shadcn UI Integrity**:
-   - Giữ các primitive trong `src/components/ui/` đồng bộ với chuẩn Shadcn / Radix / Base UI.
-   - Tùy biến giao diện thông qua class Tailwind và file `style.css`; không chỉnh sửa logic cốt lõi của primitive components.
+1. **Semantic Design Tokens (Tailwind v4 & ONE Brand System)**:
+   - 100% sử dụng token ngữ nghĩa định nghĩa trong `src/style.css` (`bg-background`, `text-foreground`, `bg-card`, `border-border`, `bg-primary`, `text-muted-foreground`, `color-brand-primary`, `color-brand-hover`, `color-brand-tint`, `color-brand-navy`, `color-semantic-*`, `color-text-*`).
+   - Màu thương hiệu chính thức: **ONE Cherry Blossom Magenta (`#E31C79`)** (Pantone 213 C). Hover/text link: `#CC196C` (WCAG AA 5.35:1). Structural navy: `#0B1B3D` (WCAG AAA 16.94:1). Tuyệt đối không hardcode các mã màu ngẫu nhiên làm hỏng tính toàn vẹn thương hiệu và Dark/Light mode.
+   - Bố cục tuân thủ **quy tắc cân bằng thị giác 60 - 30 - 10**: 60% Canvas trung tính (White `#FFFFFF` / Crisp Gray `#F8FAFC`), 30% cấu trúc nội dung (Deep Navy `#0B1B3D`, Slate 900 `#0F172A`, borders), 10% điểm nhấn hành động Magenta.
+2. **Quy chuẩn Typography & Thang Cỡ Chữ (Tuân thủ `DESIGN.md` & ADR 0035)**:
+   - **Bộ phông chữ chuẩn hóa**: `Inter Variable` cho toàn bộ giao diện thông thường; `JetBrains Mono Variable` cho mã User Story, Story Points và chuỗi kỹ thuật/logistics.
+   - **Thang kích cỡ**: Page Title (`text-2xl sm:text-3xl`), Card/Modal Title (`text-lg sm:text-xl` hoặc `text-xl sm:text-2xl`), Form Label / Buttons / Tabs (`text-sm font-medium`), Body (`text-sm sm:text-base`), Helper / Muted (`text-xs sm:text-sm`), Badges/Micro Caption (`text-[11px] sm:text-xs`).
+   - ⚠️ **Ngoại lệ 11px**: Cỡ chữ `text-[11px]` **chỉ được phép sử dụng** cho `Micro Caption` và `Status Badges` theo bản đặc tả ONE. Tuyệt đối nghiêm cấm các font dưới 11px (`text-[9px]`, `text-[10px]`).
+   - ❌ **CẤM `text-xs` cho Form Label & Main Buttons**: Nhãn nhập liệu và các nút bấm hành động chính bắt buộc phải đạt tối thiểu `text-sm` (14px).
+   - ✅ **Tương quan cỡ Icon**: Chữ 11px - 12px (`text-[11px]`/`text-xs`) đi cùng icon `size-3.5`; chữ 14px (`text-sm`) đi cùng icon `size-4`; chữ 16px đi cùng icon `size-4.5`/`size-5`.
+3. **Yếu Tố Đồ Họa & Shadcn UI Integrity**:
+   - Tận dụng cấu trúc **The Container Frame** (`.card-container-frame` với viền trên 3px Magenta) cho các thẻ dữ liệu quan trọng.
+   - Hỗ trợ hoa văn truyền thống Nhật Bản **Seigaiha** (`.bg-seigaiha` với độ mờ 3% - 5%) và **ISO Corrugated Texture** (`.bg-corrugated` với vân sọc dọc 4% opacity) làm hình nền điểm xuyết.
+   - ❌ **CẤM** hình minh họa hoa anh đào thực vật trên các màn hình B2B chức năng. Chỉ cho phép hoa văn hình học trừu tượng (Seigaiha, corrugated).
+   - Giữ các primitive trong `src/components/ui/` đồng bộ với chuẩn Shadcn / Radix / Base UI. Tùy biến thông qua class Tailwind và file `style.css`; không phá vỡ logic cốt lõi của primitive components.
    - Luôn gộp class động qua hàm `cn(...)` (`clsx` + `tailwind-merge`).
+4. **Industrial Radius & Component Dimensions (ADR 0035)**:
+   - **Border radius**: `--radius: 0.5rem` (8px base). Buttons/Inputs: `radius-md` = 6px. Cards/Modals: `radius-lg` = 8px. Badges: `radius-sm` = 4px. Command palette: `radius-xl` = 12px. **CẤM** pill buttons (`radius-full`) cho form buttons/inputs.
+   - **Button sizing**: Small 32px (`h-8`), Default 38px (`h-[38px]`), Large 44px (`h-11`).
+   - **Form input height**: 38px cố định cho tất cả input, select, autocomplete.
+   - **Table rows**: Header 36px, Body 44px (`h-11`). Sticky first column (Room Code / Account ID).
+   - **Motion**: Tất cả transitions ≤ 200ms. Sử dụng `--ease-standard: cubic-bezier(0.16, 1, 0.3, 1)`. CẤM bouncy spring effects và slow fades (>300ms).
 
 ---
 

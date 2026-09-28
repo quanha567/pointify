@@ -59,8 +59,41 @@ export interface StickyNoteProjection {
   authorName: string;
   isPinned: boolean;
   editingBy?: StickyNoteEditingUser | null;
+  jiraKey?: string;
+  jiraUrl?: string;
+  issueType?: string;
+  storyPoints?: number | string | null;
   createdAt: number;
   updatedAt: number;
+}
+
+export type StoryBacklogStatus = 'pending' | 'estimating' | 'estimated' | 'skipped';
+
+export interface RoomStoryBacklogItem {
+  id: string;
+  key: string;
+  summary: string;
+  issueType: string;
+  priority: string;
+  status: StoryBacklogStatus;
+  estimatedStoryPoints: number | string | null;
+  jiraUrl: string;
+  description?: string | null;
+  assignee?: { displayName: string; avatarUrl?: string } | null;
+}
+
+export interface LinkedJiraIssue {
+  id: string;
+  key: string;
+  summary: string;
+  url?: string;
+  status?: string;
+  currentStoryPoints?: number | string | null;
+  issueType?: string;
+  priority?: string;
+  description?: string | null;
+  assignee?: { displayName: string; avatarUrl?: string } | null;
+  sprintName?: string | null;
 }
 
 export interface CurrentRoundProjection {
@@ -72,6 +105,7 @@ export interface CurrentRoundProjection {
   statistics: RoundStatistics | null;
   timer: RoundTimerProjection | null;
   archivedStickyNotes?: StickyNoteProjection[];
+  linkedJiraIssue?: LinkedJiraIssue | null;
 }
 
 export interface RoomProjection {
@@ -83,6 +117,9 @@ export interface RoomProjection {
   version: number;
   participants: ParticipantProjection[];
   stickyNotes?: StickyNoteProjection[];
+  storyBacklog?: RoomStoryBacklogItem[];
+  activeJiraSiteUrl?: string | null;
+  activeJiraSprintName?: string | null;
   currentRound: CurrentRoundProjection;
   roundsHistoryCount: number;
   createdAt: number;
@@ -93,6 +130,8 @@ export interface CreateRoomDto {
   name: string;
   deckType?: DeckType;
   customCards?: CardValue[];
+  jiraCloudId?: string;
+  jiraSprintId?: string;
   facilitator: {
     id?: string;
     displayName: string;

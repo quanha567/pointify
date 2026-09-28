@@ -87,7 +87,7 @@ export function computePresenceDelta(
  * Hook managing presence delta tracking with 3s debounced leave toasts.
  */
 export function useRoomPresence(currentUserId: string | undefined) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const previousParticipantsRef = useRef<Map<
     string,
     { displayName: string; isOnline: boolean }

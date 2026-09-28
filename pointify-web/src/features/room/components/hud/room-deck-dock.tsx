@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   Eye,
   RotateCcw,
@@ -17,50 +16,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { CardValue, RoundTimerProjection } from '../../types/room.types';
-import { PokerStoryCard } from '../cards/poker-story-card';
+import { PokerStoryCardFront } from '../cards/poker-story-card-front';
+import { OneTechCardBack } from '../cards/one-tech-card-back';
+import { ProjectFolder, type ProjectFolderPreview } from '@/components/motion/project-folder';
 import { useRoundTimer } from '../../hooks/use-round-timer';
+import { useActiveRoom } from '../../hooks/use-active-room';
+import { useRoomStore } from '../../context/room-store-context';
+import { cn } from '@/lib/utils';
 
-const cardContainerVariants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.025,
-      delayChildren: 0.04,
-    },
-  },
-};
-
-const cardItemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 16,
-    scale: 0.95,
-  },
-  visible: (isSelected: boolean) => ({
-    opacity: 1,
-    y: isSelected ? -12 : 0,
-    scale: isSelected ? 1.05 : 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 350,
-      damping: 25,
-      mass: 0.8,
-    },
-  }),
-  exit: {
-    opacity: 0,
-    y: 12,
-    scale: 0.95,
-    transition: {
-      duration: 0.15,
-      ease: 'easeOut' as const,
-    },
-  },
-};
-
-interface RoomDeckDockProps {
-  cards: CardValue[];
+export interface RoomDeckDockProps {
+  cards?: CardValue[];
   selectedCard?: CardValue | null;
   onSelectCard?: (card: CardValue) => void;
   disabled?: boolean;
@@ -74,6 +39,10 @@ interface RoomDeckDockProps {
   onReset?: () => void;
   isActionLoading?: boolean;
   isSpectator?: boolean;
+  // Jira sync controls
+  onSyncJiraPoints?: () => void;
+  isSyncingJira?: boolean;
+  hasJiraStory?: boolean;
   // Timer controls
   timer?: RoundTimerProjection | null;
   onStartTimer?: (durationSeconds: number) => void;
@@ -83,30 +52,62 @@ interface RoomDeckDockProps {
   onAddTimerSeconds?: (seconds?: number) => void;
 }
 
-export function RoomDeckDock({
-  cards,
-  selectedCard,
-  onSelectCard,
-  disabled = false,
-  roundId,
-  deckType,
-  isFacilitator = false,
-  isRoundRevealed = false,
-  onReveal,
-  onNewRound,
-  onReset,
-  isActionLoading = false,
-  isSpectator = false,
-  timer,
-  onStartTimer,
-  onPauseTimer,
-  onResumeTimer,
-  onStopTimer,
-  onAddTimerSeconds,
-}: RoomDeckDockProps) {
-  const { t } = useTranslation();
+export function RoomDeckDock(props: RoomDeckDockProps = {}) {
+  const { t } = useTranslation('room');
+  const active = useActiveRoom();
+  const room = active.room;
+
+  const cards: CardValue[] = props.cards || (active.activeDeckConfig.cards as CardValue[]);
+  const selectedCard = props.selectedCard !== undefined ? props.selectedCard : active.selectedCard;
+  const isFacilitator =
+    props.isFacilitator !== undefined ? props.isFacilitator : active.isFacilitator;
+  const isRoundRevealed =
+    props.isRoundRevealed !== undefined ? props.isRoundRevealed : active.isRoundRevealed;
+  const isSpectator = props.isSpectator !== undefined ? props.isSpectator : active.isSpectator;
+  const hasJiraStory = props.hasJiraStory !== undefined ? props.hasJiraStory : active.hasJiraStory;
+  const timer = props.timer !== undefined ? props.timer : room?.currentRound.timer;
+  const disabled = props.disabled !== undefined ? props.disabled : isRoundRevealed;
+
+  const submitEstimate = useRoomStore((s) => s.submitEstimate);
+  const onSelectCard =
+    props.onSelectCard ||
+    ((card: CardValue) => submitEstimate(selectedCard === card ? null : card));
+
+  const revealCards = useRoomStore((s) => s.revealCards);
+  const onReveal = props.onReveal || revealCards;
+
+  const nextRound = useRoomStore((s) => s.nextRound);
+  const onNewRound = props.onNewRound || (() => nextRound());
+
+  const resetRound = useRoomStore((s) => s.resetRound);
+  const onReset = props.onReset || resetRound;
+
+  const startTimer = useRoomStore((s) => s.startTimer);
+  const onStartTimer = props.onStartTimer || startTimer;
+
+  const pauseTimer = useRoomStore((s) => s.pauseTimer);
+  const onPauseTimer = props.onPauseTimer || pauseTimer;
+
+  const resumeTimer = useRoomStore((s) => s.resumeTimer);
+  const onResumeTimer = props.onResumeTimer || resumeTimer;
+
+  const stopTimer = useRoomStore((s) => s.stopTimer);
+  const onStopTimer = props.onStopTimer || stopTimer;
+
+  const addTimerSeconds = useRoomStore((s) => s.addTimerSeconds);
+  const onAddTimerSeconds = props.onAddTimerSeconds || addTimerSeconds;
+
+  const isActionLoading =
+    props.isActionLoading !== undefined
+      ? props.isActionLoading
+      : useRoomStore((s) => s.isActionLoading);
+
+  const onSyncJiraPoints = props.onSyncJiraPoints;
+  const isSyncingJira = props.isSyncingJira || false;
+
+  const [isFolderExpanded, setIsFolderExpanded] = useState(false);
   const [isTimerPopoverOpen, setIsTimerPopoverOpen] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState(30); // 30s default
+  const [selectedDuration, setSelectedDuration] = useState(30);
 
   const timerState = useRoundTimer(timer, isRoundRevealed);
   const isTimerActive = timerState.isActive && timerState.status !== 'expired';
@@ -121,306 +122,347 @@ export function RoomDeckDock({
     }
   }, [isFacilitator, timerState.status, onStopTimer]);
 
+  const handleSelectFromFolder = (card: CardValue) => {
+    if (disabled) return;
+    onSelectCard(card);
+  };
+
+  // 5 face-down cards for the 3D fan preview (Estimate Secrecy compliant, shared-layout flight matching)
+  const previewCards: ProjectFolderPreview[] = useMemo(() => {
+    // Pick 5 cards centered around selectedCard if selected, or first 5 cards
+    let fanCards = cards.slice(0, 5);
+    if (selectedCard !== null && selectedCard !== undefined) {
+      const selectedIndex = cards.indexOf(selectedCard);
+      if (selectedIndex !== -1) {
+        const start = Math.max(0, Math.min(cards.length - 5, selectedIndex - 2));
+        fanCards = cards.slice(start, start + 5);
+      }
+    }
+
+    const isAnySelected = selectedCard !== null && selectedCard !== undefined;
+    return fanCards.map((c, index) => {
+      const isCardSelected = isAnySelected && selectedCard === c;
+      const isCenterFallback = isAnySelected && !fanCards.includes(selectedCard) && index === 2;
+      const highlightSelected = isCardSelected || isCenterFallback;
+
+      return {
+        id: String(c),
+        content: (
+          <div
+            className={cn(
+              'size-full flex items-center justify-center',
+              highlightSelected && 'ring-2 ring-[#E31C79] -translate-y-1',
+            )}
+          >
+            <OneTechCardBack className="size-full" />
+          </div>
+        ),
+      };
+    });
+  }, [cards, selectedCard]);
+
+  // Full interactive grid for expanded overlay (All cards from active deck)
+  const folderGridItems: ProjectFolderPreview[] = useMemo(() => {
+    return cards.map((c) => {
+      const isSelected = selectedCard === c;
+      return {
+        id: String(c),
+        content: (
+          <div className="relative size-full flex items-center justify-center select-none">
+            <PokerStoryCardFront
+              value={c}
+              size="md"
+              compact
+              selected={isSelected}
+              enableTilt={false}
+              className="size-full"
+            />
+          </div>
+        ),
+        onClick: () => handleSelectFromFolder(c),
+      };
+    });
+  }, [cards, selectedCard, disabled]);
+
+  const deckTitle = t(`decks.${active.activeDeckConfig?.translationKey}.name`, 'ONE Tech Deck');
+  const statusDescription =
+    selectedCard !== null && selectedCard !== undefined
+      ? t('room.cardSelected', 'Đã chọn bài')
+      : t('room.cardNotSelected', 'Chưa chọn bài');
+  const statusHeader =
+    selectedCard !== null && selectedCard !== undefined
+      ? String(selectedCard) === '1'
+        ? t('room.selectedPointStatusSingular', {
+            value: String(selectedCard),
+            defaultValue: `Selected: ${selectedCard} point`,
+          })
+        : t('room.selectedPointStatus', { value: String(selectedCard) })
+      : undefined;
+
   // If spectator and not facilitator, hide the dock entirely
   if (isSpectator && !isFacilitator) return null;
 
   return (
     <div className="absolute bottom-4 inset-x-0 z-30 pointer-events-none flex justify-center px-4">
-      <div className="pointer-events-auto max-w-5xl w-full bg-card/95 backdrop-blur-2xl border border-border/70 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)] ring-1 ring-border/40">
-        {/* ── Top Attached Facilitator Control Strip ───────────── */}
-        {isFacilitator && onReveal && onNewRound && onReset && (
-          <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/25">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-              <Sparkles className="size-3.5 text-amber-500" />
-              <span>{t('room.facilitatorTitle', 'Điều phối phòng')}</span>
-            </div>
+      <div className="pointer-events-auto max-w-5xl w-full rounded-xl border border-border/80 bg-card/95 shadow-xl backdrop-blur-2xl transition-all duration-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 sm:px-4">
+          {/* ── Left Section: ONE Container Deck Box ───── */}
+          <div className="flex items-center gap-3">
+            {!isSpectator && (
+              <ProjectFolder
+                title={deckTitle}
+                description={statusDescription}
+                itemLabel={t('room.cardLabel', 'lá')}
+                statusText={statusHeader}
+                size="sm"
+                previews={previewCards}
+                items={folderGridItems}
+                expanded={isFolderExpanded}
+                onExpandedChange={setIsFolderExpanded}
+                disabled={disabled}
+              />
+            )}
+          </div>
 
-            <div className="flex items-center gap-2">
-              {/* ── Timer Controls (Only during voting phase) ────────── */}
-              {!isRoundRevealed && (
-                <>
-                  {!isTimerActive ? (
-                    <Popover open={isTimerPopoverOpen} onOpenChange={setIsTimerPopoverOpen}>
-                      <PopoverTrigger asChild>
+          {/* ── Center / Right Section: Timer & Facilitator Controls ───── */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {/* ── Timer Section ────────── */}
+            {!isRoundRevealed && (
+              <>
+                {isFacilitator && !isTimerActive ? (
+                  <Popover open={isTimerPopoverOpen} onOpenChange={setIsTimerPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg gap-1.5 text-xs font-medium h-9 px-3 border-border hover:bg-muted cursor-pointer"
+                      >
+                        <Clock className="size-3.5 text-[#E31C79]" />
+                        <span>{t('room.timer')}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      side="top"
+                      sideOffset={10}
+                      className="w-72 p-4 space-y-3.5 rounded-xl shadow-xl backdrop-blur-xl bg-card border border-border z-50"
+                    >
+                      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                        <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                          <Clock className="size-3.5 text-[#E31C79]" />
+                          <span>{t('room.setTimerTitle')}</span>
+                        </div>
+                        <span className="font-mono text-xs font-bold text-muted-foreground">
+                          {Math.floor(selectedDuration / 60)}:
+                          {String(selectedDuration % 60).padStart(2, '0')}
+                        </span>
+                      </div>
+
+                      {/* Preset Chips */}
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {[
+                          { label: '30s', val: 30 },
+                          { label: '1m', val: 60 },
+                          { label: '2m', val: 120 },
+                          { label: '3m', val: 180 },
+                          { label: '5m', val: 300 },
+                        ].map(({ label, val }) => (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => setSelectedDuration(val)}
+                            className={`py-1.5 text-xs font-mono font-bold rounded-md border transition-colors cursor-pointer ${
+                              selectedDuration === val
+                                ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                : 'bg-muted/40 border-border hover:bg-muted text-foreground'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Stepper buttons */}
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="rounded-full gap-1.5 text-xs font-medium h-7.5 px-3 border-border/70 hover:bg-muted/70 cursor-pointer"
+                          onClick={() => setSelectedDuration((prev) => Math.max(15, prev - 15))}
+                          className="rounded-md h-7 px-2.5 text-xs font-mono cursor-pointer"
                         >
-                          <Clock className="size-3.5 text-primary" />
-                          <span>{t('room.timer', 'Hẹn giờ')}</span>
+                          -15s
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="end"
-                        side="top"
-                        sideOffset={10}
-                        className="w-72 p-4 space-y-3.5 rounded-2xl shadow-xl backdrop-blur-xl bg-card/98 border border-border/70 z-50"
-                      >
-                        <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                          <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                            <Clock className="size-3.5 text-primary" />
-                            <span>{t('room.setTimerTitle', 'Hẹn giờ vòng ước lượng')}</span>
-                          </div>
-                          <span className="text-xs font-bold text-muted-foreground">
-                            {Math.floor(selectedDuration / 60)}:
-                            {String(selectedDuration % 60).padStart(2, '0')}
-                          </span>
-                        </div>
-
-                        {/* Preset Chips */}
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {[
-                            { label: '30s', sec: 30 },
-                            { label: '1m', sec: 60 },
-                            { label: '2m', sec: 120 },
-                            { label: '3m', sec: 180 },
-                            { label: '5m', sec: 300 },
-                          ].map((preset) => (
-                            <button
-                              key={preset.sec}
-                              type="button"
-                              onClick={() => setSelectedDuration(preset.sec)}
-                              className={`h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                selectedDuration === preset.sec
-                                  ? 'bg-primary text-primary-foreground shadow-xs scale-102'
-                                  : 'bg-muted/60 hover:bg-muted text-foreground'
-                              }`}
-                            >
-                              {preset.label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Start Button */}
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {t('room.customDuration')}
+                        </span>
                         <Button
+                          variant="outline"
                           size="sm"
-                          onClick={() => {
-                            onStartTimer?.(selectedDuration);
-                            setIsTimerPopoverOpen(false);
-                          }}
-                          className="w-full rounded-full font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shadow-primary/20 cursor-pointer h-8 gap-1.5"
+                          onClick={() => setSelectedDuration((prev) => prev + 15)}
+                          className="rounded-md h-7 px-2.5 text-xs font-mono cursor-pointer"
                         >
-                          <Play className="size-3 fill-current" />
-                          <span>
-                            {t('room.startTimer', 'Bắt đầu')} ({Math.floor(selectedDuration / 60)}:
-                            {String(selectedDuration % 60).padStart(2, '0')})
-                          </span>
+                          +15s
                         </Button>
-                      </PopoverContent>
-                    </Popover>
-                  ) : (
-                    /* Active Timer Cohesive Segmented Group (h-7.5 aligned with action buttons) */
-                    <div className="h-7.5 inline-flex items-center rounded-full bg-background border border-border/70 px-1 gap-1 shadow-2xs">
-                      {/* Time Readout */}
-                      <div
-                        className={`inline-flex items-center gap-1 px-1.5 font-mono text-xs font-bold ${
-                          timerState.colorPhase === 'urgent' || timerState.status === 'expired'
-                            ? 'text-red-500'
-                            : timerState.colorPhase === 'warning'
-                              ? 'text-amber-500'
-                              : 'text-foreground'
-                        }`}
-                      >
-                        <Clock className="size-3.5 shrink-0" />
-                        <span>{timerState.formattedTime}</span>
                       </div>
 
-                      {/* Divider */}
-                      <div className="h-3.5 w-px bg-border/70" />
-
-                      {/* Pause / Resume Button */}
-                      {timerState.status === 'paused' ? (
-                        <button
-                          type="button"
-                          onClick={onResumeTimer}
-                          title={t('room.resumeTimer', 'Tiếp tục')}
-                          className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
-                        >
-                          <Play className="size-3 fill-current ml-0.5" />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={onPauseTimer}
-                          title={t('room.pauseTimer', 'Tạm dừng')}
-                          className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
-                        >
-                          <Pause className="size-3 fill-current" />
-                        </button>
-                      )}
-
-                      {/* +30s Extension Button */}
-                      <button
-                        type="button"
-                        onClick={() => onAddTimerSeconds?.(30)}
-                        title={t('room.add30s', '+30s')}
-                        className="h-6 px-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
+                      {/* Start Button */}
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          onStartTimer?.(selectedDuration);
+                          setIsTimerPopoverOpen(false);
+                        }}
+                        className="w-full rounded-lg font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-8 gap-1.5"
                       >
-                        <Plus className="size-3" />
-                        <span>30s</span>
-                      </button>
-
-                      {/* Sound Mute Toggle Button */}
-                      <button
-                        type="button"
-                        onClick={timerState.toggleMute}
-                        title={
-                          timerState.isMuted
-                            ? t('room.soundMuted', 'Bật chuông')
-                            : t('room.soundUnmuted', 'Tắt chuông')
-                        }
-                        className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
-                      >
-                        {timerState.isMuted ? (
-                          <VolumeX className="size-3.5 text-muted-foreground" />
-                        ) : (
-                          <Volume2 className="size-3.5 text-primary" />
-                        )}
-                      </button>
-
-                      {/* Cancel / Stop Button */}
-                      <button
-                        type="button"
-                        onClick={onStopTimer}
-                        title={t('room.stopTimer', 'Hủy')}
-                        className="size-6 rounded-full hover:bg-destructive/15 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer transition-colors"
-                      >
-                        <X className="size-3" />
-                      </button>
+                        <Play className="size-3 fill-current" />
+                        <span>
+                          {t('room.startTimer')} ({Math.floor(selectedDuration / 60)}:
+                          {String(selectedDuration % 60).padStart(2, '0')})
+                        </span>
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                ) : isTimerActive ? (
+                  /* Active Timer Group */
+                  <div className="h-9 inline-flex items-center rounded-lg bg-background/80 border border-border px-1.5 gap-1 shadow-2xs">
+                    <div
+                      className={`inline-flex items-center gap-1 px-1.5 font-mono text-xs font-bold ${
+                        timerState.colorPhase === 'urgent' || timerState.status === 'expired'
+                          ? 'text-red-600'
+                          : timerState.colorPhase === 'warning'
+                            ? 'text-amber-600'
+                            : 'text-foreground'
+                      }`}
+                    >
+                      <Clock className="size-3.5 shrink-0" />
+                      <span>{timerState.formattedTime}</span>
                     </div>
-                  )}
-                </>
-              )}
 
-              {/* Reveal / Next Round Button */}
-              {!isRoundRevealed ? (
-                <Button
-                  onClick={onReveal}
-                  disabled={isActionLoading}
-                  size="sm"
-                  className="rounded-full gap-1.5 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shadow-primary/20 cursor-pointer h-7.5 px-3.5"
-                >
-                  {isActionLoading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Eye className="size-3.5" />
-                  )}
-                  <span>{t('room.revealCards', 'Lật bài ngay')}</span>
-                </Button>
-              ) : (
-                <Button
-                  onClick={onNewRound}
-                  disabled={isActionLoading}
-                  size="sm"
-                  className="rounded-full gap-1.5 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shadow-primary/20 cursor-pointer h-7.5 px-3.5"
-                >
-                  {isActionLoading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Play className="size-3.5" />
-                  )}
-                  <span>{t('room.nextRound', 'Vòng tiếp theo')}</span>
-                </Button>
-              )}
+                    {isFacilitator && (
+                      <>
+                        <div className="h-3.5 w-px bg-border" />
+                        {timerState.status === 'paused' ? (
+                          <button
+                            type="button"
+                            onClick={onResumeTimer}
+                            title={t('room.resumeTimer')}
+                            className="size-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                          >
+                            <Play className="size-3 fill-current ml-0.5" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={onPauseTimer}
+                            title={t('room.pauseTimer')}
+                            className="size-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                          >
+                            <Pause className="size-3 fill-current" />
+                          </button>
+                        )}
 
-              <Button
-                onClick={onReset}
-                disabled={isActionLoading}
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-1.5 text-xs font-medium h-7.5 px-3 border-border/70 hover:bg-muted/70 cursor-pointer"
-              >
-                <RotateCcw className={`size-3.5 ${isActionLoading ? 'animate-spin' : ''}`} />
-                <span>{t('room.resetRound', 'Bỏ phiếu lại')}</span>
-              </Button>
-            </div>
-          </div>
-        )}
+                        <button
+                          type="button"
+                          onClick={() => onAddTimerSeconds?.(30)}
+                          title={t('room.add30s')}
+                          className="h-6 px-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground font-mono text-xs font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
+                        >
+                          <Plus className="size-3" />
+                          <span>30s</span>
+                        </button>
 
-        {/* ── Top Attached Participant Timer Strip (when timer is active and user is not facilitator) ── */}
-        {!isFacilitator && isTimerActive && !isRoundRevealed && (
-          <div className="flex items-center justify-end px-4 py-1.5 border-b border-border/50 bg-muted/25">
-            <div className="h-7.5 inline-flex items-center rounded-full bg-background border border-border/70 px-1 gap-1 shadow-2xs">
-              <div
-                className={`inline-flex items-center gap-1 px-1.5 font-mono text-xs font-bold ${
-                  timerState.colorPhase === 'urgent' || timerState.status === 'expired'
-                    ? 'text-red-500'
-                    : timerState.colorPhase === 'warning'
-                      ? 'text-amber-500'
-                      : 'text-foreground'
-                }`}
-              >
-                <Clock className="size-3.5 shrink-0" />
-                <span>{timerState.formattedTime}</span>
-              </div>
-
-              <div className="h-3.5 w-px bg-border/70" />
-
-              <button
-                type="button"
-                onClick={timerState.toggleMute}
-                title={
-                  timerState.isMuted
-                    ? t('room.soundMuted', 'Bật chuông')
-                    : t('room.soundUnmuted', 'Tắt chuông')
-                }
-                className="size-6 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
-              >
-                {timerState.isMuted ? (
-                  <VolumeX className="size-3.5 text-muted-foreground" />
-                ) : (
-                  <Volume2 className="size-3.5 text-primary" />
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Physical Poker Story Card Strip (Hidden for Spectators) ───── */}
-        {!isSpectator && onSelectCard && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${deckType || 'deck'}-${roundId || 'round'}-${cards.length}`}
-              variants={cardContainerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex items-end justify-start xl:justify-center gap-2 sm:gap-2.5 px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-3.5 overflow-x-auto scrollbar-none scroll-smooth"
-            >
-              {cards.map((card) => {
-                const isSelected = selectedCard === card;
-
-                return (
-                  <motion.button
-                    key={String(card)}
-                    variants={cardItemVariants}
-                    custom={isSelected}
-                    disabled={disabled}
-                    whileHover={disabled ? {} : { y: isSelected ? -16 : -8, scale: 1.05 }}
-                    whileTap={disabled ? {} : { scale: 0.95 }}
-                    onClick={() => onSelectCard(card)}
-                    className={`relative shrink-0 cursor-pointer select-none rounded-xl sm:rounded-2xl transition-shadow duration-200 ${
-                      isSelected
-                        ? 'ring-2 ring-[#d40d65] shadow-xl shadow-pink-500/25'
-                        : 'hover:shadow-md opacity-95 hover:opacity-100'
-                    } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
-                  >
-                    <PokerStoryCard side="front" value={card} size="md" />
-
-                    {/* Selected indicator dot */}
-                    {isSelected && (
-                      <motion.span
-                        layoutId="selectedCardDot"
-                        className="absolute -bottom-2 inset-x-0 mx-auto size-2 rounded-full bg-[#d40d65] ring-2 ring-card shadow-md"
-                      />
+                        <button
+                          type="button"
+                          onClick={onStopTimer}
+                          title={t('room.stopTimer')}
+                          className="size-6 rounded-md hover:bg-destructive/15 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer transition-colors"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </>
                     )}
-                  </motion.button>
-                );
-              })}
-            </motion.div>
-          </AnimatePresence>
-        )}
+
+                    {/* Mute Toggle */}
+                    <button
+                      type="button"
+                      onClick={timerState.toggleMute}
+                      title={timerState.isMuted ? t('room.soundMuted') : t('room.soundUnmuted')}
+                      className="size-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                    >
+                      {timerState.isMuted ? (
+                        <VolumeX className="size-3.5 text-muted-foreground" />
+                      ) : (
+                        <Volume2 className="size-3.5 text-[#E31C79]" />
+                      )}
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
+
+            {/* ── Facilitator Action Buttons ────────── */}
+            {isFacilitator && (
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {!isRoundRevealed ? (
+                  <Button
+                    onClick={onReveal}
+                    disabled={isActionLoading}
+                    size="sm"
+                    className="rounded-lg gap-1.5 font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-9 px-3.5"
+                  >
+                    {isActionLoading ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Eye className="size-3.5" />
+                    )}
+                    <span>{t('room.revealCards')}</span>
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={onNewRound}
+                    disabled={isActionLoading}
+                    size="sm"
+                    className="rounded-lg gap-1.5 font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-9 px-3.5"
+                  >
+                    {isActionLoading ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Play className="size-3.5" />
+                    )}
+                    <span>{t('room.nextRound')}</span>
+                  </Button>
+                )}
+
+                <Button
+                  onClick={onReset}
+                  disabled={isActionLoading}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg gap-1.5 text-xs font-medium h-9 px-3 border-border hover:bg-muted cursor-pointer"
+                >
+                  <RotateCcw className={`size-3.5 ${isActionLoading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">{t('room.resetRound')}</span>
+                </Button>
+
+                {isRoundRevealed && hasJiraStory && onSyncJiraPoints && (
+                  <Button
+                    onClick={onSyncJiraPoints}
+                    disabled={isActionLoading || isSyncingJira}
+                    size="sm"
+                    className="rounded-lg gap-1.5 font-semibold text-xs bg-blue-600 text-white hover:bg-blue-700 shadow-xs cursor-pointer h-9 px-3.5"
+                  >
+                    {isSyncingJira ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="size-3.5" />
+                    )}
+                    <span>{t('jira.syncPointsBtn')}</span>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

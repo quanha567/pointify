@@ -11,13 +11,13 @@ export const DECK_CONFIGS: DeckConfig[] = [
   {
     id: 'fibonacci',
     translationKey: 'fibonacci',
-    cards: ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?'],
+    cards: ['0', '1', '2', '3', '5', '8', '13', '21', '?'],
     image: '/decks/fibonacci.jpg',
   },
   {
     id: 'modified-fibonacci',
     translationKey: 'modified-fibonacci',
-    cards: ['0', '½', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?'],
+    cards: ['0', '½', '1', '2', '3', '5', '8', '13', '20', '?'],
     image: '/decks/modified-fibonacci.jpg',
   },
   {

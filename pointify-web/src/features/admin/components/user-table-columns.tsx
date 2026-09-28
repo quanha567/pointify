@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DataTableColumnHeader, type DataTableColumnDef } from '@/components/data-table';
+import type { TFunction } from 'i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +60,7 @@ export interface GetUserTableColumnsOptions {
   onToggleStatusRequest: (user: UserAccountDto) => void;
   onToggleRoleRequest: (user: UserAccountDto) => void;
   onCopyUid: (uid: string) => void;
-  t: (key: string, options?: Record<string, unknown>) => string;
+  t: TFunction<'admin'>;
 }
 
 export function getUserTableColumns({
@@ -131,7 +132,7 @@ export function getUserTableColumns({
                 {user.displayName || t('admin.users.columns.noName')}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
+                <span className="font-mono text-[11px] text-muted-foreground truncate max-w-[140px]">
                   {user.uid}
                 </span>
                 <button
@@ -263,7 +264,7 @@ export function getUserTableColumns({
         return (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarIcon className="size-3.5 shrink-0" />
-            <span>{format(date, 'dd/MM/yyyy')}</span>
+            <span className="font-mono text-[11px]">{format(date, 'dd/MM/yyyy')}</span>
           </div>
         );
       },
@@ -291,7 +292,7 @@ export function getUserTableColumns({
         return (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClockIcon className="size-3.5 shrink-0" />
-            <span>{format(date, 'dd/MM/yyyy HH:mm')}</span>
+            <span className="font-mono text-[11px]">{format(date, 'dd/MM/yyyy HH:mm')}</span>
           </div>
         );
       },
@@ -322,7 +323,7 @@ export function getUserTableColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="size-8 rounded-md p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <MoreHorizontalIcon className="size-4" />
                   <span className="sr-only">{t('admin.users.columns.actions')}</span>
@@ -330,7 +331,7 @@ export function getUserTableColumns({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-52 p-1.5 rounded-xl shadow-xl border-border"
+                className="w-52 p-1.5 rounded-lg shadow-xl border-border"
               >
                 <DropdownMenuLabel className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground">
                   {t('admin.users.columns.actions')}
@@ -339,14 +340,14 @@ export function getUserTableColumns({
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     onClick={() => onCopyUid(user.uid)}
-                    className="gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer"
+                    className="gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium cursor-pointer"
                   >
                     <CopyIcon className="size-4 text-muted-foreground" />
                     <span>{t('admin.users.actions.copyUid')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onEdit(user)}
-                    className="gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer"
+                    className="gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium cursor-pointer"
                   >
                     <Edit2Icon className="size-4 text-muted-foreground" />
                     <span>{t('admin.users.actions.edit')}</span>
@@ -357,7 +358,7 @@ export function getUserTableColumns({
                   <DropdownMenuItem
                     onClick={() => onToggleStatusRequest(user)}
                     className={cn(
-                      'gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer',
+                      'gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium cursor-pointer',
                       user.status === 'active'
                         ? 'text-rose-600 dark:text-rose-400 focus:text-rose-600'
                         : 'text-emerald-600 dark:text-emerald-400 focus:text-emerald-600',

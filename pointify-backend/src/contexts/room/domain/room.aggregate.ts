@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../../../shared/domain/aggregate-root.base.js';
 import { Participant } from './entities/participant.entity.js';
-import { Round, type RoundStatistics, type RoundTimer } from './entities/round.entity.js';
+import { Round, type RoundStatistics, type RoundTimer, type LinkedJiraIssue } from './entities/round.entity.js';
 import {
   StickyNote,
   type StickyNoteColor,
@@ -20,6 +20,21 @@ import {
 } from './room.errors.js';
 import { ok, fail, type Result } from '../../../shared/domain/result.js';
 
+export type StoryBacklogStatus = 'pending' | 'estimating' | 'estimated' | 'skipped';
+
+export interface RoomStoryBacklogItem {
+  id: string;
+  key: string;
+  summary: string;
+  issueType: string;
+  priority: string;
+  status: StoryBacklogStatus;
+  estimatedStoryPoints: number | string | null;
+  jiraUrl: string;
+}
+
+export type RoomStatus = 'active' | 'closed';
+
 export interface RoomProps {
   name: string;
   facilitatorId: string;
@@ -29,6 +44,10 @@ export interface RoomProps {
   stickyNotes: Map<string, StickyNote>;
   currentRound: Round;
   roundsHistory: Round[];
+  storyBacklog?: RoomStoryBacklogItem[];
+  activeJiraSiteUrl?: string | null;
+  activeJiraSprintName?: string | null;
+  status?: RoomStatus;
   createdAt: number;
   updatedAt: number;
 }
@@ -54,6 +73,9 @@ export interface RoomProjection {
   version: number;
   participants: ParticipantProjection[];
   stickyNotes: StickyNoteProjection[];
+  storyBacklog?: RoomStoryBacklogItem[];
+  activeJiraSiteUrl?: string | null;
+  activeJiraSprintName?: string | null;
   currentRound: {
     roundNumber: number;
     status: 'voting' | 'revealed' | 'completed';
@@ -63,8 +85,10 @@ export interface RoomProjection {
     statistics: RoundStatistics | null;
     timer: RoundTimer | null;
     archivedStickyNotes?: StickyNoteProjection[];
+    linkedJiraIssue?: LinkedJiraIssue | null;
   };
   roundsHistoryCount: number;
+  status: RoomStatus;
   createdAt: number;
   updatedAt: number;
 }
@@ -83,6 +107,12 @@ export class Room extends AggregateRoot<RoomProps, string> {
     facilitator: Participant;
     deck?: Deck;
     facilitatorKey?: FacilitatorKey;
+    initialStickyNotes?: StickyNote[];
+    initialTopic?: string;
+    initialLinkedJiraIssue?: LinkedJiraIssue | null;
+    storyBacklog?: RoomStoryBacklogItem[];
+    activeJiraSiteUrl?: string | null;
+    activeJiraSprintName?: string | null;
   }): Room {
     const now = Date.now();
     const deck = params.deck || Deck.fibonacci();
@@ -91,7 +121,61 @@ export class Room extends AggregateRoot<RoomProps, string> {
     const participants = new Map<string, Participant>();
     participants.set(params.facilitator.id, params.facilitator);
 
-    const initialRound = Round.startNew(1);
+    const firstJiraNote = params.initialStickyNotes?.find((n) => Boolean(n.jiraKey));
+    const firstJiraCleanSummary = firstJiraNote
+      ? firstJiraNote.text
+          .replace(new RegExp(`^(?:${firstJiraNote.jiraKey}[:\\s-]*)+`, 'i'), '')
+          .trim() || firstJiraNote.text
+      : '';
+
+    const firstBacklogItem = params.storyBacklog?.[0];
+
+    const initialLinkedJiraIssue =
+      params.initialLinkedJiraIssue !== undefined
+        ? params.initialLinkedJiraIssue
+        : firstBacklogItem
+          ? {
+              id: firstBacklogItem.id,
+              key: firstBacklogItem.key,
+              summary: firstBacklogItem.summary,
+              url: firstBacklogItem.jiraUrl,
+              status: firstBacklogItem.status,
+              currentStoryPoints: firstBacklogItem.estimatedStoryPoints,
+              issueType: firstBacklogItem.issueType,
+              priority: firstBacklogItem.priority,
+              description: firstBacklogItem.description ?? null,
+              assignee: firstBacklogItem.assignee ?? null,
+              sprintName: params.activeJiraSprintName ?? null,
+            }
+          : firstJiraNote
+            ? {
+                id: firstJiraNote.id,
+                key: firstJiraNote.jiraKey!,
+                summary: firstJiraCleanSummary,
+                url: firstJiraNote.jiraUrl,
+                status: 'pending',
+                currentStoryPoints: firstJiraNote.storyPoints,
+                issueType: firstJiraNote.issueType,
+                priority: 'Medium',
+                sprintName: params.activeJiraSprintName ?? null,
+              }
+            : null;
+
+    const initialTopic =
+      params.initialTopic !== undefined
+        ? params.initialTopic
+        : initialLinkedJiraIssue
+          ? `${initialLinkedJiraIssue.key}: ${initialLinkedJiraIssue.summary}`
+          : '';
+
+    const initialRound = Round.startNew(1, initialTopic, initialLinkedJiraIssue);
+
+    const stickyNotes = new Map<string, StickyNote>();
+    if (params.initialStickyNotes) {
+      for (const note of params.initialStickyNotes) {
+        stickyNotes.set(note.id, note);
+      }
+    }
 
     const room = new Room(
       params.id,
@@ -101,9 +185,13 @@ export class Room extends AggregateRoot<RoomProps, string> {
         facilitatorKey,
         deck,
         participants,
-        stickyNotes: new Map<string, StickyNote>(),
+        stickyNotes,
         currentRound: initialRound,
         roundsHistory: [],
+        storyBacklog: params.storyBacklog || [],
+        activeJiraSiteUrl: params.activeJiraSiteUrl ?? null,
+        activeJiraSprintName: params.activeJiraSprintName ?? null,
+        status: 'active',
         createdAt: now,
         updatedAt: now,
       },
@@ -116,6 +204,9 @@ export class Room extends AggregateRoot<RoomProps, string> {
   public static reconstruct(id: string, props: RoomProps, version: number): Room {
     if (!props.stickyNotes) {
       props.stickyNotes = new Map<string, StickyNote>();
+    }
+    if (!props.storyBacklog) {
+      props.storyBacklog = [];
     }
     return new Room(id, props, version);
   }
@@ -132,6 +223,19 @@ export class Room extends AggregateRoot<RoomProps, string> {
     return this.props.facilitatorKey;
   }
 
+  get status(): RoomStatus {
+    return this.props.status ?? 'active';
+  }
+
+  public close(): Result<void, Error> {
+    if (this.props.status === 'closed') {
+      return ok(undefined);
+    }
+    this.props.status = 'closed';
+    this.touch();
+    return ok(undefined);
+  }
+
   get deck(): Deck {
     return this.props.deck;
   }
@@ -142,6 +246,18 @@ export class Room extends AggregateRoot<RoomProps, string> {
 
   get stickyNotes(): ReadonlyMap<string, StickyNote> {
     return this.props.stickyNotes;
+  }
+
+  get storyBacklog(): ReadonlyArray<RoomStoryBacklogItem> {
+    return this.props.storyBacklog ?? [];
+  }
+
+  get activeJiraSiteUrl(): string | null {
+    return this.props.activeJiraSiteUrl ?? null;
+  }
+
+  get activeJiraSprintName(): string | null {
+    return this.props.activeJiraSprintName ?? null;
   }
 
   public addStickyNote(note: StickyNote): void {
@@ -334,7 +450,53 @@ export class Room extends AggregateRoot<RoomProps, string> {
 
     const nextRoundNumber = this.props.roundsHistory.length + 1;
     const cleanTopic = typeof nextTopic === 'string' ? nextTopic.trim() : '';
-    this.props.currentRound = Round.startNew(nextRoundNumber, cleanTopic);
+
+    const keyMatch = cleanTopic.match(/^([A-Z][A-Z0-9]+-\d+)[:\s-]*/i);
+    const jiraKey = keyMatch?.[1]?.toUpperCase();
+
+    // Clean duplicate prefixes like "SCRUM-4: SCRUM-4: ..."
+    let normalizedTopic = cleanTopic;
+    if (jiraKey) {
+      const stripped = cleanTopic
+        .replace(new RegExp(`^(?:${jiraKey}[:\\s-]*)+`, 'i'), '')
+        .trim();
+      normalizedTopic = stripped ? `${jiraKey}: ${stripped}` : jiraKey;
+    }
+
+    const matchedBacklog = jiraKey
+      ? (this.props.storyBacklog || []).find((b) => b.key.toUpperCase() === jiraKey)
+      : null;
+
+    const matchedNote = jiraKey
+      ? Array.from(this.props.stickyNotes.values()).find(
+          (n) => n.jiraKey?.toUpperCase() === jiraKey,
+        )
+      : null;
+
+    const linkedJiraIssue: LinkedJiraIssue | null = (matchedBacklog || matchedNote)
+      ? {
+          id: matchedBacklog?.id || matchedNote?.id || jiraKey,
+          key: jiraKey,
+          summary:
+            matchedBacklog?.summary ||
+            (matchedNote
+              ? matchedNote.text
+                  .replace(new RegExp(`^(?:${matchedNote.jiraKey}[:\\s-]*)+`, 'i'), '')
+                  .trim() || matchedNote.text
+              : cleanTopic),
+          url: matchedBacklog?.jiraUrl || matchedNote?.jiraUrl,
+          status: matchedBacklog?.status || 'pending',
+          currentStoryPoints:
+            matchedBacklog?.estimatedStoryPoints ?? matchedNote?.storyPoints ?? null,
+          issueType: matchedBacklog?.issueType || matchedNote?.issueType || 'Story',
+          priority: matchedBacklog?.priority || 'Medium',
+          description: matchedBacklog?.description ?? null,
+          assignee: matchedBacklog?.assignee ?? null,
+          sprintName: this.props.activeJiraSprintName ?? null,
+        }
+      : null;
+
+    this.props.currentRound = Round.startNew(nextRoundNumber, normalizedTopic, linkedJiraIssue);
 
     this.touch();
     return ok(this.props.currentRound);
@@ -480,6 +642,9 @@ export class Room extends AggregateRoot<RoomProps, string> {
       version: this._version,
       participants: participantsList,
       stickyNotes: Array.from(this.props.stickyNotes.values()).map((n) => n.toProjection()),
+      storyBacklog: this.props.storyBacklog ? [...this.props.storyBacklog] : [],
+      activeJiraSiteUrl: this.props.activeJiraSiteUrl ?? null,
+      activeJiraSprintName: this.props.activeJiraSprintName ?? null,
       currentRound: {
         roundNumber: this.props.currentRound.roundNumber,
         status: this.props.currentRound.status,
@@ -489,11 +654,54 @@ export class Room extends AggregateRoot<RoomProps, string> {
         statistics: isRevealed ? this.props.currentRound.calculateStatistics() : null,
         timer: this.props.currentRound.timer,
         archivedStickyNotes: [...this.props.currentRound.archivedStickyNotes],
+        linkedJiraIssue: this.props.currentRound.linkedJiraIssue ?? null,
       },
       roundsHistoryCount: this.props.roundsHistory.length,
+      status: this.status,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };
+  }
+
+  public updateStoryEstimate(storyKey: string, points: number | string): void {
+    for (const note of this.props.stickyNotes.values()) {
+      if (note.jiraKey?.toLowerCase() === storyKey.toLowerCase()) {
+        note.setStoryPoints(points);
+      }
+    }
+
+    if (this.props.currentRound.linkedJiraIssue?.key.toLowerCase() === storyKey.toLowerCase()) {
+      this.props.currentRound.linkedJiraIssue.currentStoryPoints = points;
+    }
+
+    this.touch();
+  }
+
+
+  public startNewRoundWithJira(
+    key: string,
+    nextTopic = '',
+    linkedJiraIssue: LinkedJiraIssue | null = null,
+  ): Result<Round, UnauthorizedFacilitatorError> {
+    if (!this.props.facilitatorKey.matches(key)) {
+      return fail(new UnauthorizedFacilitatorError('Invalid facilitator key'));
+    }
+
+    const unpinnedNotes = Array.from(this.props.stickyNotes.values()).filter((n) => !n.isPinned);
+    this.props.currentRound.setArchivedStickyNotes(unpinnedNotes.map((n) => n.toProjection()));
+    for (const unpinned of unpinnedNotes) {
+      this.props.stickyNotes.delete(unpinned.id);
+    }
+
+    this.props.currentRound.complete();
+    this.props.roundsHistory.push(this.props.currentRound);
+
+    const nextRoundNumber = this.props.roundsHistory.length + 1;
+    const cleanTopic = typeof nextTopic === 'string' ? nextTopic.trim() : '';
+    this.props.currentRound = Round.startNew(nextRoundNumber, cleanTopic, linkedJiraIssue);
+
+    this.touch();
+    return ok(this.props.currentRound);
   }
 
   private touch(): void {

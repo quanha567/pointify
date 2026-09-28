@@ -577,6 +577,40 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+
+  @SubscribeMessage('room:jira-sync-points')
+  async handleJiraSyncPoints(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      facilitatorKey: string;
+      storyKey: string;
+      points: number | string;
+    },
+  ) {
+    try {
+      const room = await this.roomRepository.findById(payload.roomId);
+      if (!room) {
+        client.emit('room:error', { message: 'Phòng không tồn tại' });
+        return;
+      }
+
+      if (!room.facilitatorKey.matches(payload.facilitatorKey)) {
+        client.emit('room:error', { message: 'Bạn không có quyền điều phối phòng' });
+        return;
+      }
+
+      room.updateStoryEstimate(payload.storyKey, payload.points);
+      await this.roomRepository.save(room);
+      await this.broadcastSanitizedRoomState(payload.roomId, room);
+    } catch (err: unknown) {
+      const message = (err as Error)?.message || 'Lỗi khi cập nhật điểm Story trong phòng';
+      this.logger.error(`Error updating story points in room: ${message}`);
+      client.emit('room:error', { message });
+    }
+  }
+
   @SubscribeMessage('room:leave')
   async handleLeave(
     @ConnectedSocket() client: Socket,

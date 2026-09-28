@@ -1,0 +1,328 @@
+{
+  "admin": {
+    "brand": {
+      "motto": "AS ONE, WE CAN"
+    },
+    "header": {
+      "searchPlaceholder": "Search game, room, or task...",
+      "notifications": "Notifications"
+    },
+    "nav": {
+      "home": "Home",
+      "games": "Games",
+      "rooms": "Rooms",
+      "backlog": "Backlog",
+      "team": "Team",
+      "reports": "Reports"
+    },
+    "heroBanner": {
+      "greetingMorning": "Good morning, {{name}}",
+      "greetingAfternoon": "Good afternoon, {{name}}",
+      "greetingEvening": "Good evening, {{name}}"
+    },
+    "overview": {
+      "heroSubtitle": "Digitalizing Global Ocean Trade with Agile Estimation",
+      "cards": {
+        "totalGames": "Total Games",
+        "activeRooms": "Active Rooms",
+        "teamMembers": "Team Members",
+        "avgCycleTime": "Avg. Cycle Time",
+        "vsLastMonth": "vs. last month",
+        "vsLastWeek": "vs. last week",
+        "recentGames": "Recent Rooms",
+        "viewAll": "View all",
+        "name": "Name",
+        "team": "Team",
+        "date": "Date",
+        "status": "Status",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "gameDistribution": "Game Distribution",
+        "thisMonth": "This month",
+        "total": "total",
+        "feature": "Feature",
+        "bug": "Bug",
+        "refactor": "Refactor",
+        "uiux": "UI/UX",
+        "others": "Others",
+        "myTeam": "My Team",
+        "moreMembers": "+{{count}} more members",
+        "recentActivity": "Recent Activity",
+        "quickActions": "Quick Actions",
+        "days": "days"
+      },
+      "activities": {
+        "createdGame": "created a new game",
+        "completedVoting": "completed voting",
+        "joinedRoom": "joined the room",
+        "updatedBacklog": "updated backlog",
+        "m_ago": "{{count}}m ago",
+        "h_ago": "{{count}}h ago"
+      },
+      "actions": {
+        "startGame": "Start a Game",
+        "startGameDesc": "Create a new poker game",
+        "joinRoom": "Join Room",
+        "joinRoomDesc": "Enter existing room",
+        "viewBacklog": "View Backlog",
+        "viewBacklogDesc": "Check upcoming tasks",
+        "viewReports": "View Reports",
+        "viewReportsDesc": "See detailed insights"
+      },
+      "activeRooms": {
+        "title": "Active Poker Rooms",
+        "subtitle": "Rooms currently running estimation sessions",
+        "empty": "No active rooms right now"
+      },
+      "charts": {
+        "rounds": "Rounds",
+        "rooms": "Rooms",
+        "activityTrendTitle": "Activity Trend",
+        "activityTrendSubtitle": "Estimation sessions and rounds over time",
+        "noChartData": "No activity data available"
+      },
+      "sprintTracker": {
+        "title": "Active Sprints",
+        "subtitle": "Estimation progress across teams",
+        "storiesEstimated": "{{estimated}} of {{total}} stories estimated"
+      },
+      "timeRange": {
+        "label": "Time range",
+        "range7d": "Last 7 days",
+        "range30d": "Last 30 days",
+        "range90d": "Last 90 days",
+        "rangeAll": "All time"
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "subtitle": "Manage user accounts, roles, and platform permissions",
+      "refresh": "Refresh",
+      "createAccount": "Create Account",
+      "searchPlaceholder": "Search by name, email, or UID...",
+      "roles": {
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "statuses": {
+        "active": "Active",
+        "disabled": "Disabled"
+      },
+      "columns": {
+        "user": "Account",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "provider": "Auth Provider",
+        "createdAt": "Created Date",
+        "lastLoginAt": "Last Login",
+        "actions": "Actions",
+        "never": "Never logged in",
+        "noName": "No name provided",
+        "noEmail": "No email provided"
+      },
+      "actions": {
+        "copyUid": "Copy UID",
+        "edit": "Edit Account",
+        "disable": "Disable Account",
+        "activate": "Enable Account",
+        "promoteAdmin": "Promote to Admin",
+        "demoteMember": "Demote to Member"
+      },
+      "toasts": {
+        "copiedUid": "Copied UID: {{uid}}",
+        "createdSuccess": "User {{name}} created successfully",
+        "updatedSuccess": "User {{name}} updated successfully",
+        "bulkActivated": "Activated {{count}} users",
+        "bulkDisabled": "Disabled {{count}} users",
+        "selfLockError": "You cannot disable your own admin account",
+        "selfDemoteError": "You cannot demote your own admin account",
+        "selfExcludedInfo": "Your account was automatically excluded from the disable list",
+        "fetchError": "Failed to load accounts",
+        "saveError": "An error occurred while saving account details",
+        "bulkError": "Failed to update users"
+      },
+      "confirm": {
+        "disableTitle": "Disable Account",
+        "disableDesc": "Are you sure you want to disable account {{name}}? They will not be able to log in.",
+        "disableButton": "Disable",
+        "enableTitle": "Enable Account",
+        "enableDesc": "Are you sure you want to re-enable account {{name}}?",
+        "enableButton": "Enable",
+        "changeRoleTitle": "Change User Role",
+        "changeRoleDesc": "Change role of {{name}} to {{role}}?",
+        "confirmButton": "Confirm",
+        "cancel": "Cancel"
+      },
+      "bulk": {
+        "activate": "Activate ({{count}})",
+        "disable": "Disable ({{count}})",
+        "confirmDisableTitle": "Disable {{count}} accounts",
+        "confirmDisableDesc": "These users will be blocked from logging into the platform.",
+        "confirmDisableButton": "Disable all"
+      },
+      "form": {
+        "createTitle": "Add New Account",
+        "editTitle": "Edit Account",
+        "createDesc": "Enter details for the new Pointify account.",
+        "editDesc": "Update role and status permissions for {{name}}.",
+        "email": "Email Address",
+        "emailPlaceholder": "user@company.com",
+        "displayName": "Display Name",
+        "displayNamePlaceholder": "Alex Nguyen",
+        "photoURL": "Avatar URL",
+        "photoURLPlaceholder": "https://...",
+        "role": "Account Role",
+        "status": "Account Status",
+        "roleAdminDesc": "Full management access across system and accounts",
+        "roleMemberDesc": "Can create and participate in Scrum Poker rooms",
+        "statusActiveDesc": "Allowed to log in and use Pointify normally",
+        "statusDisabledDesc": "Disabled, cannot log in to the system",
+        "cancel": "Cancel",
+        "createSubmit": "Create Account",
+        "editSubmit": "Save Changes",
+        "saving": "Saving...",
+        "saved": "Saved successfully",
+        "error": "An error occurred while saving",
+        "validationEmail": "Invalid email address",
+        "validationDisplayName": "Display name must be between 2 and 50 characters",
+        "validationPhotoUrl": "Invalid avatar image URL",
+        "noName": "No name provided"
+      },
+      "error": {
+        "title": "Something went wrong",
+        "desc": "Unable to load data. Please try again later.",
+        "retry": "Try again"
+      },
+      "providers": {
+        "google": "Google",
+        "password": "Email & Password",
+        "unknown": "Unknown"
+      }
+    },
+    "breadcrumbs": {
+      "admin": "Admin",
+      "overview": "Overview",
+      "management": "Management",
+      "system": "System",
+      "users": "Account Management",
+      "rooms": "Estimation Rooms",
+      "settings": "System Settings"
+    },
+    "navUser": {
+      "adminRole": "System Administrator"
+    },
+    "search": {
+      "groupNav": "Navigation",
+      "groupTheme": "Appearance & Account",
+      "navDashboard": "Dashboard",
+      "navUsers": "User management",
+      "navRooms": "Scrum Poker rooms",
+      "navDecks": "Estimation decks",
+      "navSettings": "System settings",
+      "themeLight": "Light mode",
+      "themeDark": "Dark mode",
+      "backToHome": "Back to home",
+      "signOut": "Sign out",
+      "trigger": "Search...",
+      "triggerShort": "Search...",
+      "inputPlaceholder": "Type a command or search...",
+      "empty": "No matching results found."
+    },
+    "theme": {
+      "toggleTitle": "Toggle theme"
+    },
+    "guard": {
+      "loginRequired": "Please sign in to access administration",
+      "noPermission": "You do not have permission to access administration",
+      "loading": "Checking administrator permissions..."
+    },
+    "rooms": {
+      "title": "Estimation Rooms",
+      "subtitle": "Monitor, audit, and orchestrate all Scrum Poker estimation sessions",
+      "stats": {
+        "totalRooms": "Total Rooms",
+        "activeRooms": "Active Rooms",
+        "closedRooms": "Closed Rooms",
+        "activeParticipants": "Online Participants"
+      },
+      "table": {
+        "roomCode": "Room Code",
+        "roomName": "Room Name",
+        "facilitator": "Facilitator",
+        "deck": "Deck",
+        "participants": "Participants",
+        "round": "Round",
+        "status": "Status",
+        "createdAt": "Created At"
+      },
+      "statuses": {
+        "active": "Active",
+        "closed": "Closed",
+        "stale": "Inactive"
+      },
+      "actions": {
+        "viewDetail": "View Room Details",
+        "joinAsFacilitator": "Join as Facilitator",
+        "closeRoom": "Close Room",
+        "deleteRoom": "Delete Room",
+        "copyCode": "Copy Code",
+        "copy": "Copy",
+        "copied": "Copied"
+      },
+      "bulk": {
+        "close": "Close ({{count}})",
+        "delete": "Delete ({{count}})",
+        "export": "Export CSV"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "participants": "Participants",
+        "rounds": "Rounds"
+      },
+      "detail": {
+        "shareUrl": "Room Share URL",
+        "version": "State Version",
+        "cardsInDeck": "Cards in Deck",
+        "currentRound": "Current Estimation Round",
+        "noTopic": "No topic / User Story specified",
+        "spectator": "Spectator",
+        "estimated": "Estimated",
+        "online": "Online",
+        "offline": "Offline",
+        "totalRoundsConcluded": "Total Concluded Rounds",
+        "roundsDesc": "Each round corresponds to one estimation cycle by team members for a User Story.",
+        "consensus": "Consensus",
+        "average": "Average",
+        "median": "Median"
+      },
+      "toasts": {
+        "closedSuccess": "Room successfully closed",
+        "deletedSuccess": "Room successfully deleted",
+        "bulkClosedSuccess": "Successfully closed {{count}} rooms",
+        "bulkDeletedSuccess": "Successfully deleted {{count}} rooms",
+        "copiedCode": "Room code copied to clipboard",
+        "copiedLink": "Room share URL copied to clipboard",
+        "takeoverError": "Could not take over facilitator role",
+        "error": "An error occurred"
+      },
+      "dialogs": {
+        "closeTitle": "Confirm Close Room",
+        "closeDesc": "Are you sure you want to close '{{name}}'? All participants will be disconnected and further voting blocked.",
+        "deleteTitle": "Confirm Delete Room",
+        "deleteDesc": "This action cannot be undone. Room '{{name}}' and all estimation history will be permanently deleted.",
+        "confirmClose": "Close Room",
+        "confirmDelete": "Delete Permanently",
+        "cancel": "Cancel"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by room code, name, or facilitator...",
+        "allStatus": "All Statuses",
+        "allDecks": "All Decks",
+        "statusActive": "Active",
+        "statusClosed": "Closed",
+        "empty": "No estimation rooms found."
+      }
+    }
+  }
+}

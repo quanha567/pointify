@@ -163,6 +163,7 @@ export const httpClient = {
     try {
       const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+      const hasBody = body !== undefined;
       const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
@@ -170,15 +171,11 @@ export const httpClient = {
           {
             Accept: 'application/json',
             ...authHeader,
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
           },
           headers,
         ),
-        body: isFormData
-          ? (body as FormData)
-          : body !== undefined
-            ? JSON.stringify(body)
-            : undefined,
+        body: isFormData ? (body as FormData) : hasBody ? JSON.stringify(body) : undefined,
         ...rest,
       });
 
@@ -200,6 +197,7 @@ export const httpClient = {
     try {
       const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+      const hasBody = body !== undefined;
       const response = await fetch(url, {
         method: 'PATCH',
         credentials: 'include',
@@ -207,15 +205,11 @@ export const httpClient = {
           {
             Accept: 'application/json',
             ...authHeader,
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
           },
           headers,
         ),
-        body: isFormData
-          ? (body as FormData)
-          : body !== undefined
-            ? JSON.stringify(body)
-            : undefined,
+        body: isFormData ? (body as FormData) : hasBody ? JSON.stringify(body) : undefined,
         ...rest,
       });
 
@@ -237,6 +231,7 @@ export const httpClient = {
     try {
       const authHeader = await getAuthHeader();
       const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+      const hasBody = body !== undefined;
       const response = await fetch(url, {
         method: 'PUT',
         credentials: 'include',
@@ -244,15 +239,11 @@ export const httpClient = {
           {
             Accept: 'application/json',
             ...authHeader,
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
           },
           headers,
         ),
-        body: isFormData
-          ? (body as FormData)
-          : body !== undefined
-            ? JSON.stringify(body)
-            : undefined,
+        body: isFormData ? (body as FormData) : hasBody ? JSON.stringify(body) : undefined,
         ...rest,
       });
 

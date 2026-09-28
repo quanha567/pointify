@@ -23,7 +23,7 @@ export function SecuritySettingsCard({
   onChangePassword,
   onSendPasswordReset,
 }: SecuritySettingsCardProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'common']);
   const isGoogle = user.providerId === 'google.com';
 
   const [showCurrent, setShowCurrent] = useState(false);
@@ -143,7 +143,7 @@ export function SecuritySettingsCard({
                 disabled={isSendingReset}
                 className="h-auto p-0 text-xs sm:text-sm text-muted-foreground hover:text-primary font-normal"
               >
-                {isSendingReset ? t('common.loading') : t('profile.forgotPasswordLink')}
+                {isSendingReset ? t('common:common.loading') : t('profile.forgotPasswordLink')}
               </Button>
             </div>
           }
@@ -154,7 +154,7 @@ export function SecuritySettingsCard({
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
               className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
-              aria-label={showCurrent ? t('common.hide') : t('common.show')}
+              aria-label={showCurrent ? t('common:common.hide') : t('common:common.show')}
             >
               {showCurrent ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -174,7 +174,7 @@ export function SecuritySettingsCard({
               type="button"
               onClick={() => setShowNew(!showNew)}
               className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
-              aria-label={showNew ? t('common.hide') : t('common.show')}
+              aria-label={showNew ? t('common:common.hide') : t('common:common.show')}
             >
               {showNew ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -194,7 +194,7 @@ export function SecuritySettingsCard({
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
               className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
-              aria-label={showConfirm ? t('common.hide') : t('common.show')}
+              aria-label={showConfirm ? t('common:common.hide') : t('common:common.show')}
             >
               {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -214,7 +214,7 @@ export function SecuritySettingsCard({
                 disabled={!isDirty || isSubmitting}
                 className="h-10 px-4 text-sm font-medium w-full sm:w-auto"
               >
-                {t('common.cancel')}
+                {t('common:common.cancel')}
               </Button>
 
               <Button
@@ -224,7 +224,7 @@ export function SecuritySettingsCard({
               >
                 <Key className="size-4" />
                 <span>
-                  {isSubmitting ? t('common.processing') : t('profile.updatePasswordButton')}
+                  {isSubmitting ? t('common:common.processing') : t('profile.updatePasswordButton')}
                 </span>
               </Button>
             </>

@@ -4,9 +4,7 @@ import { useTheme } from 'next-themes';
 import {
   Settings,
   User,
-  Sliders,
   Crown,
-  Languages,
   Sun,
   Moon,
   Laptop,
@@ -15,7 +13,6 @@ import {
   Check,
   AlertTriangle,
   Loader2,
-  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,14 +33,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useAppStore } from '@/store/useAppStore';
+import { cn } from '@/lib/utils';
+import { useAppStore, type SupportedLanguage } from '@/store/useAppStore';
 import { DECK_CONFIGS } from '../../constants/deck-configs';
 import type { DeckType, RoomProjection } from '../../types/room.types';
+
+function CountryFlag({ countryCode, alt }: { countryCode: string; alt: string }) {
+  return (
+    <img
+      src={`https://flagcdn.com/${countryCode}.svg`}
+      alt={alt}
+      width={18}
+      height={13}
+      loading="lazy"
+      className="size-4 aspect-4/3 rounded-[2px] object-cover shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.12)] border border-black/10 dark:border-white/15"
+    />
+  );
+}
 
 export interface RoomSettingsDialogHandle {
   open: (tab?: 'personal' | 'room') => void;
@@ -69,7 +86,7 @@ export function RoomSettingsDialog({
   isSwitchingRole = false,
   onUpdateRoomConfig,
 }: RoomSettingsDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const { language, setLanguage } = useAppStore();
   const { theme, setTheme } = useTheme();
 
@@ -113,7 +130,7 @@ export function RoomSettingsDialog({
 
   const handleSaveRoomConfig = () => {
     if (!roomName.trim()) {
-      toast.error(t('room.settingsDialog.roomNamePlaceholder', 'Vui lòng nhập tên phòng'));
+      toast.error(t('room.settingsDialog.roomNamePlaceholder'));
       return;
     }
 
@@ -133,7 +150,7 @@ export function RoomSettingsDialog({
       deckType: selectedDeck,
     });
 
-    toast.success(t('room.settingsDialog.saveSuccess', 'Đã cập nhật cấu hình phòng thành công!'));
+    toast.success(t('room.settingsDialog.saveSuccess'));
     setIsSavingRoom(false);
     setShowResetConfirm(false);
     setIsOpen(false);
@@ -142,21 +159,18 @@ export function RoomSettingsDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-xl p-0 overflow-hidden gap-0 rounded-2xl">
-          <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
+        <DialogContent className="sm:max-w-xl p-0 overflow-hidden gap-0 rounded-lg card-container-frame shadow-lg">
+          <DialogHeader className="px-6 py-5 border-b border-border/60 bg-background">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-9 rounded-xl bg-primary/10 text-primary shrink-0 border border-primary/20 shadow-xs">
-                <Settings className="size-4.5" />
+              <div className="flex items-center justify-center size-9 rounded-md bg-muted/60 text-foreground shrink-0 border border-border/60 shadow-xs">
+                <Settings className="size-4.5 text-muted-foreground" />
               </div>
               <div className="text-left">
-                <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                  {t('room.settingsDialog.title', 'Cài đặt phòng')}
+                <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
+                  {t('room.settingsDialog.title')}
                 </DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-normal mt-0.5">
-                  {t(
-                    'room.settingsDialog.description',
-                    'Tùy chỉnh trải nghiệm cá nhân và cấu hình phòng ước lượng.',
-                  )}
+                <DialogDescription className="text-xs text-muted-foreground leading-normal mt-0.5">
+                  {t('room.settingsDialog.description')}
                 </DialogDescription>
               </div>
             </div>
@@ -168,21 +182,26 @@ export function RoomSettingsDialog({
             className="w-full flex flex-col"
           >
             <div className="px-6 pt-3 pb-2 border-b border-border/40 bg-background">
-              <TabsList className="grid w-full grid-cols-2 p-1 rounded-xl bg-muted/60">
+              <TabsList
+                className={cn(
+                  'grid w-full p-1 rounded-md bg-muted/60 h-9',
+                  isFacilitator ? 'grid-cols-2' : 'grid-cols-1',
+                )}
+              >
                 <TabsTrigger
                   value="personal"
-                  className="rounded-lg text-sm font-semibold gap-2 py-1.5 transition-all cursor-pointer"
+                  className="rounded-sm text-sm font-medium gap-2 h-7 transition-all cursor-pointer"
                 >
                   <User className="size-4" />
-                  <span>{t('room.settingsDialog.tabPersonal', 'Cá nhân')}</span>
+                  <span>{t('room.settingsDialog.tabPersonal')}</span>
                 </TabsTrigger>
                 {isFacilitator && (
                   <TabsTrigger
                     value="room"
-                    className="rounded-lg text-sm font-semibold gap-2 py-1.5 transition-all cursor-pointer"
+                    className="rounded-sm text-sm font-medium gap-2 h-7 transition-all cursor-pointer"
                   >
                     <Crown className="size-4 text-amber-500" />
-                    <span>{t('room.settingsDialog.tabRoom', 'Phòng')}</span>
+                    <span>{t('room.settingsDialog.tabRoom')}</span>
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -190,167 +209,139 @@ export function RoomSettingsDialog({
 
             <div className="p-6 overflow-y-auto max-h-[calc(85vh-160px)]">
               {/* TAB 1: PERSONAL PREFERENCES */}
-              <TabsContent value="personal" className="mt-0 space-y-6">
-                {/* 1. Language Preference */}
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-0.5">
-                    <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Languages className="size-4 text-primary" />
-                      <span>{t('room.settingsDialog.languageTitle', 'Ngôn ngữ')}</span>
-                    </Label>
-                    <span className="text-xs text-muted-foreground leading-normal">
-                      {t(
-                        'room.settingsDialog.languageDesc',
-                        'Chọn ngôn ngữ hiển thị trên toàn bộ giao diện của bạn',
-                      )}
-                    </span>
-                  </div>
+              <TabsContent value="personal" className="mt-0 space-y-4">
+                {/* 1. Language Row */}
+                <div className="flex items-center justify-between gap-4 py-1">
+                  <span className="text-sm font-medium text-foreground">
+                    {t('room.settingsDialog.languageTitle')}
+                  </span>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setLanguage('vi')}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
-                        language === 'vi'
-                          ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-base leading-none">🇻🇳</span>
-                        <span>{t('room.settingsDialog.langVi', 'Tiếng Việt')}</span>
-                      </div>
-                      {language === 'vi' && <Check className="size-4 text-primary shrink-0" />}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setLanguage('en')}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
-                        language === 'en'
-                          ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-base leading-none">🇬🇧</span>
-                        <span>{t('room.settingsDialog.langEn', 'English')}</span>
-                      </div>
-                      {language === 'en' && <Check className="size-4 text-primary shrink-0" />}
-                    </button>
-                  </div>
+                  <Select
+                    value={language}
+                    onValueChange={(val) => setLanguage(val as SupportedLanguage)}
+                  >
+                    <SelectTrigger className="w-48 h-[38px] rounded-md bg-background border-border/80 text-sm font-medium cursor-pointer">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          <CountryFlag countryCode={language === 'vi' ? 'vn' : 'gb'} alt="" />
+                          <span>{language === 'vi' ? 'Tiếng Việt' : 'English'}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align="end" className="w-48 rounded-md bg-popover border-border">
+                      <SelectItem value="vi" className="rounded-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <CountryFlag countryCode="vn" alt="Tiếng Việt" />
+                          <span>Tiếng Việt</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="en" className="rounded-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <CountryFlag countryCode="gb" alt="English" />
+                          <span>English</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="h-px w-full bg-border/60" />
+                {/* 2. Theme Row */}
+                <div className="flex items-center justify-between gap-4 py-1">
+                  <span className="text-sm font-medium text-foreground">
+                    {t('room.settingsDialog.themeTitle')}
+                  </span>
 
-                {/* 2. Theme Preference */}
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-0.5">
-                    <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Sun className="size-4 text-amber-500 dark:hidden" />
-                      <Moon className="size-4 text-sky-400 hidden dark:inline" />
-                      <span>{t('room.settingsDialog.themeTitle', 'Giao diện')}</span>
-                    </Label>
-                    <span className="text-xs text-muted-foreground leading-normal">
-                      {t('room.settingsDialog.themeDesc', 'Chọn chế độ hiển thị sáng hoặc tối')}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setTheme('light')}
-                      className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                        theme === 'light'
-                          ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
-                    >
-                      <Sun className="size-4 text-amber-500" />
-                      <span>{t('room.settingsDialog.themeLight', 'Sáng')}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setTheme('dark')}
-                      className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                        theme === 'dark'
-                          ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
-                    >
-                      <Moon className="size-4 text-sky-400" />
-                      <span>{t('room.settingsDialog.themeDark', 'Tối')}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setTheme('system')}
-                      className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                        theme === 'system'
-                          ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
-                    >
-                      <Laptop className="size-4 text-muted-foreground" />
-                      <span>{t('room.settingsDialog.themeSystem', 'Hệ thống')}</span>
-                    </button>
-                  </div>
+                  <Select value={theme || 'system'} onValueChange={(val) => setTheme(val)}>
+                    <SelectTrigger className="w-48 h-[38px] rounded-md bg-background border-border/80 text-sm font-medium cursor-pointer">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          {theme === 'light' && <Sun className="size-4 text-muted-foreground" />}
+                          {theme === 'dark' && <Moon className="size-4 text-muted-foreground" />}
+                          {(!theme || theme === 'system') && (
+                            <Laptop className="size-4 text-muted-foreground" />
+                          )}
+                          <span>
+                            {theme === 'light' && t('room.settingsDialog.themeLight')}
+                            {theme === 'dark' && t('room.settingsDialog.themeDark')}
+                            {(!theme || theme === 'system') && t('room.settingsDialog.themeSystem')}
+                          </span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align="end" className="w-48 rounded-md bg-popover border-border">
+                      <SelectItem value="light" className="rounded-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Sun className="size-4 text-muted-foreground" />
+                          <span>{t('room.settingsDialog.themeLight')}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="dark" className="rounded-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Moon className="size-4 text-muted-foreground" />
+                          <span>{t('room.settingsDialog.themeDark')}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="system" className="rounded-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Laptop className="size-4 text-muted-foreground" />
+                          <span>{t('room.settingsDialog.themeSystem')}</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="h-px w-full bg-border/60" />
+                <div className="h-px w-full bg-border/50 my-1" />
 
-                {/* 3. Role Selection */}
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-0.5">
-                    <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Sliders className="size-4 text-primary" />
-                      <span>{t('room.settingsDialog.roleTitle', 'Vai trò trong phòng')}</span>
-                    </Label>
-                    <span className="text-xs text-muted-foreground leading-normal">
-                      {t(
-                        'room.settingsDialog.roleDesc',
-                        'Chuyển đổi giữa chế độ bỏ phiếu ước lượng hoặc chỉ quan sát',
-                      )}
-                    </span>
-                  </div>
+                {/* 3. Role Selection (Clean Industrial Radio Cards with High Contrast) */}
+                <div className="space-y-3 pt-1">
+                  <span className="text-sm font-medium text-foreground block">
+                    {t('room.settingsDialog.roleTitle')}
+                  </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Option 1: Estimator */}
                     <button
                       type="button"
                       disabled={isSwitchingRole}
                       onClick={() => onSwitchRole?.(false)}
-                      className={`flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-60 ${
+                      className={cn(
+                        'relative flex items-start gap-3.5 p-4 rounded-md border text-left transition-all duration-150 cursor-pointer disabled:opacity-60',
                         !isCurrentSpectator
-                          ? 'border-emerald-500/70 bg-emerald-500/10 text-emerald-950 dark:text-emerald-200 ring-1 ring-emerald-500/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
+                          ? 'border-primary ring-1 ring-primary/25 bg-primary/[0.03] shadow-xs'
+                          : 'border-border bg-card hover:border-slate-400 dark:hover:border-slate-600 hover:bg-muted/30',
+                      )}
                     >
-                      <div className="flex items-center justify-center size-8 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
+                      <div
+                        className={cn(
+                          'flex items-center justify-center size-9 rounded-md shrink-0 mt-0.5 border transition-colors',
+                          !isCurrentSpectator
+                            ? 'bg-primary/10 border-primary/20 text-primary'
+                            : 'bg-muted/80 border-border/80 text-foreground/70',
+                        )}
+                      >
                         {isSwitchingRole && isCurrentSpectator ? (
-                          <Loader2 className="size-4 animate-spin" />
+                          <Loader2 className="size-4.5 animate-spin" />
                         ) : (
-                          <UserCheck className="size-4" />
+                          <UserCheck className="size-4.5" />
                         )}
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1.5 font-semibold text-sm">
-                          <span>
-                            {t('room.settingsDialog.roleEstimator', 'Thành viên ước lượng')}
-                          </span>
-                          {!isCurrentSpectator && (
-                            <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-none text-xs px-1.5 py-0">
-                              Active
-                            </Badge>
-                          )}
+                      <div className="flex-1 min-w-0 pr-5">
+                        <div className="font-semibold text-sm text-foreground">
+                          {t('room.settingsDialog.roleEstimator')}
                         </div>
-                        <span className="text-xs text-muted-foreground leading-normal">
-                          {t(
-                            'room.settingsDialog.roleEstimatorDesc',
-                            'Tham gia bỏ phiếu và ước lượng độ phức tạp thẻ bài',
-                          )}
-                        </span>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mt-1">
+                          {t('room.settingsDialog.roleEstimatorDesc')}
+                        </p>
+                      </div>
+                      <div className="absolute top-4 right-4">
+                        {!isCurrentSpectator ? (
+                          <div className="size-4.5 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
+                            <Check className="size-3 stroke-[3]" />
+                          </div>
+                        ) : (
+                          <div className="size-4.5 rounded-full border-2 border-slate-300 dark:border-slate-600" />
+                        )}
                       </div>
                     </button>
 
@@ -359,34 +350,43 @@ export function RoomSettingsDialog({
                       type="button"
                       disabled={isSwitchingRole}
                       onClick={() => onSwitchRole?.(true)}
-                      className={`flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-60 ${
+                      className={cn(
+                        'relative flex items-start gap-3.5 p-4 rounded-md border text-left transition-all duration-150 cursor-pointer disabled:opacity-60',
                         isCurrentSpectator
-                          ? 'border-sky-500/70 bg-sky-500/10 text-sky-950 dark:text-sky-200 ring-1 ring-sky-500/30 shadow-xs'
-                          : 'border-border/70 hover:bg-muted/40 text-foreground'
-                      }`}
+                          ? 'border-primary ring-1 ring-primary/25 bg-primary/[0.03] shadow-xs'
+                          : 'border-border bg-card hover:border-slate-400 dark:hover:border-slate-600 hover:bg-muted/30',
+                      )}
                     >
-                      <div className="flex items-center justify-center size-8 rounded-lg bg-sky-500/20 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5">
+                      <div
+                        className={cn(
+                          'flex items-center justify-center size-9 rounded-md shrink-0 mt-0.5 border transition-colors',
+                          isCurrentSpectator
+                            ? 'bg-primary/10 border-primary/20 text-primary'
+                            : 'bg-muted/80 border-border/80 text-foreground/70',
+                        )}
+                      >
                         {isSwitchingRole && !isCurrentSpectator ? (
-                          <Loader2 className="size-4 animate-spin" />
+                          <Loader2 className="size-4.5 animate-spin" />
                         ) : (
-                          <Eye className="size-4" />
+                          <Eye className="size-4.5" />
                         )}
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1.5 font-semibold text-sm">
-                          <span>{t('room.settingsDialog.roleSpectator', 'Người quan sát')}</span>
-                          {isCurrentSpectator && (
-                            <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-400 border-none text-xs px-1.5 py-0">
-                              Active
-                            </Badge>
-                          )}
+                      <div className="flex-1 min-w-0 pr-5">
+                        <div className="font-semibold text-sm text-foreground">
+                          {t('room.settingsDialog.roleSpectator')}
                         </div>
-                        <span className="text-xs text-muted-foreground leading-normal">
-                          {t(
-                            'room.settingsDialog.roleSpectatorDesc',
-                            'Chỉ theo dõi tiến trình, không tham gia bỏ phiếu',
-                          )}
-                        </span>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mt-1">
+                          {t('room.settingsDialog.roleSpectatorDesc')}
+                        </p>
+                      </div>
+                      <div className="absolute top-4 right-4">
+                        {isCurrentSpectator ? (
+                          <div className="size-4.5 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
+                            <Check className="size-3 stroke-[3]" />
+                          </div>
+                        ) : (
+                          <div className="size-4.5 rounded-full border-2 border-slate-300 dark:border-slate-600" />
+                        )}
                       </div>
                     </button>
                   </div>
@@ -400,9 +400,9 @@ export function RoomSettingsDialog({
                   <div className="space-y-2">
                     <Label
                       htmlFor="room-name-input"
-                      className="text-sm font-semibold text-foreground flex items-center justify-between"
+                      className="text-sm font-medium text-foreground flex items-center justify-between"
                     >
-                      <span>{t('room.settingsDialog.roomNameLabel', 'Tên phòng')}</span>
+                      <span>{t('room.settingsDialog.roomNameLabel')}</span>
                       <span className="text-xs text-muted-foreground font-normal">
                         {roomName.length}/100
                       </span>
@@ -412,28 +412,16 @@ export function RoomSettingsDialog({
                       value={roomName}
                       maxLength={100}
                       onChange={(e) => setRoomName(e.target.value)}
-                      placeholder={t(
-                        'room.settingsDialog.roomNamePlaceholder',
-                        'Nhập tên phòng ước lượng...',
-                      )}
-                      className="h-10 text-sm rounded-xl bg-background border-border/80"
+                      placeholder={t('room.settingsDialog.roomNamePlaceholder')}
+                      className="h-[38px] text-sm rounded-md bg-background border-border/80"
                     />
                   </div>
 
                   {/* Estimation Deck Selection */}
-                  <div className="space-y-3">
-                    <div className="flex flex-col gap-0.5">
-                      <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                        <Sparkles className="size-4 text-primary" />
-                        <span>{t('room.settingsDialog.deckLabel', 'Bộ bài ước lượng')}</span>
-                      </Label>
-                      <span className="text-xs text-muted-foreground leading-normal">
-                        {t(
-                          'room.settingsDialog.deckDesc',
-                          'Chọn bộ thang điểm ước lượng áp dụng cho cả phòng',
-                        )}
-                      </span>
-                    </div>
+                  <div className="space-y-2.5">
+                    <span className="text-sm font-medium text-foreground block">
+                      {t('room.settingsDialog.deckLabel')}
+                    </span>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {DECK_CONFIGS.map((deck) => {
@@ -443,17 +431,17 @@ export function RoomSettingsDialog({
                             key={deck.id}
                             type="button"
                             onClick={() => setSelectedDeck(deck.id)}
-                            className={`flex flex-col p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            className={cn(
+                              'relative flex flex-col p-3.5 rounded-md border text-left transition-all duration-150 cursor-pointer',
                               isSelected
-                                ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30 shadow-xs'
-                                : 'border-border/70 hover:bg-muted/40 text-foreground'
-                            }`}
+                                ? 'border-primary bg-primary/[0.04] text-foreground ring-1 ring-primary/20 shadow-xs'
+                                : 'border-border/70 hover:bg-muted/40 text-foreground',
+                            )}
                           >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-semibold text-sm text-foreground">
+                            <div className="flex items-center justify-between mb-1 pr-6">
+                              <span className="font-medium text-sm text-foreground">
                                 {t(`decks.${deck.translationKey}.name`)}
                               </span>
-                              {isSelected && <Check className="size-4 text-primary" />}
                             </div>
 
                             <p className="text-xs text-muted-foreground leading-normal mb-2 line-clamp-1">
@@ -464,7 +452,7 @@ export function RoomSettingsDialog({
                               {deck.cards.slice(0, 7).map((cardVal, idx) => (
                                 <span
                                   key={idx}
-                                  className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60"
+                                  className="text-xs font-mono font-medium px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground border border-border/60"
                                 >
                                   {cardVal}
                                 </span>
@@ -475,6 +463,16 @@ export function RoomSettingsDialog({
                                 </span>
                               )}
                             </div>
+
+                            <div className="absolute top-3.5 right-3.5">
+                              {isSelected ? (
+                                <div className="size-4 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
+                                  <Check className="size-2.5 stroke-[3]" />
+                                </div>
+                              ) : (
+                                <div className="size-4 rounded-full border border-border/80" />
+                              )}
+                            </div>
                           </button>
                         );
                       })}
@@ -483,16 +481,13 @@ export function RoomSettingsDialog({
 
                   {/* Warning banner if changing deck during active round */}
                   {isDeckChanged && hasAnyActiveVotes && (
-                    <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                    <div className="p-3 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
                       <AlertTriangle className="size-4.5 text-amber-500 shrink-0 mt-0.5" />
                       <div className="text-xs leading-relaxed">
                         <span className="font-semibold block mb-0.5">
-                          {t('room.settingsDialog.resetConfirmTitle', 'Lưu ý đổi bộ bài')}
+                          {t('room.settingsDialog.resetConfirmTitle')}
                         </span>
-                        {t(
-                          'room.settingsDialog.resetConfirmDesc',
-                          'Vòng hiện tại đang có thành viên đã ước lượng. Việc đổi bộ bài sẽ xóa sạch các thẻ đã chọn trong vòng này để đảm bảo tính tương thích.',
-                        )}
+                        {t('room.settingsDialog.resetConfirmDesc')}
                       </div>
                     </div>
                   )}
@@ -502,15 +497,15 @@ export function RoomSettingsDialog({
                     <Button
                       onClick={handleSaveRoomConfig}
                       disabled={isSavingRoom || !hasRoomChanges}
-                      className="h-10 px-5 text-sm font-semibold rounded-xl cursor-pointer shadow-xs gap-2"
+                      className="h-[38px] px-5 text-sm font-medium rounded-md cursor-pointer shadow-xs gap-2 bg-primary hover:bg-brand-hover text-primary-foreground transition-colors duration-150"
                     >
                       {isSavingRoom ? (
                         <>
                           <Loader2 className="size-4 animate-spin" />
-                          <span>{t('room.settingsDialog.saving', 'Đang lưu...')}</span>
+                          <span>{t('room.settingsDialog.saving')}</span>
                         </>
                       ) : (
-                        <span>{t('room.settingsDialog.saveChanges', 'Lưu thay đổi')}</span>
+                        <span>{t('room.settingsDialog.saveChanges')}</span>
                       )}
                     </Button>
                   </div>
@@ -523,30 +518,25 @@ export function RoomSettingsDialog({
 
       {/* Confirmation Dialog when Changing Deck during active voting with submitted cards */}
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
-        <AlertDialogContent className="sm:max-w-md rounded-2xl">
+        <AlertDialogContent className="sm:max-w-md rounded-lg p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2 text-destructive">
               <AlertTriangle className="size-5 text-destructive" />
-              <span>
-                {t('room.settingsDialog.resetConfirmTitle', 'Làm mới lượt ước lượng hiện tại?')}
-              </span>
+              <span>{t('room.settingsDialog.resetConfirmTitle')}</span>
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              {t(
-                'room.settingsDialog.resetConfirmDesc',
-                'Vòng ước lượng hiện tại đang diễn ra và đã có thành viên gửi thẻ bài. Việc đổi bộ bài sẽ xóa sạch các thẻ bài đã chọn trong vòng này để đảm bảo dữ liệu tương thích. Bạn có chắc chắn muốn đổi không?',
-              )}
+              {t('room.settingsDialog.resetConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="h-9 rounded-xl text-sm font-medium cursor-pointer">
-              {t('room.settingsDialog.resetConfirmCancel', 'Hủy')}
+          <AlertDialogFooter className="gap-2 sm:gap-0 mt-4">
+            <AlertDialogCancel className="h-[38px] rounded-md text-sm font-medium cursor-pointer">
+              {t('room.settingsDialog.resetConfirmCancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={executeSaveRoomConfig}
-              className="h-9 rounded-xl text-sm font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+              className="h-[38px] rounded-md text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
             >
-              {t('room.settingsDialog.resetConfirmAction', 'Đổi bộ bài & Làm mới')}
+              {t('room.settingsDialog.resetConfirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

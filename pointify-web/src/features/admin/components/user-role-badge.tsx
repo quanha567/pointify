@@ -9,19 +9,19 @@ export interface UserRoleBadgeProps {
 }
 
 export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   if (role === 'admin') {
     return (
       <Badge
         variant="outline"
         className={cn(
-          'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-md transition-colors',
-          'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25',
+          'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-sm transition-colors',
+          'bg-primary/10 text-primary border-primary/25',
           className,
         )}
       >
-        <ShieldCheckIcon className="size-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+        <ShieldCheckIcon className="size-3.5 text-primary shrink-0" />
         <span>{t('admin.users.roles.admin')}</span>
       </Badge>
     );
@@ -31,7 +31,7 @@ export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-md transition-colors',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-sm transition-colors',
         'bg-secondary/60 text-secondary-foreground border-border',
         className,
       )}

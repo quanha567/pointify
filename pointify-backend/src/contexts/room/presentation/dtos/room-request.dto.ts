@@ -51,6 +51,16 @@ export class CreateRoomRequestDto {
   })
   customCards?: CardValue[];
 
+  @ApiPropertyOptional({
+    description: 'Jira Cloud Site ID to import sprint from',
+  })
+  jiraCloudId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Jira Sprint ID to import user stories from',
+  })
+  jiraSprintId?: string;
+
   @ApiProperty({
     type: FacilitatorInputDto,
     description: 'Facilitator information',

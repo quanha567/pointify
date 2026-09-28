@@ -19,6 +19,21 @@ export interface RoundStatistics {
   min: number | null;
   max: number | null;
   distribution: Record<string, number>;
+  agreementScore?: number | null;
+}
+
+export interface LinkedJiraIssue {
+  id: string;
+  key: string;
+  summary: string;
+  url?: string;
+  status?: string;
+  currentStoryPoints?: number | string | null;
+  issueType?: string;
+  priority?: string;
+  description?: string | null;
+  assignee?: { displayName: string; avatarUrl?: string } | null;
+  sprintName?: string | null;
 }
 
 export interface RoundProps {
@@ -30,6 +45,7 @@ export interface RoundProps {
   revealedAt: number | null;
   timer?: RoundTimer | null;
   archivedStickyNotes?: StickyNoteProjection[];
+  linkedJiraIssue?: LinkedJiraIssue | null;
 }
 
 export class Round extends Entity<RoundProps, number> {
@@ -37,7 +53,11 @@ export class Round extends Entity<RoundProps, number> {
     super(roundNumber, props);
   }
 
-  public static startNew(roundNumber: number, topic = ''): Round {
+  public static startNew(
+    roundNumber: number,
+    topic = '',
+    linkedJiraIssue: LinkedJiraIssue | null = null,
+  ): Round {
     return new Round(roundNumber, {
       roundNumber,
       status: 'voting',
@@ -47,6 +67,7 @@ export class Round extends Entity<RoundProps, number> {
       revealedAt: null,
       timer: null,
       archivedStickyNotes: [],
+      linkedJiraIssue,
     });
   }
 
@@ -60,6 +81,7 @@ export class Round extends Entity<RoundProps, number> {
       revealedAt: number | null;
       timer?: RoundTimer | null;
       archivedStickyNotes?: StickyNoteProjection[];
+      linkedJiraIssue?: LinkedJiraIssue | null;
     },
   ): Round {
     return new Round(roundNumber, {
@@ -71,6 +93,7 @@ export class Round extends Entity<RoundProps, number> {
       revealedAt: props.revealedAt,
       timer: props.timer ?? null,
       archivedStickyNotes: props.archivedStickyNotes ?? [],
+      linkedJiraIssue: props.linkedJiraIssue ?? null,
     });
   }
 
@@ -108,6 +131,14 @@ export class Round extends Entity<RoundProps, number> {
 
   public setArchivedStickyNotes(notes: StickyNoteProjection[]): void {
     this.props.archivedStickyNotes = [...notes];
+  }
+
+  get linkedJiraIssue(): LinkedJiraIssue | null {
+    return this.props.linkedJiraIssue ?? null;
+  }
+
+  public setLinkedJiraIssue(issue: LinkedJiraIssue | null): void {
+    this.props.linkedJiraIssue = issue;
   }
 
   public startTimer(durationSeconds: number): void {
@@ -216,6 +247,7 @@ export class Round extends Entity<RoundProps, number> {
         min: null,
         max: null,
         distribution: {},
+        agreementScore: null,
       };
     }
 
@@ -223,17 +255,28 @@ export class Round extends Entity<RoundProps, number> {
     const numericValues: number[] = [];
 
     for (const est of estimates) {
-      const valStr = String(est.cardValue);
+      const valStr = String(est.cardValue).trim();
       distribution[valStr] = (distribution[valStr] || 0) + 1;
 
-      const num = Number(est.cardValue);
-      if (!isNaN(num) && typeof est.cardValue === 'number') {
+      // Handle numeric cards (handles both number 13 and string "13", "0.5", "½" -> 0.5)
+      let num = typeof est.cardValue === 'number' ? est.cardValue : Number(est.cardValue);
+      if (valStr === '½') {
+        num = 0.5;
+      }
+      if (!isNaN(num) && isFinite(num) && valStr !== '?' && valStr !== '☕') {
         numericValues.push(num);
       }
     }
 
     const uniqueValues = Object.keys(distribution);
-    const consensus = count > 1 && uniqueValues.length === 1;
+    const hasSpecialCards = uniqueValues.some((v) => v === '?' || v === '☕');
+    const consensus = count > 0 && uniqueValues.length === 1 && !hasSpecialCards;
+
+    let maxFreq = 0;
+    for (const freq of Object.values(distribution)) {
+      if (freq > maxFreq) maxFreq = freq;
+    }
+    const agreementScore = count > 0 ? Math.round((maxFreq / count) * 100) : null;
 
     let average: number | null = null;
     let min: number | null = null;
@@ -253,6 +296,7 @@ export class Round extends Entity<RoundProps, number> {
       min,
       max,
       distribution,
+      agreementScore,
     };
   }
 }

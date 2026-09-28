@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
@@ -14,15 +14,7 @@ import {
   MoonIcon,
   LogOutIcon,
 } from 'lucide-react';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command';
+import { CommandPalette, type CommandItem } from '@/components/motion/command-palette';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Kbd } from '../ui/kbd';
@@ -30,168 +22,132 @@ import { Kbd } from '../ui/kbd';
 interface SearchDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
-export function SearchDialog({ open: controlledOpen, onOpenChange }: SearchDialogProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = useCallback(
-    (value: boolean) => {
-      if (isControlled && onOpenChange) {
-        onOpenChange(value);
-      } else {
-        setInternalOpen(value);
-      }
-    },
-    [isControlled, onOpenChange],
-  );
-
+export function SearchDialog({ open, onOpenChange, hideTrigger = false }: SearchDialogProps) {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
   const { logout } = useAuthStore();
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen(!open);
-      }
-    };
-
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
-  }, [open, setOpen]);
-
-  const runCommand = useCallback(
-    (command: () => void) => {
-      setOpen(false);
-      command();
-    },
-    [setOpen],
+  const items: CommandItem[] = useMemo(
+    () => [
+      {
+        id: 'nav-dashboard',
+        label: t('admin.search.navDashboard'),
+        group: t('admin.search.groupNav'),
+        icon: LayoutDashboardIcon,
+        keywords: ['dashboard', 'tong quan', 'overview', 'stats'],
+        onSelect: () => {
+          void navigate({ to: '/admin' });
+        },
+      },
+      {
+        id: 'nav-users',
+        label: t('admin.search.navUsers'),
+        group: t('admin.search.groupNav'),
+        icon: UsersIcon,
+        keywords: ['users', 'nguoi dung', 'accounts', 'tai khoan', 'members'],
+        onSelect: () => {
+          void navigate({ to: '/admin/users' });
+        },
+      },
+      {
+        id: 'nav-rooms',
+        label: t('admin.search.navRooms'),
+        group: t('admin.search.groupNav'),
+        icon: LayersIcon,
+        keywords: ['rooms', 'phong', 'poker', 'scrum'],
+        onSelect: () => {
+          void navigate({ to: '/admin' });
+        },
+      },
+      {
+        id: 'nav-decks',
+        label: t('admin.search.navDecks'),
+        group: t('admin.search.groupNav'),
+        icon: DicesIcon,
+        keywords: ['decks', 'bo bai', 'cards', 'la bai'],
+        onSelect: () => {
+          void navigate({ to: '/admin' });
+        },
+      },
+      {
+        id: 'nav-settings',
+        label: t('admin.search.navSettings'),
+        group: t('admin.search.groupNav'),
+        icon: SettingsIcon,
+        keywords: ['settings', 'cai dat', 'he thong'],
+        onSelect: () => {
+          void navigate({ to: '/admin' });
+        },
+      },
+      {
+        id: 'theme-light',
+        label: t('admin.search.themeLight'),
+        group: t('admin.search.groupTheme'),
+        icon: SunIcon,
+        keywords: ['light', 'sang', 'theme', 'bright'],
+        onSelect: () => setTheme('light'),
+      },
+      {
+        id: 'theme-dark',
+        label: t('admin.search.themeDark'),
+        group: t('admin.search.groupTheme'),
+        icon: MoonIcon,
+        keywords: ['dark', 'toi', 'theme', 'night'],
+        onSelect: () => setTheme('dark'),
+      },
+      {
+        id: 'back-to-home',
+        label: t('admin.search.backToHome'),
+        group: t('admin.search.groupTheme'),
+        icon: HomeIcon,
+        keywords: ['home', 'trang chu'],
+        onSelect: () => {
+          void navigate({ to: '/' });
+        },
+      },
+      {
+        id: 'sign-out',
+        label: t('admin.search.signOut'),
+        group: t('admin.search.groupTheme'),
+        icon: LogOutIcon,
+        keywords: ['logout', 'dang xuat', 'sign out'],
+        onSelect: () => {
+          void logout();
+        },
+      },
+    ],
+    [navigate, setTheme, logout, t],
   );
 
   return (
     <>
-      <Button
-        variant="outline"
-        onClick={() => setOpen(true)}
-        className="relative h-9 w-full justify-start rounded-xl border-border/70 bg-muted/40 text-sm font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground shadow-none sm:pr-12 md:w-48 lg:w-64 cursor-pointer"
-      >
-        <SearchIcon className="mr-2 size-4 shrink-0 opacity-60" />
-        <span className="hidden lg:inline-flex">{t('admin.search.trigger')}</span>
-        <span className="inline-flex lg:hidden">{t('admin.search.triggerShort')}</span>
-        <Kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none opacity-100 sm:flex">
-          ⌘ + K
-        </Kbd>
-      </Button>
+      {!hideTrigger && (
+        <Button
+          variant="outline"
+          onClick={() => onOpenChange?.(true)}
+          className="relative h-[38px] w-full justify-start rounded-md border-border/70 bg-card/90 text-sm font-medium text-muted-foreground hover:bg-card hover:text-foreground hover:border-primary/40 shadow-2xs sm:pr-12 md:w-52 lg:w-68 cursor-pointer transition-all duration-150"
+        >
+          <SearchIcon className="mr-2 size-4 shrink-0 text-muted-foreground/70" />
+          <span className="hidden sm:inline-flex text-sm">{t('admin.search.trigger')}</span>
+          <span className="inline-flex sm:hidden text-sm">{t('admin.search.triggerShort')}</span>
+          <Kbd className="pointer-events-none absolute right-2 top-1.5 hidden h-6 select-none opacity-90 sm:flex rounded-sm px-1.5 text-[11px] font-semibold bg-muted/60 border border-border/60">
+            ⌘K
+          </Kbd>
+        </Button>
+      )}
 
-      <CommandDialog open={open} onOpenChange={setOpen} title={t('admin.search.dialogTitle')}>
-        <CommandInput placeholder={t('admin.search.inputPlaceholder')} />
-        <CommandList>
-          <CommandEmpty>{t('admin.search.empty')}</CommandEmpty>
-
-          <CommandGroup heading={t('admin.search.groupNav')}>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/admin' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <LayoutDashboardIcon className="size-4 text-muted-foreground" />
-              <span>{t('admin.search.navDashboard')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/admin/users' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <UsersIcon className="size-4 text-primary" />
-              <span>{t('admin.search.navUsers')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/admin' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <LayersIcon className="size-4 text-muted-foreground" />
-              <span>{t('admin.search.navRooms')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/admin' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <DicesIcon className="size-4 text-muted-foreground" />
-              <span>{t('admin.search.navDecks')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/admin' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <SettingsIcon className="size-4 text-muted-foreground" />
-              <span>{t('admin.search.navSettings')}</span>
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
-
-          <CommandGroup heading={t('admin.search.groupTheme')}>
-            <CommandItem
-              onSelect={() => runCommand(() => setTheme('light'))}
-              className="cursor-pointer gap-2.5"
-            >
-              <SunIcon className="size-4 text-amber-500" />
-              <span>{t('admin.search.themeLight')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() => runCommand(() => setTheme('dark'))}
-              className="cursor-pointer gap-2.5"
-            >
-              <MoonIcon className="size-4 text-blue-400" />
-              <span>{t('admin.search.themeDark')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void navigate({ to: '/' });
-                })
-              }
-              className="cursor-pointer gap-2.5"
-            >
-              <HomeIcon className="size-4 text-emerald-500" />
-              <span>{t('admin.search.backToHome')}</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
-                  void logout();
-                })
-              }
-              className="cursor-pointer gap-2.5 text-destructive"
-            >
-              <LogOutIcon className="size-4" />
-              <span>{t('admin.search.signOut')}</span>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      <CommandPalette
+        items={items}
+        shortcut="k"
+        open={open}
+        onOpenChange={onOpenChange}
+        placeholder={t('admin.search.inputPlaceholder')}
+        emptyMessage={t('admin.search.empty')}
+      />
     </>
   );
 }

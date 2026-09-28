@@ -16,7 +16,7 @@ import {
  * - Manages join dialog visibility
  */
 export function useRoomParticipantIdentity(roomId: string) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('room');
   const { user } = useAuthStore();
 
   const [participant, setParticipant] = useState<StoredParticipant | null>(() => {
@@ -62,7 +62,7 @@ export function useRoomParticipantIdentity(roomId: string) {
       joinRoom(newParticipant);
       setParticipant(newParticipant);
       setIsJoinDialogOpen(false);
-      toast.success(t('room.joinedSuccess', 'Đã tham gia phòng thành công!'));
+      toast.success(t('room.joinedSuccess'));
     },
     [t],
   );

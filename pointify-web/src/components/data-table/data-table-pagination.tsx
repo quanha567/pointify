@@ -33,24 +33,35 @@ export function DataTablePagination<TData extends RowData = any>({
   const endRow = Math.min((pageIndex + 1) * pageSize, displayTotal);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-t border-border/80 bg-muted/20 dark:bg-zinc-950/40 rounded-b-xl">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-t border-border/80 bg-muted/20 dark:bg-zinc-950/40 rounded-b-lg">
       {/* Left: Record Range & Selection Status */}
       <div className="flex items-center gap-2">
         {selectedCount > 0 ? (
           <div className="flex items-center gap-2">
             <Typography as="span" variant="small" className="text-foreground/85 font-medium">
-              Đã chọn <strong className="font-semibold text-foreground">{selectedCount}</strong> /{' '}
-              <strong className="font-semibold text-foreground">{displayTotal}</strong> bản ghi
+              Đã chọn{' '}
+              <strong className="font-mono tabular-nums font-semibold text-foreground">
+                {selectedCount}
+              </strong>{' '}
+              /{' '}
+              <strong className="font-mono tabular-nums font-semibold text-foreground">
+                {displayTotal}
+              </strong>{' '}
+              bản ghi
             </Typography>
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <Typography as="span" variant="small" className="text-foreground/85 font-medium">
               Hiển thị{' '}
-              <strong className="font-semibold text-foreground">
+              <strong className="font-mono tabular-nums font-semibold text-foreground">
                 {startRow} - {endRow}
               </strong>{' '}
-              / <strong className="font-semibold text-foreground">{displayTotal}</strong> bản ghi
+              /{' '}
+              <strong className="font-mono tabular-nums font-semibold text-foreground">
+                {displayTotal}
+              </strong>{' '}
+              bản ghi
             </Typography>
           </div>
         )}
@@ -60,7 +71,7 @@ export function DataTablePagination<TData extends RowData = any>({
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Page Size Selector */}
         <div className="flex items-center gap-2">
-          <Typography as="span" variant="muted" className="whitespace-nowrap">
+          <Typography as="span" variant="muted" className="whitespace-nowrap text-xs">
             Số dòng:
           </Typography>
           <Select
@@ -69,17 +80,24 @@ export function DataTablePagination<TData extends RowData = any>({
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="h-8 px-2.5 text-xs font-medium bg-background border-border/80 rounded-lg shadow-2xs hover:bg-accent/60 gap-1.5 min-w-[76px] cursor-pointer">
+            <SelectTrigger className="h-8 px-2.5 text-xs font-medium bg-background border-border rounded-md shadow-xs hover:bg-accent text-foreground gap-1.5 min-w-[76px] cursor-pointer">
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
-            <SelectContent side="top" className="shadow-xl border-border/80 p-1 min-w-[100px]">
+            <SelectContent
+              side="top"
+              className="shadow-md rounded-lg border-border p-1 min-w-[100px] bg-popover text-popover-foreground"
+            >
               {pageSizeOptions.map((size) => (
                 <SelectItem
                   key={size}
                   value={`${size}`}
                   className="text-xs cursor-pointer rounded-md"
                 >
-                  <Typography as="span" variant="small" className="text-xs font-normal">
+                  <Typography
+                    as="span"
+                    variant="small"
+                    className="text-xs font-normal font-mono tabular-nums"
+                  >
                     {size} / trang
                   </Typography>
                 </SelectItem>
@@ -89,19 +107,17 @@ export function DataTablePagination<TData extends RowData = any>({
         </div>
 
         {/* Page Index Indicator */}
-        <div className="flex items-center gap-1 whitespace-nowrap">
-          <Typography as="span" variant="muted">
+        <div className="flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+          <Typography as="span" variant="muted" className="text-xs">
             Trang
           </Typography>
-          <Typography as="span" variant="small" className="font-semibold text-foreground">
+          <span className="font-mono tabular-nums font-semibold text-foreground text-xs">
             {pageIndex + 1}
-          </Typography>
-          <Typography as="span" variant="muted" className="text-muted-foreground/60">
-            /
-          </Typography>
-          <Typography as="span" variant="small" className="font-medium text-foreground">
+          </span>
+          <span className="text-muted-foreground/60">/</span>
+          <span className="font-mono tabular-nums font-medium text-foreground text-xs">
             {pageCount}
-          </Typography>
+          </span>
         </div>
 
         {/* Nav Buttons */}
@@ -109,46 +125,46 @@ export function DataTablePagination<TData extends RowData = any>({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-lg border-border/80 bg-background shadow-2xs hover:bg-muted/80 text-foreground disabled:opacity-30 cursor-pointer"
+            className="h-8 w-8 rounded-md border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground text-foreground disabled:opacity-30 cursor-pointer transition-colors"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
             title="Trang đầu"
           >
             <span className="sr-only">Trang đầu</span>
-            <ChevronsLeftIcon className="h-4 w-4" />
+            <ChevronsLeftIcon className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-lg border-border/80 bg-background shadow-2xs hover:bg-muted/80 text-foreground disabled:opacity-30 cursor-pointer"
+            className="h-8 w-8 rounded-md border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground text-foreground disabled:opacity-30 cursor-pointer transition-colors"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             title="Trang trước"
           >
             <span className="sr-only">Trang trước</span>
-            <ChevronLeftIcon className="h-4 w-4" />
+            <ChevronLeftIcon className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-lg border-border/80 bg-background shadow-2xs hover:bg-muted/80 text-foreground disabled:opacity-30 cursor-pointer"
+            className="h-8 w-8 rounded-md border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground text-foreground disabled:opacity-30 cursor-pointer transition-colors"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             title="Trang sau"
           >
             <span className="sr-only">Trang sau</span>
-            <ChevronRightIcon className="h-4 w-4" />
+            <ChevronRightIcon className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-lg border-border/80 bg-background shadow-2xs hover:bg-muted/80 text-foreground disabled:opacity-30 cursor-pointer"
+            className="h-8 w-8 rounded-md border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground text-foreground disabled:opacity-30 cursor-pointer transition-colors"
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!table.getCanNextPage()}
             title="Trang cuối"
           >
             <span className="sr-only">Trang cuối</span>
-            <ChevronsRightIcon className="h-4 w-4" />
+            <ChevronsRightIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>

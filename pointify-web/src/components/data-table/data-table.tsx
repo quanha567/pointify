@@ -18,7 +18,7 @@ import { DataTablePagination } from './data-table-pagination';
 import { DataTableFloatingBar } from './data-table-floating-bar';
 import {
   type TableDensity,
-  type DataTableFilterOption,
+  type DataTableFacetedFilterConfig,
   type DataTableColumnDef,
   type DataTableColumn,
   type CustomColumnMeta,
@@ -34,11 +34,7 @@ interface DataTableProps<TData extends RowData = any> {
   isLoading?: boolean;
   searchPlaceholder?: string;
   searchColumnId?: string;
-  facetedFilters?: {
-    columnId: string;
-    title: string;
-    options: DataTableFilterOption[];
-  }[];
+  facetedFilters?: DataTableFacetedFilterConfig[];
   totalRows?: number;
   serverPagination?: {
     pageIndex: number;
@@ -272,8 +268,8 @@ export function DataTable<TData extends RowData = any>({
 
   return (
     <div className={cn('flex flex-col h-full w-full', className)}>
-      {/* AG-Grid Styled Container with Integrated Toolbar */}
-      <div className="relative flex-1 flex flex-col min-h-[350px] w-full overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+      {/* Container with Integrated Toolbar & ONE Container Frame (8px radius) */}
+      <div className="relative flex-1 flex flex-col min-h-[350px] w-full overflow-hidden rounded-lg border border-border bg-card shadow-xs card-container-frame">
         {/* Table Toolbar Header */}
         <div className="p-3 border-b border-border/80 bg-card">
           <DataTableToolbar

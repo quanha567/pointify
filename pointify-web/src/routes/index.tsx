@@ -13,18 +13,18 @@ import {
   type CreateRoomModalHandle,
 } from '@/features/room/components/create-room-modal';
 import {
-  JoinRoomModal,
-  type JoinRoomModalHandle,
-} from '@/features/room/components/join-room-modal';
+  JoinRoomDialog,
+  type JoinRoomDialogHandle,
+} from '@/features/room/components/dialogs/join-room-dialog';
 
 export const Route = createFileRoute('/')({
   component: DashboardHomePage,
 });
 
 function DashboardHomePage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'room']);
   const createRef = useRef<CreateRoomModalHandle>(null);
-  const joinRef = useRef<JoinRoomModalHandle>(null);
+  const joinRef = useRef<JoinRoomDialogHandle>(null);
 
   const morphingTexts = t('app.morphingTexts', { returnObjects: true }) as string[];
 
@@ -69,7 +69,7 @@ function DashboardHomePage() {
                 onClick={() => createRef.current?.open()}
               >
                 <Plus className="size-5" />
-                <span>{t('createRoom.cta')}</span>
+                <span>{t('room:createRoom.cta')}</span>
               </Button>
             </motion.div>
 
@@ -81,7 +81,7 @@ function DashboardHomePage() {
                 className="w-full sm:w-auto gap-2 text-base font-semibold cursor-pointer rounded-2xl h-13 px-8 border-border/80 hover:border-primary/40 hover:bg-primary/5 transition-all"
                 onClick={() => joinRef.current?.open()}
               >
-                <span>{t('joinRoom.cta')}</span>
+                <span>{t('room:joinRoom.cta')}</span>
                 <ArrowRight className="size-4" />
               </Button>
             </motion.div>
@@ -92,7 +92,7 @@ function DashboardHomePage() {
       {/* Encapsulated Room Modals */}
       <AnimatePresence>
         <CreateRoomModal ref={createRef} />
-        <JoinRoomModal ref={joinRef} />
+        <JoinRoomDialog ref={joinRef} />
       </AnimatePresence>
     </div>
   );

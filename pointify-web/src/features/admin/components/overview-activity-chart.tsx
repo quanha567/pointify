@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -16,7 +16,7 @@ interface OverviewActivityChartProps {
 }
 
 export function OverviewActivityChart({ data }: OverviewActivityChartProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   const chartConfig: ChartConfig = {
     rounds: {
@@ -25,11 +25,7 @@ export function OverviewActivityChart({ data }: OverviewActivityChartProps) {
     },
     rooms: {
       label: t('admin.overview.charts.rooms'),
-      color: '#8b5cf6',
-    },
-    accounts: {
-      label: t('admin.overview.charts.accounts'),
-      color: '#06b6d4',
+      color: 'var(--chart-3)',
     },
   };
 
@@ -44,7 +40,7 @@ export function OverviewActivityChart({ data }: OverviewActivityChartProps) {
   });
 
   return (
-    <Card className="border border-border bg-card shadow-xs">
+    <Card className="rounded-lg border border-border/70 bg-card shadow-xs transition-shadow hover:shadow-sm">
       <CardHeader className="p-5 pb-2">
         <div className="flex flex-col gap-1">
           <CardTitle className="text-base sm:text-lg font-semibold tracking-tight">
@@ -62,17 +58,11 @@ export function OverviewActivityChart({ data }: OverviewActivityChartProps) {
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto h-[280px] w-full">
-            <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="fillRounds" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
-                </linearGradient>
-                <linearGradient id="fillRooms" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
+            <BarChart
+              data={formattedData}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              barGap={4}
+            >
               <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
               <XAxis
                 dataKey="shortDate"
@@ -89,25 +79,11 @@ export function OverviewActivityChart({ data }: OverviewActivityChartProps) {
                 allowDecimals={false}
                 className="text-xs"
               />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-              <Area
-                dataKey="rounds"
-                type="monotone"
-                fill="url(#fillRounds)"
-                stroke="var(--primary)"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Area
-                dataKey="rooms"
-                type="monotone"
-                fill="url(#fillRooms)"
-                stroke="#8b5cf6"
-                strokeWidth={2}
-                dot={false}
-              />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
+              <Bar dataKey="rounds" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={20} />
+              <Bar dataKey="rooms" fill="var(--chart-3)" radius={[6, 6, 0, 0]} maxBarSize={20} />
               <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
+            </BarChart>
           </ChartContainer>
         )}
       </CardContent>

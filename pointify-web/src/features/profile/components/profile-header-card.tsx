@@ -26,7 +26,7 @@ interface ProfileHeaderCardProps {
 }
 
 export function ProfileHeaderCard({ user, onOpenAvatarPicker }: ProfileHeaderCardProps) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['auth', 'common', 'room']);
   const isVi = i18n.language === 'vi';
   const [copiedUid, setCopiedUid] = useState(false);
 
@@ -73,7 +73,7 @@ export function ProfileHeaderCard({ user, onOpenAvatarPicker }: ProfileHeaderCar
             >
               <Sparkles className="size-4 mb-0.5 text-primary-foreground" />
               <span className="text-xs font-semibold uppercase tracking-wide">
-                {t('common.edit')}
+                {t('common:common.edit')}
               </span>
             </button>
           </div>
@@ -97,11 +97,11 @@ export function ProfileHeaderCard({ user, onOpenAvatarPicker }: ProfileHeaderCar
             {user.role === 'admin' ? (
               <Badge variant="destructive" className="gap-1.5 text-xs font-medium h-6 px-2.5">
                 <Shield className="size-3.5" />
-                {t('roles.admin')}
+                {t('room:roles.admin')}
               </Badge>
             ) : (
               <Badge variant="secondary" className="text-xs font-medium h-6 px-2.5">
-                {t('roles.member')}
+                {t('room:roles.member')}
               </Badge>
             )}
 

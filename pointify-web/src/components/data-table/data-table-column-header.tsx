@@ -38,7 +38,10 @@ export function DataTableColumnHeader<TData extends RowData, TValue = any>({
       <Typography
         as="div"
         variant="small"
-        className={cn('text-xs font-semibold text-foreground/85 select-none', className)}
+        className={cn(
+          'text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground select-none',
+          className,
+        )}
       >
         {title}
       </Typography>
@@ -56,7 +59,7 @@ export function DataTableColumnHeader<TData extends RowData, TValue = any>({
             variant="ghost"
             size="sm"
             className={cn(
-              'group/btn -ml-2 h-7 px-2 hover:bg-muted/80 data-[state=open]:bg-muted rounded-md transition-colors select-none gap-1.5',
+              'group/btn -ml-2 h-7 px-2 hover:bg-muted/80 data-[state=open]:bg-muted rounded-md transition-colors select-none gap-1.5 cursor-pointer',
               (sortDirection || isPinned) && 'bg-muted/60',
             )}
           >
@@ -64,62 +67,62 @@ export function DataTableColumnHeader<TData extends RowData, TValue = any>({
               as="span"
               variant="small"
               className={cn(
-                'truncate text-xs font-semibold text-foreground/80 group-hover/btn:text-foreground',
+                'truncate text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover/btn:text-foreground transition-colors',
                 (sortDirection || isPinned) && 'text-foreground font-bold',
               )}
             >
               {title}
             </Typography>
             {sortDirection === 'desc' ? (
-              <span className="flex items-center justify-center h-4 w-4 rounded bg-primary/10 text-primary">
-                <ArrowDownIcon className="h-3 w-3 stroke-[2.5]" />
+              <span className="flex items-center justify-center size-4 rounded-xs bg-primary/10 text-primary">
+                <ArrowDownIcon className="size-3 stroke-[2.5]" />
               </span>
             ) : sortDirection === 'asc' ? (
-              <span className="flex items-center justify-center h-4 w-4 rounded bg-primary/10 text-primary">
-                <ArrowUpIcon className="h-3 w-3 stroke-[2.5]" />
+              <span className="flex items-center justify-center size-4 rounded-xs bg-primary/10 text-primary">
+                <ArrowUpIcon className="size-3 stroke-[2.5]" />
               </span>
             ) : (
-              <ChevronsUpDownIcon className="h-3 w-3 text-muted-foreground/40 group-hover/btn:text-muted-foreground transition-colors" />
+              <ChevronsUpDownIcon className="size-3 text-muted-foreground/50 group-hover/btn:text-muted-foreground transition-colors" />
             )}
             {isPinned && (
               <span title={`Đang ghim ${isPinned === 'start' ? 'trái' : 'phải'}`}>
-                <PinIcon className="h-3 w-3 rotate-45 text-primary fill-primary/20" />
+                <PinIcon className="size-3 rotate-45 text-primary fill-primary/20" />
               </span>
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-48 bg-popover shadow-xl border-border/60 p-1"
+          className="w-48 bg-popover shadow-md border-border rounded-lg p-1 text-popover-foreground"
         >
           {column.getCanSort() && (
             <>
               <DropdownMenuItem
                 onClick={() => column.toggleSorting(false)}
-                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
+                className="cursor-pointer text-xs rounded-md flex items-center justify-between"
               >
                 <div className="flex items-center">
-                  <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <ArrowUpIcon className="mr-2 size-3.5 text-muted-foreground" />
                   Sắp xếp tăng dần
                 </div>
-                {sortDirection === 'asc' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
+                {sortDirection === 'asc' && <CheckIcon className="size-3.5 text-primary" />}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => column.toggleSorting(true)}
-                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
+                className="cursor-pointer text-xs rounded-md flex items-center justify-between"
               >
                 <div className="flex items-center">
-                  <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <ArrowDownIcon className="mr-2 size-3.5 text-muted-foreground" />
                   Sắp xếp giảm dần
                 </div>
-                {sortDirection === 'desc' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
+                {sortDirection === 'desc' && <CheckIcon className="size-3.5 text-primary" />}
               </DropdownMenuItem>
               {sortDirection && (
                 <DropdownMenuItem
                   onClick={() => column.clearSorting()}
-                  className="cursor-pointer text-xs rounded-sm text-muted-foreground"
+                  className="cursor-pointer text-xs rounded-md text-muted-foreground"
                 >
-                  <ChevronsUpDownIcon className="mr-2 h-3.5 w-3.5" />
+                  <ChevronsUpDownIcon className="mr-2 size-3.5" />
                   Bỏ sắp xếp
                 </DropdownMenuItem>
               )}
@@ -131,30 +134,30 @@ export function DataTableColumnHeader<TData extends RowData, TValue = any>({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => column.pin('start')}
-                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
+                className="cursor-pointer text-xs rounded-md flex items-center justify-between"
               >
                 <div className="flex items-center">
-                  <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <PinIcon className="mr-2 size-3.5 text-muted-foreground" />
                   Ghim bên trái
                 </div>
-                {isPinned === 'start' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
+                {isPinned === 'start' && <CheckIcon className="size-3.5 text-primary" />}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => column.pin('end')}
-                className="cursor-pointer text-xs rounded-sm flex items-center justify-between"
+                className="cursor-pointer text-xs rounded-md flex items-center justify-between"
               >
                 <div className="flex items-center">
-                  <PinIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground rotate-90" />
+                  <PinIcon className="mr-2 size-3.5 text-muted-foreground rotate-90" />
                   Ghim bên phải
                 </div>
-                {isPinned === 'end' && <CheckIcon className="h-3.5 w-3.5 text-primary" />}
+                {isPinned === 'end' && <CheckIcon className="size-3.5 text-primary" />}
               </DropdownMenuItem>
               {isPinned && (
                 <DropdownMenuItem
                   onClick={() => column.pin(false)}
-                  className="cursor-pointer text-xs rounded-sm text-muted-foreground"
+                  className="cursor-pointer text-xs rounded-md text-muted-foreground"
                 >
-                  <PinOffIcon className="mr-2 h-3.5 w-3.5" />
+                  <PinOffIcon className="mr-2 size-3.5" />
                   Bỏ ghim cột
                 </DropdownMenuItem>
               )}
@@ -166,9 +169,9 @@ export function DataTableColumnHeader<TData extends RowData, TValue = any>({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => column.toggleVisibility(false)}
-                className="cursor-pointer text-xs rounded-sm text-muted-foreground"
+                className="cursor-pointer text-xs rounded-md text-muted-foreground"
               >
-                <EyeOffIcon className="mr-2 h-3.5 w-3.5" />
+                <EyeOffIcon className="mr-2 size-3.5" />
                 Ẩn cột này
               </DropdownMenuItem>
             </>

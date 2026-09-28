@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { ParticipantProjection } from '../../types/room.types';
 import { ThinkingMascot } from './mascots/thinking-mascot';
 import { PokerStoryCard } from '../cards/poker-story-card';
+import { EASE_OUT } from '@/lib/ease';
 
 interface ParticipantNodeProps {
   data: {
@@ -24,29 +25,26 @@ export const ParticipantNode = memo(function ParticipantNode({ data }: Participa
   // Compute a slight deterministic stagger cascade delay for 3D flip animation
   const flipDelay = useMemo(() => {
     const sum = participant.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (sum % 6) * 0.06;
+    return (sum % 6) * 0.05;
   }, [participant.id]);
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 select-none transition-all duration-300 ${
-        isOnline ? 'opacity-100' : 'opacity-75'
+      className={`flex flex-col items-center gap-2 select-none transition-opacity duration-200 ${
+        isOnline ? 'opacity-100' : 'opacity-65'
       }`}
     >
       {/* Dynamic Slot: Thinking Mascot (before vote) -> Face-down Card -> Face-up Card */}
-      <div className="perspective-1000 w-16 h-24 sm:w-18 sm:h-26 flex items-center justify-center relative">
-        {/* Seat Pedestal Glow beneath mascot / card */}
-        <div className="absolute -bottom-1.5 w-16 sm:w-20 h-4 rounded-full bg-primary/20 blur-[4px] pointer-events-none ring-1 ring-primary/10" />
-
+      <div className="perspective-1000 w-16 h-24 sm:w-18 sm:h-27 md:w-20 md:h-30 flex items-center justify-center relative">
         <AnimatePresence mode="wait">
           {hasEstimated ? (
             /* Card chosen — true 3D flip between face-down and revealed face-up */
             <motion.div
               key="chosen-card"
-              initial={{ scale: 0.3, opacity: 0, y: 15 }}
+              initial={{ scale: 0.8, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.5, opacity: 0, y: -20 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+              exit={{ scale: 0.8, opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: EASE_OUT }}
               className="z-10 cursor-default"
             >
               <PokerStoryCard
@@ -54,21 +52,22 @@ export const ParticipantNode = memo(function ParticipantNode({ data }: Participa
                 value={participant.estimatedValue}
                 size="md"
                 flipDelay={isRevealed ? flipDelay : 0}
+                enableTilt={false}
               />
             </motion.div>
           ) : (
             /* Thinking Mascot — contemplating before voting */
             <motion.div
               key="mascot-thinking"
-              initial={{ scale: 0.6, opacity: 0 }}
+              initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{
-                scale: 1.25,
-                y: -12,
+                scale: 1.1,
+                y: -8,
                 opacity: 0,
-                transition: { duration: 0.22, ease: 'easeIn' },
+                transition: { duration: 0.15, ease: 'easeIn' },
               }}
-              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+              transition={{ duration: 0.18, ease: EASE_OUT }}
               className="w-full h-full flex items-center justify-center z-10"
             >
               <ThinkingMascot
@@ -81,14 +80,25 @@ export const ParticipantNode = memo(function ParticipantNode({ data }: Participa
         </AnimatePresence>
       </div>
 
-      {/* Participant Name Badge — simplified to display name only, active color for current user */}
+      {/* Participant Name Badge — ONE Industrial 6px radius, status dot indicator */}
       <div
-        className={`px-3 py-1 rounded-full border shadow-xs transition-all duration-300 pointer-events-auto select-none max-w-[130px] text-center ${
+        className={`px-2.5 py-1 rounded-md border shadow-2xs transition-all duration-200 pointer-events-auto select-none max-w-[140px] flex items-center gap-1.5 text-center ${
           isCurrentUser
-            ? 'bg-primary/15 border-primary/50 text-primary font-semibold shadow-sm ring-1 ring-primary/25'
-            : 'bg-card/90 border-border/80 text-foreground/85 backdrop-blur-md font-medium'
+            ? 'bg-primary/10 border-primary/40 text-primary font-semibold ring-1 ring-primary/20'
+            : 'bg-card/95 border-border text-foreground font-medium'
         }`}
       >
+        {/* Live Status Indicator Dot */}
+        <span
+          className={`size-1.5 rounded-full shrink-0 ${
+            !isOnline
+              ? 'bg-slate-400'
+              : hasEstimated
+                ? 'bg-emerald-600'
+                : 'bg-amber-500 animate-pulse'
+          }`}
+          aria-hidden
+        />
         <span className="text-xs truncate block" title={participant.displayName}>
           {participant.displayName}
         </span>

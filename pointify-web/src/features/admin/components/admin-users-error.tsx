@@ -9,7 +9,7 @@ export interface AdminUsersErrorProps {
 }
 
 export function AdminUsersError({ error, reset }: AdminUsersErrorProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('admin');
 
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center">
@@ -26,7 +26,7 @@ export function AdminUsersError({ error, reset }: AdminUsersErrorProps) {
         <Button
           variant="outline"
           onClick={reset}
-          className="h-9 sm:h-10 px-4 text-sm font-medium gap-2 rounded-xl cursor-pointer"
+          className="h-[38px] px-4 text-sm font-medium gap-2 rounded-md cursor-pointer"
         >
           <RefreshCwIcon className="size-4" />
           <span>{t('admin.users.error.retry')}</span>

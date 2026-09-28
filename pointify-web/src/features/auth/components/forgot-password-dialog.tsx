@@ -25,7 +25,7 @@ interface ForgotPasswordDialogProps {
 }
 
 export function ForgotPasswordDialog({ ref }: ForgotPasswordDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);

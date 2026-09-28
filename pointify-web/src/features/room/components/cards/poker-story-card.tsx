@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { EASE_OUT } from '@/lib/ease';
 import type { CardValue } from '../../types/room.types';
 import { PokerStoryCardFront } from './poker-story-card-front';
 import { OneTechCardBack } from './one-tech-card-back';
@@ -15,12 +16,13 @@ export interface PokerStoryCardProps {
   className?: string;
   flipDelay?: number;
   compact?: boolean;
+  enableTilt?: boolean;
 }
 
 const SIZE_CLASSES: Record<CardSize, string> = {
   sm: 'w-14 h-21',
-  md: 'w-16 h-24 sm:w-17 sm:h-25.5 md:w-18 md:h-27',
-  lg: 'w-20 h-30 sm:w-24 sm:h-36',
+  md: 'w-[72px] h-[108px] sm:w-[78px] sm:h-[117px] md:w-[82px] md:h-[123px]',
+  lg: 'w-24 h-36 sm:w-28 sm:h-42',
 };
 
 export const PokerStoryCard = memo(function PokerStoryCard({
@@ -30,6 +32,7 @@ export const PokerStoryCard = memo(function PokerStoryCard({
   className = '',
   flipDelay = 0,
   compact = false,
+  enableTilt = true,
 }: PokerStoryCardProps) {
   const isBack = side === 'back';
 
@@ -45,15 +48,19 @@ export const PokerStoryCard = memo(function PokerStoryCard({
         className="w-full h-full relative preserve-3d"
         animate={{ rotateY: isBack ? 180 : 0 }}
         transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 24,
+          duration: 0.2,
+          ease: EASE_OUT,
           delay: flipDelay,
         }}
       >
         {/* Front Face (Story Point Front) */}
         <div className="absolute inset-0 w-full h-full backface-hidden">
-          <PokerStoryCardFront value={value} size={size} compact={compact || size === 'sm'} />
+          <PokerStoryCardFront
+            value={value}
+            size={size}
+            compact={compact || size === 'sm'}
+            enableTilt={enableTilt && !isBack}
+          />
         </div>
 
         {/* Back Face (One Tech Stop Logo & Ribbed Texture) */}

@@ -1,0 +1,328 @@
+{
+  "admin": {
+    "brand": {
+      "motto": "AS ONE, WE CAN"
+    },
+    "header": {
+      "searchPlaceholder": "Tìm kiếm ván bài, phòng, công việc...",
+      "notifications": "Thông báo"
+    },
+    "nav": {
+      "home": "Trang chủ",
+      "games": "Ván bài",
+      "rooms": "Phòng Scrum",
+      "backlog": "Hàng đợi Backlog",
+      "team": "Đội ngũ",
+      "reports": "Báo cáo"
+    },
+    "heroBanner": {
+      "greetingMorning": "Chào buổi sáng, {{name}}",
+      "greetingAfternoon": "Chào buổi chiều, {{name}}",
+      "greetingEvening": "Chào buổi tối, {{name}}"
+    },
+    "overview": {
+      "heroSubtitle": "Chuyển đổi số ngành vận tải biển toàn cầu với Ước lượng Agile",
+      "cards": {
+        "totalGames": "Tổng số ván bài",
+        "activeRooms": "Phòng đang hoạt động",
+        "teamMembers": "Thành viên đội ngũ",
+        "avgCycleTime": "Thời gian chu kỳ TB",
+        "vsLastMonth": "so với tháng trước",
+        "vsLastWeek": "so với tuần trước",
+        "recentGames": "Phòng gần đây",
+        "viewAll": "Xem tất cả",
+        "name": "Tên ván bài",
+        "team": "Đội ngũ",
+        "date": "Ngày tạo",
+        "status": "Trạng thái",
+        "inProgress": "Đang diễn ra",
+        "completed": "Đã hoàn thành",
+        "gameDistribution": "Phân bổ ván bài",
+        "thisMonth": "Tháng này",
+        "total": "tổng số",
+        "feature": "Tính năng",
+        "bug": "Sửa lỗi",
+        "refactor": "Tái cấu trúc",
+        "uiux": "Giao diện UI/UX",
+        "others": "Khác",
+        "myTeam": "Đội ngũ của tôi",
+        "moreMembers": "+{{count}} thành viên khác",
+        "recentActivity": "Hoạt động gần đây",
+        "quickActions": "Thao tác nhanh",
+        "days": "ngày"
+      },
+      "activities": {
+        "createdGame": "đã tạo ván bài mới",
+        "completedVoting": "đã hoàn tất ước lượng",
+        "joinedRoom": "đã tham gia phòng",
+        "updatedBacklog": "đã cập nhật backlog",
+        "m_ago": "{{count}} phút trước",
+        "h_ago": "{{count}} giờ trước"
+      },
+      "actions": {
+        "startGame": "Bắt đầu ván bài",
+        "startGameDesc": "Tạo ván Scrum Poker mới",
+        "joinRoom": "Vào phòng",
+        "joinRoomDesc": "Tham gia phòng sẵn có",
+        "viewBacklog": "Xem Backlog",
+        "viewBacklogDesc": "Xem các công việc sắp tới",
+        "viewReports": "Xem báo cáo",
+        "viewReportsDesc": "Phân tích số liệu chi tiết"
+      },
+      "activeRooms": {
+        "title": "Phòng Poker Đang Mở",
+        "subtitle": "Các phòng đang diễn ra phiên ước lượng",
+        "empty": "Hiện chưa có phòng nào đang mở"
+      },
+      "charts": {
+        "rounds": "Vòng ước lượng",
+        "rooms": "Phòng",
+        "activityTrendTitle": "Xu hướng hoạt động",
+        "activityTrendSubtitle": "Số phiên và vòng ước lượng theo thời gian",
+        "noChartData": "Chưa có dữ liệu hoạt động"
+      },
+      "sprintTracker": {
+        "title": "Sprint Đang Chạy",
+        "subtitle": "Tiến độ ước lượng của các nhóm",
+        "storiesEstimated": "Đã ước lượng {{estimated}} trên {{total}} story"
+      },
+      "timeRange": {
+        "label": "Khoảng thời gian",
+        "range7d": "7 ngày qua",
+        "range30d": "30 ngày qua",
+        "range90d": "90 ngày qua",
+        "rangeAll": "Tất cả thời gian"
+      }
+    },
+    "users": {
+      "title": "Quản lý người dùng",
+      "subtitle": "Quản lý danh sách tài khoản, vai trò và trạng thái truy cập hệ thống",
+      "refresh": "Làm mới",
+      "createAccount": "Tạo tài khoản",
+      "searchPlaceholder": "Tìm theo tên, email hoặc UID...",
+      "roles": {
+        "admin": "Quản trị viên",
+        "member": "Thành viên"
+      },
+      "statuses": {
+        "active": "Hoạt động",
+        "disabled": "Bị khóa"
+      },
+      "columns": {
+        "user": "Tài khoản",
+        "email": "Email",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "provider": "Đăng nhập qua",
+        "createdAt": "Ngày tạo",
+        "lastLoginAt": "Đăng nhập gần nhất",
+        "actions": "Thao tác",
+        "never": "Chưa đăng nhập",
+        "noName": "Chưa đặt tên",
+        "noEmail": "Chưa cung cấp email"
+      },
+      "actions": {
+        "copyUid": "Sao chép UID",
+        "edit": "Chỉnh sửa thông tin",
+        "disable": "Khóa tài khoản",
+        "activate": "Mở khóa tài khoản",
+        "promoteAdmin": "Cấp quyền Quản trị viên",
+        "demoteMember": "Chuyển về Thành viên"
+      },
+      "toasts": {
+        "copiedUid": "Đã sao chép UID: {{uid}}",
+        "createdSuccess": "Đã tạo người dùng {{name}} thành công",
+        "updatedSuccess": "Đã cập nhật người dùng {{name}} thành công",
+        "bulkActivated": "Đã kích hoạt {{count}} người dùng",
+        "bulkDisabled": "Đã vô hiệu hóa {{count}} người dùng",
+        "selfLockError": "Không thể tự khóa tài khoản quản trị của bạn",
+        "selfDemoteError": "Không thể tự hạ quyền quản trị của bạn",
+        "selfExcludedInfo": "Tài khoản của bạn đã được tự động loại trừ khỏi danh sách khóa",
+        "fetchError": "Không thể tải danh sách tài khoản",
+        "saveError": "Có lỗi xảy ra khi lưu thông tin tài khoản",
+        "bulkError": "Không thể cập nhật người dùng"
+      },
+      "confirm": {
+        "disableTitle": "Khóa tài khoản",
+        "disableDesc": "Bạn có chắc chắn muốn khóa tài khoản {{name}}? Người dùng này sẽ không thể đăng nhập vào hệ thống.",
+        "disableButton": "Khóa tài khoản",
+        "enableTitle": "Kích hoạt tài khoản",
+        "enableDesc": "Bạn có chắc chắn muốn kích hoạt lại tài khoản {{name}}?",
+        "enableButton": "Kích hoạt",
+        "changeRoleTitle": "Thay đổi vai trò",
+        "changeRoleDesc": "Bạn có chắc muốn đổi vai trò của {{name}} thành {{role}}?",
+        "confirmButton": "Xác nhận",
+        "cancel": "Hủy"
+      },
+      "bulk": {
+        "activate": "Kích hoạt ({{count}})",
+        "disable": "Khóa ({{count}})",
+        "confirmDisableTitle": "Khóa {{count}} tài khoản đã chọn",
+        "confirmDisableDesc": "Các người dùng này sẽ không thể đăng nhập vào hệ thống sau khi bị khóa.",
+        "confirmDisableButton": "Khóa tất cả"
+      },
+      "form": {
+        "createTitle": "Thêm tài khoản mới",
+        "editTitle": "Chỉnh sửa tài khoản",
+        "createDesc": "Nhập thông tin để tạo tài khoản mới trong hệ thống Pointify.",
+        "editDesc": "Cập nhật quyền hạn và trạng thái cho {{name}}.",
+        "email": "Địa chỉ Email",
+        "emailPlaceholder": "user@congty.com",
+        "displayName": "Tên hiển thị",
+        "displayNamePlaceholder": "Alex Nguyễn",
+        "photoURL": "Đường dẫn ảnh đại diện (URL)",
+        "photoURLPlaceholder": "https://...",
+        "role": "Vai trò tài khoản",
+        "status": "Trạng thái hoạt động",
+        "roleAdminDesc": "Toàn quyền quản trị hệ thống và các tài khoản",
+        "roleMemberDesc": "Tạo và tham gia các phòng Scrum Poker",
+        "statusActiveDesc": "Được phép đăng nhập và sử dụng bình thường",
+        "statusDisabledDesc": "Bị khóa, không thể đăng nhập vào hệ thống",
+        "cancel": "Hủy",
+        "createSubmit": "Tạo tài khoản",
+        "editSubmit": "Lưu thay đổi",
+        "saving": "Đang lưu...",
+        "saved": "Đã lưu thành công",
+        "error": "Có lỗi xảy ra khi lưu thông tin",
+        "validationEmail": "Địa chỉ email không hợp lệ",
+        "validationDisplayName": "Tên hiển thị phải có từ 2 đến 50 ký tự",
+        "validationPhotoUrl": "Đường dẫn ảnh đại diện không hợp lệ",
+        "noName": "Chưa đặt tên"
+      },
+      "error": {
+        "title": "Đã xảy ra lỗi",
+        "desc": "Không thể tải dữ liệu. Vui lòng thử lại sau.",
+        "retry": "Thử lại"
+      },
+      "providers": {
+        "google": "Google",
+        "password": "Email & Mật khẩu",
+        "unknown": "Không xác định"
+      }
+    },
+    "breadcrumbs": {
+      "admin": "Quản trị",
+      "overview": "Tổng quan",
+      "management": "Quản lý",
+      "system": "Hệ thống",
+      "users": "Quản lý tài khoản",
+      "rooms": "Phòng ước lượng",
+      "settings": "Cấu hình hệ thống"
+    },
+    "navUser": {
+      "adminRole": "Quản trị viên hệ thống"
+    },
+    "search": {
+      "groupNav": "Điều hướng",
+      "groupTheme": "Giao diện & Tài khoản",
+      "navDashboard": "Bảng điều khiển",
+      "navUsers": "Quản lý người dùng",
+      "navRooms": "Phòng Scrum Poker",
+      "navDecks": "Bộ bài ước lượng",
+      "navSettings": "Cài đặt hệ thống",
+      "themeLight": "Giao diện sáng",
+      "themeDark": "Giao diện tối",
+      "backToHome": "Về trang chủ",
+      "signOut": "Đăng xuất",
+      "trigger": "Tìm kiếm...",
+      "triggerShort": "Tìm...",
+      "inputPlaceholder": "Nhập lệnh hoặc tìm kiếm...",
+      "empty": "Không tìm thấy kết quả phù hợp."
+    },
+    "theme": {
+      "toggleTitle": "Chuyển đổi giao diện"
+    },
+    "guard": {
+      "loginRequired": "Vui lòng đăng nhập để truy cập trang quản trị",
+      "noPermission": "Bạn không có quyền truy cập trang quản trị",
+      "loading": "Đang kiểm tra quyền quản trị..."
+    },
+    "rooms": {
+      "title": "Quản lý phòng ước lượng",
+      "subtitle": "Giám sát, kiểm toán và điều hành tất cả các phiên Scrum Poker trong hệ thống",
+      "stats": {
+        "totalRooms": "Tổng số phòng",
+        "activeRooms": "Phòng đang chạy",
+        "closedRooms": "Phòng đã đóng",
+        "activeParticipants": "Thành viên trực tuyến"
+      },
+      "table": {
+        "roomCode": "Mã phòng",
+        "roomName": "Tên phòng",
+        "facilitator": "Người điều phối",
+        "deck": "Bộ bài",
+        "participants": "Thành viên",
+        "round": "Vòng",
+        "status": "Trạng thái",
+        "createdAt": "Ngày tạo"
+      },
+      "statuses": {
+        "active": "Đang hoạt động",
+        "closed": "Đã kết thúc",
+        "stale": "Không hoạt động"
+      },
+      "actions": {
+        "viewDetail": "Xem chi tiết phòng",
+        "joinAsFacilitator": "Vào phòng (Điều phối)",
+        "closeRoom": "Đóng phòng",
+        "deleteRoom": "Xóa phòng",
+        "copyCode": "Sao chép mã",
+        "copy": "Sao chép",
+        "copied": "Đã chép"
+      },
+      "bulk": {
+        "close": "Đóng ({{count}})",
+        "delete": "Xóa ({{count}})",
+        "export": "Xuất CSV"
+      },
+      "tabs": {
+        "overview": "Tổng quan",
+        "participants": "Thành viên",
+        "rounds": "Vòng ước lượng"
+      },
+      "detail": {
+        "shareUrl": "Liên kết tham gia phòng",
+        "version": "Phiên bản state",
+        "cardsInDeck": "Các lá bài trong bộ bài",
+        "currentRound": "Vòng ước lượng hiện tại",
+        "noTopic": "Chưa có chủ đề / User Story",
+        "spectator": "Quan sát",
+        "estimated": "Đã chọn bài",
+        "online": "Trực tuyến",
+        "offline": "Ngoại tuyến",
+        "totalRoundsConcluded": "Tổng số vòng đã tổ chức",
+        "roundsDesc": "Mỗi vòng tương ứng với một lần các thành viên biểu quyết story point cho User Story.",
+        "consensus": "Đồng thuận",
+        "average": "Trung bình",
+        "median": "Trung vị"
+      },
+      "toasts": {
+        "closedSuccess": "Đã đóng phòng ước lượng",
+        "deletedSuccess": "Đã xóa phòng ước lượng",
+        "bulkClosedSuccess": "Đã đóng {{count}} phòng ước lượng",
+        "bulkDeletedSuccess": "Đã xóa {{count}} phòng ước lượng",
+        "copiedCode": "Đã sao chép mã phòng",
+        "copiedLink": "Đã sao chép liên kết tham gia phòng",
+        "takeoverError": "Không thể tiếp quản quyền điều phối",
+        "error": "Có lỗi xảy ra"
+      },
+      "dialogs": {
+        "closeTitle": "Xác nhận đóng phòng",
+        "closeDesc": "Bạn có chắc chắn muốn đóng phòng '{{name}}'? Mọi người tham gia sẽ bị ngắt kết nối và không thể biểu quyết thêm.",
+        "deleteTitle": "Xác nhận xóa phòng",
+        "deleteDesc": "Hành động này không thể hoàn tác. Phòng '{{name}}' và toàn bộ lịch sử ước lượng sẽ bị xóa vĩnh viễn.",
+        "confirmClose": "Đóng phòng",
+        "confirmDelete": "Xóa vĩnh viễn",
+        "cancel": "Hủy"
+      },
+      "filters": {
+        "searchPlaceholder": "Tìm theo mã phòng, tên phòng hoặc người điều phối...",
+        "allStatus": "Tất cả trạng thái",
+        "allDecks": "Tất cả bộ bài",
+        "statusActive": "Đang hoạt động",
+        "statusClosed": "Đã kết thúc",
+        "empty": "Không tìm thấy phòng ước lượng nào phù hợp."
+      }
+    }
+  }
+}
