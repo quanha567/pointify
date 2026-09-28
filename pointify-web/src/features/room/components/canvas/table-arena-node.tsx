@@ -180,12 +180,7 @@ export const TableArenaNode = memo(function TableArenaNode({ data }: TableArenaN
   return (
     <div className="w-[620px] min-h-[340px] select-none pointer-events-auto">
       {/* Container Frame with 3px ONE Cherry Blossom Magenta Top Accent */}
-      <div
-        className="w-full h-full min-h-[340px] rounded-lg border border-border bg-card text-card-foreground p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between shadow-xs transition-colors duration-200 pointer-events-auto"
-        style={{
-          borderTop: '3px solid #E31C79',
-        }}
-      >
+      <div className="w-full h-full min-h-[340px] rounded-lg border border-border border-t-[3px] border-t-brand-primary bg-card text-card-foreground p-5 sm:p-6 relative overflow-hidden flex flex-col justify-between shadow-xs transition-colors duration-200 pointer-events-auto">
         {/* Header Info */}
         <ArenaTopicCard
           roundNumber={currentRound.roundNumber}

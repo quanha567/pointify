@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { useRoomQuery } from '../api/use-room';
-import { useRoomSocket } from '../api/use-room-socket';
-import { useRoomParticipantIdentity } from '../hooks/use-room-participant-identity';
-import { useRoomStoreApi } from '../context/room-store-context';
+import { useRoomStore, useRoomStoreApi } from '../context/room-store-context';
 import { useActiveRoom } from '../hooks/use-active-room';
 import { TypographyMuted } from '@/components/ui/typography';
 import { Spinner } from '@/components/ui/spinner';
@@ -17,6 +15,8 @@ import { StoryBacklogDrawer } from './hud/story-backlog-drawer';
 import { JoinRoomDialog } from './dialogs/join-room-dialog';
 import { initAudioUnlockListener } from '../utils/web-audio-chime';
 import { useJiraStatus, useSyncStoryPointsMutation } from '@/features/profile/api/jira.api';
+import type { StoredParticipant } from '../utils/participant-session';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface RoomPageProps {
   roomId: string;
@@ -24,49 +24,27 @@ export interface RoomPageProps {
 
 export function RoomPage({ roomId }: RoomPageProps) {
   const { t } = useTranslation('room');
+  const { user, isInitialized } = useAuthStore();
   const store = useRoomStoreApi();
 
-  // 1. Participant identity (session, auth, join dialog)
-  const { participant, isJoinDialogOpen, handleJoinSubmit, handleParticipantJoined } =
-    useRoomParticipantIdentity(roomId);
-
-  // 2. Unlock Web AudioContext on initial user gesture
+  // 1. Unlock Web AudioContext on initial user gesture
   useEffect(() => initAudioUnlockListener(), []);
 
-  // 3. Real-time WebSocket gateway
-  const socket = useRoomSocket({
-    roomId,
-    participant,
-    onParticipantJoined: handleParticipantJoined,
-  });
+  // 2. Selectors from Room Zustand Store
+  const participant = useRoomStore((s) => s.participant);
+  const joinRoom = useRoomStore((s) => s.joinRoom);
+  const syncJiraPoints = useRoomStore((s) => s.syncJiraPoints);
 
-  // 4. Room state query (seeded and updated live by socket)
+  // Dialog only opens for unauthenticated guests after auth has finished initializing
+  const isJoinDialogOpen = isInitialized && !participant && !user?.uid;
+
+  // 3. Room state query (seeded and updated live by socket via React Query cache)
   const { data: room, isLoading, error } = useRoomQuery(roomId, participant?.id);
   const { currentJiraKey } = useActiveRoom();
 
   // Jira sync mutation & status
   const { data: jiraStatus } = useJiraStatus(false);
   const syncPointsMutation = useSyncStoryPointsMutation();
-
-  const handleEstimateStory = useCallback(
-    (storyKey: string, summary: string) => {
-      const cleanSummary = storyKey
-        ? summary.replace(new RegExp(`^(?:${storyKey}[:\\s-]*)+`, 'i'), '').trim()
-        : summary.trim();
-      const topic = storyKey
-        ? cleanSummary
-          ? `${storyKey}: ${cleanSummary}`
-          : storyKey
-        : cleanSummary;
-      socket.nextRound(topic);
-      if (storyKey) {
-        toast.info(t('room.startEstimateForStory', { storyKey }));
-      } else {
-        toast.info(t('room.startEstimate'));
-      }
-    },
-    [socket, t],
-  );
 
   const handleSyncPoints = useCallback(async () => {
     if (!currentJiraKey || !room) return;
@@ -89,63 +67,22 @@ export function RoomPage({ roomId }: RoomPageProps) {
         issueKey: currentJiraKey,
         points: consensusPoints,
       });
-      socket.syncJiraPoints(currentJiraKey, consensusPoints);
+      syncJiraPoints(currentJiraKey, consensusPoints);
       toast.success(t('jira.syncPointsSuccess', { points: consensusPoints, key: currentJiraKey }));
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       toast.error(errMsg || t('jira.syncPointsError'));
     }
-  }, [currentJiraKey, room, jiraStatus, syncPointsMutation, socket, t]);
+  }, [currentJiraKey, room, jiraStatus, syncPointsMutation, syncJiraPoints, t]);
 
-  // Sync participant into Zustand store
-  useEffect(() => {
-    store.getState().setParticipant(participant);
-  }, [participant, store]);
-
-  // Sync socket connection state into Zustand store
-  useEffect(() => {
-    store.getState().setSocketState({
-      connectionStatus: socket.connectionStatus,
-      isConnected: socket.isConnected,
-      isActionLoading: socket.isActionLoading,
-      isSwitchingRole: socket.isSwitchingRole,
-    });
-  }, [
-    socket.connectionStatus,
-    socket.isConnected,
-    socket.isActionLoading,
-    socket.isSwitchingRole,
-    store,
-  ]);
-
-  // Sync socket actions into Zustand store
-  useEffect(() => {
-    store.getState().setActions({
-      joinRoom: socket.joinRoom,
-      submitEstimate: socket.submitEstimate,
-      revealCards: socket.revealCards,
-      nextRound: socket.nextRound,
-      resetRound: socket.resetRound,
-      claimFacilitator: socket.claimFacilitator,
-      switchRole: socket.switchRole,
-      updateRoomConfig: socket.updateRoomConfig,
-      startTimer: (durationSeconds?: number) => socket.startTimer(durationSeconds ?? 30),
-      pauseTimer: socket.pauseTimer,
-      resumeTimer: socket.resumeTimer,
-      stopTimer: socket.stopTimer,
-      addTimerSeconds: (seconds?: number) => socket.addTimerSeconds(seconds ?? 30),
-      createStickyNote: socket.createStickyNote,
-      moveStickyNote: socket.moveStickyNote,
-      editStickyNote: socket.editStickyNote,
-      togglePinStickyNote: socket.togglePinStickyNote,
-      deleteStickyNote: socket.deleteStickyNote,
-      startEditingStickyNote: socket.startEditingStickyNote,
-      stopEditingStickyNote: socket.stopEditingStickyNote,
-      syncJiraPoints: socket.syncJiraPoints,
-      leaveRoom: socket.leaveRoom,
-      estimateStory: handleEstimateStory,
-    });
-  }, [socket, handleEstimateStory, store]);
+  const handleJoin = useCallback(
+    (newParticipant: StoredParticipant) => {
+      joinRoom(newParticipant);
+      store.getState().setParticipant(newParticipant);
+      toast.success(t('room.joinedSuccess'));
+    },
+    [joinRoom, store, t],
+  );
 
   if (isLoading) {
     return (
@@ -170,7 +107,7 @@ export function RoomPage({ roomId }: RoomPageProps) {
         open={isJoinDialogOpen}
         roomName={room.name}
         roomId={roomId}
-        onJoin={(p) => handleJoinSubmit(p, socket.joinRoom)}
+        onJoin={handleJoin}
       />
 
       {/* Zero prop drilling — components pull state directly from useActiveRoom & useRoomStore */}

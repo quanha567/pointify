@@ -2,7 +2,11 @@ import { useState, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Socket } from 'socket.io-client';
 import { roomKeys } from './use-room';
-import { setStoredParticipant, type StoredParticipant } from '../utils/participant-session';
+import {
+  setStoredParticipant,
+  getStoredParticipant,
+  type StoredParticipant,
+} from '../utils/participant-session';
 import type { CardValue, RoomProjection } from '../types/room.types';
 
 export function useEstimatorActions(
@@ -16,13 +20,14 @@ export function useEstimatorActions(
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const roleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Submit Estimate with 400ms rapid-click suppression + optimistic update
+  // Submit Estimate with 200ms rapid-click suppression + optimistic update
   const submitEstimate = useCallback(
     (cardValue: CardValue | null) => {
-      if (!participant) return;
+      const activeParticipant = participant || getStoredParticipant(roomId);
+      if (!activeParticipant) return;
 
       const now = Date.now();
-      if (now - lastEstimateTimeRef.current < 400) return;
+      if (now - lastEstimateTimeRef.current < 200) return;
       lastEstimateTimeRef.current = now;
 
       // Optimistic update for instant local UI
@@ -31,7 +36,7 @@ export function useEstimatorActions(
         return {
           ...old,
           participants: old.participants.map((p) =>
-            p.id === participant.id
+            p.id === activeParticipant.id
               ? { ...p, hasEstimated: cardValue !== null, estimatedValue: cardValue }
               : p,
           ),
@@ -40,7 +45,7 @@ export function useEstimatorActions(
 
       getSocket().emit('room:estimate', {
         roomId,
-        participantId: participant.id,
+        participantId: activeParticipant.id,
         cardValue,
       });
     },

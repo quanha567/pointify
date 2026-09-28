@@ -139,7 +139,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
                     ? t('room.stickyNote.reestimateThisStory')
                     : t('room.stickyNote.estimateThisStory')
                 }
-                className="h-7 px-2.5 rounded-md flex items-center gap-1.5 bg-[#E31C79] hover:bg-[#CC196C] text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+                className="h-7 px-2.5 rounded-md flex items-center gap-1.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
                 {hasStoryPoints ? (
                   <>
@@ -251,7 +251,8 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
           'bg-card/95 backdrop-blur-xs border border-border/80 shadow-xs hover:shadow-md',
           colorConfig.tintBg,
           isSelected && 'ring-2 ring-primary/80',
-          isEstimating && 'ring-2 ring-[#E31C79] shadow-md shadow-[#E31C79]/20 animate-pulse',
+          isEstimating &&
+            'ring-2 ring-brand-primary shadow-md shadow-brand-primary/20 animate-pulse',
           isLockedByOther && 'ring-2 ring-amber-400',
         )}
       >
@@ -259,7 +260,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
         <div
           className={cn(
             'absolute top-0 left-0 right-0 h-[3px] z-20',
-            isEstimating ? 'bg-[#E31C79]' : colorConfig.topBorder,
+            isEstimating ? 'bg-brand-primary' : colorConfig.topBorder,
           )}
         />
 
@@ -317,7 +318,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
               {/* Right: Lifecycle / Points Badge */}
               <div className="shrink-0">
                 {isEstimating ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#E31C79]/15 text-[#E31C79] border border-[#E31C79]/30 animate-pulse">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-brand-primary/15 text-brand-primary border border-brand-primary/30 animate-pulse">
                     <Play className="size-2.5 fill-current" />
                     <span>{t('room.stickyNote.estimatingStatus')}</span>
                   </span>
@@ -335,7 +336,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
                     }}
                     onClick={handleEstimateAction}
                     title={t('room.stickyNote.estimateThisStory')}
-                    className="nodrag h-6 px-2 rounded-md flex items-center gap-1 bg-[#E31C79] hover:bg-[#CC196C] text-white text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
+                    className="nodrag h-6 px-2 rounded-md flex items-center gap-1 bg-brand-primary hover:bg-brand-hover text-white text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
                   >
                     <Play className="size-2.5 fill-current" />
                     <span>{t('room.startEstimate')}</span>
@@ -379,7 +380,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
               <span className="truncate max-w-[80px] pointer-events-none">{note.authorName}</span>
               <div className="shrink-0">
                 {isEstimating ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-[#E31C79]/15 text-[#E31C79] border border-[#E31C79]/30 animate-pulse">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-brand-primary/15 text-brand-primary border border-brand-primary/30 animate-pulse">
                     <Play className="size-2.5 fill-current" />
                     <span>{t('room.stickyNote.estimatingStatus')}</span>
                   </span>
@@ -397,7 +398,7 @@ export function StickyNoteNode({ data, selected }: NodeProps) {
                     }}
                     onClick={handleEstimateAction}
                     title={t('room.stickyNote.estimateThisStory')}
-                    className="nodrag h-6 px-2 rounded-md flex items-center gap-1 bg-[#E31C79] hover:bg-[#CC196C] text-white text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
+                    className="nodrag h-6 px-2 rounded-md flex items-center gap-1 bg-brand-primary hover:bg-brand-hover text-white text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
                   >
                     <Play className="size-2.5 fill-current" />
                     <span>{t('room.startEstimate')}</span>

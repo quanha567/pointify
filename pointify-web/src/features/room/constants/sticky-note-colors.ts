@@ -78,9 +78,9 @@ export const STICKY_NOTE_COLORS: StickyNoteColorConfig[] = [
     dot: 'bg-[#ffbfe0]',
     bg: 'bg-pink-100/90 dark:bg-pink-950/40',
     border: 'border-pink-300 dark:border-pink-700/60',
-    topBorder: 'bg-[#E31C79]',
-    tintBg: 'bg-[#E31C79]/[0.04] dark:bg-[#E31C79]/[0.08]',
-    badgeBg: 'bg-[#E31C79]/10 text-[#CC196C] dark:text-pink-300 border-[#E31C79]/20',
+    topBorder: 'bg-brand-primary',
+    tintBg: 'bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08]',
+    badgeBg: 'bg-brand-primary/10 text-brand-hover dark:text-pink-300 border-brand-primary/20',
   },
   {
     id: 'orange',

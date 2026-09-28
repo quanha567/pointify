@@ -17,13 +17,10 @@ import {
  */
 export function useRoomParticipantIdentity(roomId: string) {
   const { t } = useTranslation('room');
-  const { user } = useAuthStore();
+  const { user, isInitialized } = useAuthStore();
 
   const [participant, setParticipant] = useState<StoredParticipant | null>(() => {
-    const stored = getStoredParticipant(roomId);
-    if (stored) return stored;
-
-    // Auto-create from authenticated user if available
+    // 1. Prioritize authenticated user if available
     if (user?.uid) {
       const authParticipant: StoredParticipant = {
         id: user.uid,
@@ -36,14 +33,21 @@ export function useRoomParticipantIdentity(roomId: string) {
       return authParticipant;
     }
 
+    // 2. Fall back to stored session in sessionStorage
+    const stored = getStoredParticipant(roomId);
+    if (stored) return stored;
+
     return null;
   });
 
-  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(!participant);
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(
+    () => isInitialized && !participant && !user?.uid,
+  );
 
-  // Synchronize when auth changes
+  // Synchronize when auth state resolves
   useEffect(() => {
-    if (!participant && user?.uid) {
+    if (user?.uid) {
+      if (participant?.id === user.uid) return;
       const authParticipant: StoredParticipant = {
         id: user.uid,
         displayName: user.displayName || 'Tài khoản',
@@ -54,8 +58,10 @@ export function useRoomParticipantIdentity(roomId: string) {
       setStoredParticipant(roomId, authParticipant);
       setParticipant(authParticipant);
       setIsJoinDialogOpen(false);
+    } else if (isInitialized && !participant) {
+      setIsJoinDialogOpen(true);
     }
-  }, [user, roomId, participant]);
+  }, [user, roomId, participant, isInitialized]);
 
   const handleJoinSubmit = useCallback(
     (newParticipant: StoredParticipant, joinRoom: (p: StoredParticipant) => void) => {

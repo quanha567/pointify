@@ -35,7 +35,7 @@ export interface JoinRoomDialogHandle {
 
 export interface JoinRoomDialogProps {
   ref?: React.Ref<JoinRoomDialogHandle>;
-  // Controlled mode props (used when entering /rooms/:roomId directly)
+  defaultOpen?: boolean;
   open?: boolean;
   roomName?: string;
   roomId?: string;
@@ -45,6 +45,7 @@ export interface JoinRoomDialogProps {
 
 export function JoinRoomDialog({
   ref,
+  defaultOpen,
   open: controlledOpen,
   roomName: controlledRoomName,
   roomId: controlledRoomId,
@@ -56,7 +57,7 @@ export function JoinRoomDialog({
   const { user, isGuest, guestName } = useAuthStore();
   const { addRecentRoom } = useAppStore();
 
-  const [internalOpen, setInternalOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const [internalRoomId, setInternalRoomId] = useState('');
   const [internalRoomName, setInternalRoomName] = useState('');
 

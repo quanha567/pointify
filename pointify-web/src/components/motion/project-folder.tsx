@@ -1,17 +1,9 @@
 'use client';
-// beui.dev/components/blocks/project-folder
 
-import { X } from 'lucide-react';
-import {
-  AnimatePresence,
-  LayoutGroup,
-  motion,
-  useReducedMotion,
-  type Transition,
-} from 'motion/react';
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { SPRING_LAYOUT, SPRING_PRESS } from '@/lib/ease';
+import { X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useHoverCapable } from '@/lib/hooks/use-hover-capable';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +11,7 @@ export type ProjectFolderPreview = {
   id: string;
   content: ReactNode;
   onClick?: () => void;
+  selected?: boolean;
 };
 
 export interface ProjectFolderProps {
@@ -43,14 +36,6 @@ export interface ProjectFolderProps {
 }
 
 const MAX_PREVIEWS = 5;
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 function getPreviewTransform(index: number, count: number, isCompact = false) {
   const offset = index - (count - 1) / 2;
@@ -88,26 +73,25 @@ export function ProjectFolder({
   className,
 }: ProjectFolderProps) {
   const isCompact = size === 'sm';
-  const reduce = useReducedMotion();
   const canHover = useHoverCapable();
-  const layoutGroupId = useId();
-  const dialogTitleId = `${layoutGroupId}-title`;
-  const hoveredRef = useRef(false);
-  const focusedRef = useRef(false);
-  const restoringFocusRef = useRef(false);
   const folderButtonRef = useRef<HTMLButtonElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
+
   const [mounted, setMounted] = useState(false);
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
-  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const openControlled = open !== undefined;
   const expandedControlled = expanded !== undefined;
+
   const isExpanded = expanded ?? internalExpanded;
-  const isOpen = (open ?? internalOpen) || isExpanded;
+  const isHoverOpen = (open ?? internalOpen) && !isExpanded;
+
   const previewItems = previews.slice(0, MAX_PREVIEWS);
-  const transition: Transition = reduce ? { duration: 0 } : SPRING_LAYOUT;
+  const displayItems = items ?? previewItems;
   const countText =
     count === 1
       ? `1 ${itemLabel}`
@@ -115,7 +99,7 @@ export function ProjectFolder({
         ? `${count} ${itemLabel}`
         : `${count} ${itemLabel}s`;
 
-  const setOpen = useCallback(
+  const handleOpenHover = useCallback(
     (next: boolean) => {
       if (disabled) return;
       if (!openControlled) setInternalOpen(next);
@@ -124,299 +108,208 @@ export function ProjectFolder({
     [disabled, onOpenChange, openControlled],
   );
 
-  const setExpanded = useCallback(
+  const handleExpandedChange = useCallback(
     (next: boolean) => {
-      if (disabled || previewItems.length === 0) return;
+      if (disabled) return;
       if (!expandedControlled) setInternalExpanded(next);
       onExpandedChange?.(next);
+      if (!next) {
+        handleOpenHover(false);
+      }
     },
-    [disabled, expandedControlled, onExpandedChange, previewItems.length],
+    [disabled, expandedControlled, onExpandedChange, handleOpenHover],
   );
 
-  const finishClose = useCallback(() => {
-    setIsClosing(false);
-    restoringFocusRef.current = true;
-    requestAnimationFrame(() => folderButtonRef.current?.focus());
-  }, []);
-
-  const closeOverlay = useCallback(() => {
-    setIsClosing(true);
-    setOpen(false);
-    setExpanded(false);
-  }, [setExpanded, setOpen]);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (reduce && isClosing) finishClose();
-  }, [finishClose, isClosing, reduce]);
-
+  // Close on Escape & Lock body scroll when overlay is open
   useEffect(() => {
     if (!isExpanded) return;
 
-    const previousOverflow = document.body.style.overflow;
-    const focusFrame = requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleExpandedChange(false);
+      }
+    };
 
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeOverlay();
-        return;
-      }
-      if (event.key !== 'Tab' || !dialogRef.current) return;
-
-      const focusable = Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((element) => element.tabIndex >= 0);
-      const first = focusable[0];
-      const last = focusable.at(-1);
-      if (!first || !last) return;
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
-      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [closeOverlay, isExpanded]);
+  }, [isExpanded, handleExpandedChange]);
 
-  const handleFolderClick = () => {
-    setIsClosing(false);
-    setExpanded(true);
-    setOpen(true);
-    onClick?.();
-  };
+  const overlayContent = (
+    <AnimatePresence>
+      {isExpanded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Background mờ dần hiện lên */}
+          <motion.div
+            key="deck-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            onClick={() => handleExpandedChange(false)}
+            aria-hidden="true"
+            className="fixed inset-0 bg-background/80 backdrop-blur-xl cursor-default"
+          />
 
-  // The chrome is two siblings: a backdrop spanning the viewport edges that
-  // paints the scrim, and a transparent dialog inset off every edge that lays
-  // out and scrolls the panel. The backdrop cannot nest inside that scroll box —
-  // WebKit resolves a `position: fixed` descendant of an accelerated overflow
-  // scroller against the scroller, not the viewport, so the insets would go
-  // unscrimmed on a phone. The scroll box takes no pointer events and the panel
-  // takes them back, so gutter presses still close the overlay. Accepted: the
-  // 2rem inset sits outside the scroll box, so it stays put rather than
-  // scrolling away with the content.
-  // See tests/fixed-overlay-edge-sampling.test.tsx.
-  const overlay =
-    isExpanded || isClosing ? (
-      <>
-        <AnimatePresence initial={false}>
-          {isExpanded ? (
-            <motion.button
-              key="project-files-backdrop"
-              type="button"
-              tabIndex={-1}
-              aria-label="Close file overlay"
-              onClick={closeOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={reduce ? { duration: 0 } : { duration: 0.18 }}
-              className={cn(
-                'fixed inset-0 z-50 cursor-default bg-background/80 backdrop-blur-xl',
-                isClosing && 'pointer-events-none',
-              )}
-            />
-          ) : null}
-        </AnimatePresence>
-
-        <div
-          ref={dialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={dialogTitleId}
-          aria-hidden={isExpanded ? undefined : 'true'}
-          className="pointer-events-none fixed inset-x-6 inset-y-8 z-50 flex items-start justify-center overflow-y-auto sm:items-center"
-        >
+          {/* Modal Container */}
           <div
-            className={cn(
-              'pointer-events-auto relative z-10 w-full max-w-[61rem]',
-              isClosing && 'pointer-events-none',
-            )}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
           >
-            <AnimatePresence initial={false}>
-              {isExpanded ? (
-                <motion.div
-                  key="project-files-header"
-                  initial={{ opacity: 0, y: reduce ? 0 : 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: reduce ? 0 : -8 }}
-                  transition={reduce ? { duration: 0 } : { duration: 0.18 }}
-                  className="mb-6 flex items-center justify-between gap-4"
-                >
-                  <div>
-                    <h2
-                      id={dialogTitleId}
-                      className="text-xl sm:text-2xl font-bold text-foreground tracking-tight"
-                    >
-                      {title}
-                    </h2>
-                    <div className="mt-1 flex items-center gap-3 text-sm">
-                      <span className="text-muted-foreground">{countText}</span>
-                      {statusText && (
-                        <>
-                          <span className="size-1 rounded-full bg-border" />
-                          <span className="font-semibold text-[#E31C79]">{statusText}</span>
-                        </>
-                      )}
-                    </div>
+            <div className="pointer-events-auto relative w-full max-w-5xl my-auto py-6">
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: -16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="mb-6 flex items-center justify-between gap-4 px-2"
+              >
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                    {title}
+                  </h2>
+                  <div className="mt-1 flex items-center gap-3 text-sm">
+                    <span className="text-muted-foreground">{countText}</span>
+                    {statusText && (
+                      <>
+                        <span className="size-1 rounded-full bg-border" />
+                        <span className="font-semibold text-[#E31C79]">{statusText}</span>
+                      </>
+                    )}
                   </div>
-                  <button
-                    ref={closeButtonRef}
-                    type="button"
-                    onClick={closeOverlay}
-                    aria-label={`Close ${title}`}
-                    className="flex size-10 items-center justify-center rounded-full border border-foreground/10 bg-background/50 text-muted-foreground backdrop-blur-xl transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-                  >
-                    <X className="size-4" aria-hidden="true" />
-                  </button>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleExpandedChange(false)}
+                  aria-label={`Close ${title}`}
+                  className="flex size-10 items-center justify-center rounded-full border border-foreground/10 bg-background/70 text-muted-foreground backdrop-blur-md transition-colors hover:text-foreground hover:bg-background/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              </motion.div>
 
-            <div className="grid grid-cols-2 place-items-center gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {isExpanded
-                ? (items ?? previewItems).map((item) => (
-                    <motion.div
-                      key={item.id}
-                      layoutId={`file-${item.id}`}
-                      transition={transition}
-                      onClick={item.onClick}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      className="aspect-[2/3] w-full max-w-40 overflow-hidden rounded-xl cursor-pointer select-none"
-                    >
-                      {item.content}
-                    </motion.div>
-                  ))
-                : null}
+              {/* Từng lá bài chạy lên giữa màn hình */}
+              <div className="grid grid-cols-2 place-items-center gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {displayItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 60, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                    transition={{
+                      duration: 0.28,
+                      delay: 0.03 + index * 0.028,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    whileHover={{ scale: 1.05, y: -6 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={item.onClick}
+                    className={cn(
+                      'aspect-[2/3] w-full max-w-40 rounded-xl cursor-pointer select-none transition-shadow',
+                      item.selected ? '-translate-y-1.5' : '',
+                    )}
+                  >
+                    {item.content}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </>
-    ) : null;
+      )}
+    </AnimatePresence>
+  );
 
   return (
-    <LayoutGroup id={layoutGroupId}>
-      <motion.button
+    <>
+      <button
         ref={folderButtonRef}
         type="button"
         disabled={disabled}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ?? title}
         aria-haspopup="dialog"
         aria-expanded={isExpanded}
-        data-open={isOpen ? 'true' : 'false'}
-        data-expanded={isExpanded ? 'true' : 'false'}
-        tabIndex={isExpanded ? -1 : undefined}
         onPointerEnter={() => {
           if (!canHover) return;
-          hoveredRef.current = true;
-          setOpen(true);
+          handleOpenHover(true);
         }}
         onPointerLeave={() => {
           if (!canHover) return;
-          hoveredRef.current = false;
-          if (!isExpanded && !isClosing) setOpen(focusedRef.current);
+          handleOpenHover(false);
         }}
-        onFocus={() => {
-          if (restoringFocusRef.current) {
-            restoringFocusRef.current = false;
-            focusedRef.current = false;
-            return;
-          }
-          focusedRef.current = true;
-          setOpen(true);
+        onClick={() => {
+          handleExpandedChange(true);
+          onClick?.();
         }}
-        onBlur={() => {
-          focusedRef.current = false;
-          if (!isExpanded && !isClosing) setOpen(hoveredRef.current);
-        }}
-        onClick={handleFolderClick}
-        whileTap={reduce || disabled ? undefined : { scale: 0.98 }}
-        transition={reduce ? { duration: 0 } : SPRING_PRESS}
         className={cn(
           isCompact
-            ? 'relative block h-32 w-44 select-none rounded-xl text-left outline-none [perspective:1000px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer'
-            : 'relative block h-56 w-72 select-none rounded-2xl text-left outline-none [perspective:1200px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
+            ? 'relative block h-32 w-44 select-none rounded-xl text-left outline-none [perspective:1000px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-transform duration-150 active:scale-[0.98]'
+            : 'relative block h-56 w-72 select-none rounded-2xl text-left outline-none [perspective:1200px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-transform duration-150 active:scale-[0.98]',
           className,
         )}
       >
-        <motion.span
+        {/* Back Flap */}
+        <span
           aria-hidden="true"
-          animate={{ rotateX: isOpen && !reduce ? (isCompact ? 12 : 15) : 0 }}
-          transition={transition}
           className={cn(
-            'absolute inset-0 bg-background/25 backdrop-blur-xl [transform-origin:center_bottom]',
+            'absolute inset-0 bg-background/25 backdrop-blur-xl [transform-origin:center_bottom] transition-transform duration-200 ease-out',
+            isHoverOpen
+              ? isCompact
+                ? '[transform:rotateX(12deg)]'
+                : '[transform:rotateX(15deg)]'
+              : '',
             isCompact ? 'rounded-xl' : 'rounded-2xl',
           )}
         />
 
+        {/* Fanned Preview Cards (stays inside button) */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-0">
           <span className="absolute left-1/2 top-0 block h-0 w-0">
-            <AnimatePresence initial={false}>
-              {!isExpanded
-                ? previewItems.map((preview, index) => {
-                    const opened = getPreviewTransform(index, previewItems.length, isCompact);
-                    return (
-                      <motion.span
-                        key={preview.id}
-                        layoutId={`file-${preview.id}`}
-                        initial={false}
-                        animate={
-                          isOpen && !reduce
-                            ? {
-                                x: opened.x * (isCompact ? 1.35 : 1.4),
-                                y: opened.y - (isCompact ? 6 : 8),
-                                rotate: opened.rotate * (isCompact ? 1.2 : 1.3),
-                                scale: opened.scale * 1.02,
-                                opacity: Math.min(1, opened.opacity + 0.18),
-                              }
-                            : {
-                                x: opened.x,
-                                y: opened.y,
-                                rotate: opened.rotate,
-                                scale: opened.scale,
-                                opacity: opened.opacity,
-                              }
-                        }
-                        transition={transition}
-                        onLayoutAnimationComplete={() => {
-                          if (isClosing && index === 0) finishClose();
-                        }}
-                        className={cn(
-                          'absolute left-0 top-0 overflow-hidden pointer-events-auto cursor-pointer rounded-xl',
-                          isCompact
-                            ? '-ml-8 block h-24 w-16 shadow-md'
-                            : '-ml-12 block h-40 w-24 shadow-lg',
-                        )}
-                        style={{ zIndex: opened.zIndex }}
-                      >
-                        {preview.content}
-                      </motion.span>
-                    );
-                  })
-                : null}
-            </AnimatePresence>
+            {previewItems.map((preview, index) => {
+              const opened = getPreviewTransform(index, previewItems.length, isCompact);
+              const transform = isHoverOpen
+                ? `translate3d(${opened.x * (isCompact ? 1.35 : 1.4)}px, ${opened.y - (isCompact ? 6 : 8)}px, 0) rotate(${opened.rotate * (isCompact ? 1.2 : 1.3)}deg) scale(${opened.scale * 1.02})`
+                : `translate3d(${opened.x}px, ${opened.y}px, 0) rotate(${opened.rotate}deg) scale(${opened.scale})`;
+
+              return (
+                <span
+                  key={preview.id}
+                  className={cn(
+                    'absolute left-0 top-0 overflow-hidden pointer-events-none rounded-xl transition-all duration-200 ease-out',
+                    isCompact
+                      ? '-ml-8 block h-24 w-16 shadow-md'
+                      : '-ml-12 block h-40 w-24 shadow-lg',
+                  )}
+                  style={{
+                    transform,
+                    opacity: isHoverOpen ? Math.min(1, opened.opacity + 0.18) : opened.opacity,
+                    zIndex: opened.zIndex,
+                  }}
+                >
+                  {preview.content}
+                </span>
+              );
+            })}
           </span>
         </span>
 
-        <motion.span
-          initial={false}
-          animate={{ rotateX: isOpen && !reduce ? (isCompact ? -20 : -25) : 0 }}
-          transition={transition}
+        {/* Front Flap */}
+        <span
           className={cn(
-            'absolute inset-x-0 bottom-0 z-20 overflow-hidden border border-foreground/10 bg-background/60 backdrop-blur-2xl [backface-visibility:hidden] [transform-origin:center_bottom]',
+            'absolute inset-x-0 bottom-0 z-20 overflow-hidden border border-foreground/10 bg-background/60 backdrop-blur-2xl [backface-visibility:hidden] [transform-origin:center_bottom] transition-transform duration-200 ease-out',
+            isHoverOpen
+              ? isCompact
+                ? '[transform:rotateX(-20deg)]'
+                : '[transform:rotateX(-25deg)]'
+              : '',
             isCompact ? 'rounded-xl' : 'rounded-2xl',
           )}
         >
@@ -439,10 +332,10 @@ export function ProjectFolder({
             <span className="shrink-0 font-medium text-foreground/80">{countText}</span>
             <span className="truncate text-muted-foreground">{description}</span>
           </span>
-        </motion.span>
-      </motion.button>
+        </span>
+      </button>
 
-      {mounted ? createPortal(overlay, document.body) : null}
-    </LayoutGroup>
+      {mounted ? createPortal(overlayContent, document.body) : null}
+    </>
   );
 }

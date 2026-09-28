@@ -209,7 +209,7 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
           type="button"
           onClick={() => setIsOpen(true)}
           title={t('room.backlog.toggleOpen')}
-          className="pointer-events-auto group flex items-center gap-2 px-3 py-2 rounded-r-md border border-l-0 border-border bg-card dark:bg-[#0B1B3D] text-foreground shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-150 cursor-pointer"
+          className="pointer-events-auto group flex items-center gap-2 px-3 py-2 rounded-r-md border border-l-0 border-border bg-card dark:bg-brand-navy text-foreground shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-150 cursor-pointer"
         >
           <Layers className="size-4 text-primary transition-transform group-hover:scale-110" />
           <span className="text-xs font-mono font-bold tracking-tight text-foreground">
@@ -233,10 +233,10 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
             transition={SPRING_PANEL}
-            className="fixed left-0 inset-y-0 z-40 w-96 max-w-[calc(100vw-1rem)] flex flex-col bg-card dark:bg-[#0B1B3D] border-r border-border shadow-2xl select-none"
+            className="fixed left-0 inset-y-0 z-40 w-96 max-w-[calc(100vw-1rem)] flex flex-col bg-card dark:bg-brand-navy border-r border-border shadow-2xl select-none"
           >
             {/* The Container Frame: 3px ONE Magenta Accent Line at top */}
-            <div className="h-[3px] w-full bg-[#E31C79] shrink-0" />
+            <div className="h-[3px] w-full bg-brand-primary shrink-0" />
 
             {/* ── Drawer Header (ONE Brand: Structured, High-contrast, Disciplined density) ── */}
             <div className="p-4 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 shrink-0 flex flex-col gap-2.5">
@@ -277,7 +277,7 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
               {/* Progress Micro Bar */}
               <div className="w-full bg-slate-200/80 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
                 <div
-                  className="bg-[#E31C79] h-full transition-all duration-300 rounded-full"
+                  className="bg-brand-primary h-full transition-all duration-300 rounded-full"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -339,8 +339,8 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
                           'group relative w-full p-3.5 rounded-lg border transition-all duration-150 select-none text-left',
                           isFacilitator && !isStoryActive && 'cursor-pointer',
                           isStoryActive
-                            ? 'card-container-frame bg-[#FDF2F7]/70 dark:bg-[#E31C79]/10 border-primary/40 shadow-xs'
-                            : 'bg-card/90 dark:bg-[#0E1F44]/90 border-border/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-none',
+                            ? 'card-container-frame bg-brand-tint/70 dark:bg-brand-primary/10 border-primary/40 shadow-xs'
+                            : 'bg-card/90 dark:bg-brand-navy-hover/90 border-border/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-none',
                         )}
                       >
                         {/* Header: Jira Key + Issue Type Badge + Status/Points Badge */}
@@ -363,7 +363,7 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
                                   title={t('room.backlog.openInJira')}
-                                  className="text-muted-foreground hover:text-[#CC196C] transition-colors"
+                                  className="text-muted-foreground hover:text-brand-hover transition-colors"
                                 >
                                   <ExternalLink className="size-3" />
                                 </a>
@@ -383,7 +383,7 @@ export function StoryBacklogDrawer(props: StoryBacklogDrawerProps) {
                                 {story.storyPoints} pts
                               </Badge>
                             ) : isStoryActive ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[11px] font-semibold bg-[#FDF2F7] text-[#CC196C] dark:bg-primary/20 dark:text-pink-300 border border-[#E31C79]/30 animate-pulse">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[11px] font-semibold bg-brand-tint text-brand-hover dark:bg-primary/20 dark:text-pink-300 border border-brand-primary/30 animate-pulse">
                                 <Sparkles className="size-3" />
                                 {t('room.backlog.activeBadge')}
                               </span>

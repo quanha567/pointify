@@ -34,7 +34,9 @@ export const ArenaActiveTimer = memo(function ArenaActiveTimer({
           min={0}
           value={votedCount}
           gaugePrimaryColor={
-            votedCount === totalEstimators && totalEstimators > 0 ? '#059669' : '#E31C79'
+            votedCount === totalEstimators && totalEstimators > 0
+              ? 'var(--color-semantic-success)'
+              : 'var(--color-brand-primary)'
           }
           gaugeSecondaryColor="rgba(148, 163, 184, 0.25)"
           className="size-32"
@@ -63,7 +65,9 @@ export const ArenaActiveTimer = memo(function ArenaActiveTimer({
           min={0}
           value={votedCount}
           gaugePrimaryColor={
-            votedCount === totalEstimators && totalEstimators > 0 ? '#059669' : '#E31C79'
+            votedCount === totalEstimators && totalEstimators > 0
+              ? 'var(--color-semantic-success)'
+              : 'var(--color-brand-primary)'
           }
           gaugeSecondaryColor="rgba(148, 163, 184, 0.25)"
           className="size-28"

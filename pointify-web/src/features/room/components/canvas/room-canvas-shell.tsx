@@ -19,6 +19,8 @@ import {
   useStickyNotes,
   type StickyNotesContextValue,
 } from '../../context/sticky-notes-context';
+import { useActiveRoom } from '../../hooks/use-active-room';
+import { useRoomStore } from '../../context/room-store-context';
 import { generateRoomNodes, NODE_TYPES } from '../../utils/canvas-layout-helper';
 import type { RoomProjection, StickyNoteColor } from '../../types/room.types';
 
@@ -308,9 +310,6 @@ function RoomCanvasContent({ room, currentUserId, isFacilitator }: RoomCanvasCon
     </div>
   );
 }
-
-import { useActiveRoom } from '../../hooks/use-active-room';
-import { useRoomStore } from '../../context/room-store-context';
 
 export interface RoomCanvasShellProps {
   room?: RoomProjection;

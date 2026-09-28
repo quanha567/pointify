@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { createRoomApi, getRoomApi } from './room.api';
 import { saveFacilitatorKey } from '../utils/facilitator-storage';
+import { setStoredParticipant } from '../utils/participant-session';
 import { useAppStore } from '@/store/useAppStore';
 import type { CreateRoomDto, DeckType, ParticipantRole } from '../types/room.types';
 
@@ -40,6 +41,18 @@ export function useCreateRoomMutation(options?: { onSuccess?: () => void }) {
       // 1. Save Facilitator Key in local storage for session persistence
       if (res.facilitatorKey) {
         saveFacilitatorKey(room.id, res.facilitatorKey);
+      }
+
+      // 2. Save participant session so room initializes with the creator identity immediately
+      const creatorParticipant = room.participants.find((p) => p.id === room.facilitatorId);
+      if (creatorParticipant) {
+        setStoredParticipant(room.id, {
+          id: creatorParticipant.id,
+          displayName: creatorParticipant.displayName,
+          photoURL: creatorParticipant.photoURL,
+          isGuest: creatorParticipant.isGuest,
+          isSpectator: creatorParticipant.isSpectator,
+        });
       }
 
       // 2. Add to recent rooms list

@@ -150,6 +150,15 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      // Ensure socket session is mapped to participant for unmasking own estimate in broadcast
+      if (!this.socketSessions.has(client.id) && payload.participantId) {
+        this.socketSessions.set(client.id, {
+          roomId: payload.roomId,
+          participantId: payload.participantId,
+        });
+        await client.join(`room:${payload.roomId}`);
+      }
+
       if (payload.cardValue === null) {
         const clearRes = room.clearEstimate(payload.participantId);
         if (clearRes.isFail) {

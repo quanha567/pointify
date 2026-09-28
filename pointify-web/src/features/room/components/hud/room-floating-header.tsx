@@ -81,10 +81,7 @@ export function RoomFloatingHeader(props: RoomFloatingHeaderProps) {
     <header className="absolute top-4 inset-x-4 sm:inset-x-6 z-30 pointer-events-none flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         {/* Left Island: Back + Room Info (Name & Code) */}
-        <div
-          className="pointer-events-auto flex items-center gap-2 bg-card/95 backdrop-blur-md border border-border rounded-lg h-[46px] px-2 sm:px-3 shadow-xs transition-colors"
-          style={{ borderTop: '3px solid #E31C79' }}
-        >
+        <div className="pointer-events-auto flex items-center gap-2 bg-card/95 backdrop-blur-md border border-border border-t-[3px] border-t-brand-primary rounded-lg h-[46px] px-2 sm:px-3 shadow-xs transition-colors">
           <Button
             asChild
             variant="ghost"
@@ -124,10 +121,7 @@ export function RoomFloatingHeader(props: RoomFloatingHeaderProps) {
         </div>
 
         {/* Right Island: Invite + Participants Drawer + Room Settings */}
-        <div
-          className="pointer-events-auto flex items-center gap-2 bg-card/95 backdrop-blur-md border border-border rounded-lg h-[46px] px-2 sm:px-3 shadow-xs transition-colors"
-          style={{ borderTop: '3px solid #E31C79' }}
-        >
+        <div className="pointer-events-auto flex items-center gap-2 bg-card/95 backdrop-blur-md border border-border border-t-[3px] border-t-brand-primary rounded-lg h-[46px] px-2 sm:px-3 shadow-xs transition-colors">
           {/* Share / Invite Button (Primary Accent) */}
           <Button
             onClick={() => setIsInviteDialogOpen(true)}

@@ -59,6 +59,19 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
 
   const cards: CardValue[] = props.cards || (active.activeDeckConfig.cards as CardValue[]);
   const selectedCard = props.selectedCard !== undefined ? props.selectedCard : active.selectedCard;
+
+  // Optimistic local selection state for instant 0ms visual feedback
+  const [optimisticSelectedCard, setOptimisticSelectedCard] = useState<
+    CardValue | null | undefined
+  >(undefined);
+
+  useEffect(() => {
+    setOptimisticSelectedCard(undefined);
+  }, [selectedCard]);
+
+  const effectiveSelectedCard =
+    optimisticSelectedCard !== undefined ? optimisticSelectedCard : selectedCard;
+
   const isFacilitator =
     props.isFacilitator !== undefined ? props.isFacilitator : active.isFacilitator;
   const isRoundRevealed =
@@ -71,7 +84,13 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
   const submitEstimate = useRoomStore((s) => s.submitEstimate);
   const onSelectCard =
     props.onSelectCard ||
-    ((card: CardValue) => submitEstimate(selectedCard === card ? null : card));
+    ((card: CardValue) => {
+      const isSame =
+        effectiveSelectedCard !== null &&
+        effectiveSelectedCard !== undefined &&
+        String(effectiveSelectedCard) === String(card);
+      submitEstimate(isSame ? null : card);
+    });
 
   const revealCards = useRoomStore((s) => s.revealCards);
   const onReveal = props.onReveal || revealCards;
@@ -124,6 +143,12 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
 
   const handleSelectFromFolder = (card: CardValue) => {
     if (disabled) return;
+    const isSameCard =
+      effectiveSelectedCard !== null &&
+      effectiveSelectedCard !== undefined &&
+      String(effectiveSelectedCard) === String(card);
+    const nextVal = isSameCard ? null : card;
+    setOptimisticSelectedCard(nextVal);
     onSelectCard(card);
   };
 
@@ -131,27 +156,32 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
   const previewCards: ProjectFolderPreview[] = useMemo(() => {
     // Pick 5 cards centered around selectedCard if selected, or first 5 cards
     let fanCards = cards.slice(0, 5);
-    if (selectedCard !== null && selectedCard !== undefined) {
-      const selectedIndex = cards.indexOf(selectedCard);
+    const isAnySelected = effectiveSelectedCard !== null && effectiveSelectedCard !== undefined;
+
+    if (isAnySelected) {
+      const selectedIndex = cards.findIndex((c) => String(c) === String(effectiveSelectedCard));
       if (selectedIndex !== -1) {
         const start = Math.max(0, Math.min(cards.length - 5, selectedIndex - 2));
         fanCards = cards.slice(start, start + 5);
       }
     }
 
-    const isAnySelected = selectedCard !== null && selectedCard !== undefined;
     return fanCards.map((c, index) => {
-      const isCardSelected = isAnySelected && selectedCard === c;
-      const isCenterFallback = isAnySelected && !fanCards.includes(selectedCard) && index === 2;
+      const isCardSelected = isAnySelected && String(effectiveSelectedCard) === String(c);
+      const isCenterFallback =
+        isAnySelected &&
+        !fanCards.some((fc) => String(fc) === String(effectiveSelectedCard)) &&
+        index === 2;
       const highlightSelected = isCardSelected || isCenterFallback;
 
       return {
         id: String(c),
+        selected: highlightSelected,
         content: (
           <div
             className={cn(
               'size-full flex items-center justify-center',
-              highlightSelected && 'ring-2 ring-[#E31C79] -translate-y-1',
+              highlightSelected && 'ring-2 ring-brand-primary -translate-y-1',
             )}
           >
             <OneTechCardBack className="size-full" />
@@ -159,14 +189,18 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
         ),
       };
     });
-  }, [cards, selectedCard]);
+  }, [cards, effectiveSelectedCard]);
 
   // Full interactive grid for expanded overlay (All cards from active deck)
   const folderGridItems: ProjectFolderPreview[] = useMemo(() => {
     return cards.map((c) => {
-      const isSelected = selectedCard === c;
+      const isSelected =
+        effectiveSelectedCard !== null &&
+        effectiveSelectedCard !== undefined &&
+        String(effectiveSelectedCard) === String(c);
       return {
         id: String(c),
+        selected: isSelected,
         content: (
           <div className="relative size-full flex items-center justify-center select-none">
             <PokerStoryCardFront
@@ -182,21 +216,21 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
         onClick: () => handleSelectFromFolder(c),
       };
     });
-  }, [cards, selectedCard, disabled]);
+  }, [cards, effectiveSelectedCard, disabled]);
 
   const deckTitle = t(`decks.${active.activeDeckConfig?.translationKey}.name`, 'ONE Tech Deck');
   const statusDescription =
-    selectedCard !== null && selectedCard !== undefined
+    effectiveSelectedCard !== null && effectiveSelectedCard !== undefined
       ? t('room.cardSelected', 'Đã chọn bài')
       : t('room.cardNotSelected', 'Chưa chọn bài');
   const statusHeader =
-    selectedCard !== null && selectedCard !== undefined
-      ? String(selectedCard) === '1'
+    effectiveSelectedCard !== null && effectiveSelectedCard !== undefined
+      ? String(effectiveSelectedCard) === '1'
         ? t('room.selectedPointStatusSingular', {
-            value: String(selectedCard),
-            defaultValue: `Selected: ${selectedCard} point`,
+            value: String(effectiveSelectedCard),
+            defaultValue: `Selected: ${effectiveSelectedCard} point`,
           })
-        : t('room.selectedPointStatus', { value: String(selectedCard) })
+        : t('room.selectedPointStatus', { value: String(effectiveSelectedCard) })
       : undefined;
 
   // If spectator and not facilitator, hide the dock entirely
@@ -237,7 +271,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                         size="sm"
                         className="rounded-lg gap-1.5 text-xs font-medium h-9 px-3 border-border hover:bg-muted cursor-pointer"
                       >
-                        <Clock className="size-3.5 text-[#E31C79]" />
+                        <Clock className="size-3.5 text-brand-primary" />
                         <span>{t('room.timer')}</span>
                       </Button>
                     </PopoverTrigger>
@@ -249,7 +283,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                     >
                       <div className="flex items-center justify-between border-b border-border/60 pb-2">
                         <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
-                          <Clock className="size-3.5 text-[#E31C79]" />
+                          <Clock className="size-3.5 text-brand-primary" />
                           <span>{t('room.setTimerTitle')}</span>
                         </div>
                         <span className="font-mono text-xs font-bold text-muted-foreground">
@@ -312,7 +346,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                           onStartTimer?.(selectedDuration);
                           setIsTimerPopoverOpen(false);
                         }}
-                        className="w-full rounded-lg font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-8 gap-1.5"
+                        className="w-full rounded-lg font-semibold text-xs bg-brand-primary text-white hover:bg-brand-hover shadow-xs cursor-pointer h-8 gap-1.5"
                       >
                         <Play className="size-3 fill-current" />
                         <span>
@@ -392,7 +426,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                       {timerState.isMuted ? (
                         <VolumeX className="size-3.5 text-muted-foreground" />
                       ) : (
-                        <Volume2 className="size-3.5 text-[#E31C79]" />
+                        <Volume2 className="size-3.5 text-brand-primary" />
                       )}
                     </button>
                   </div>
@@ -408,7 +442,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                     onClick={onReveal}
                     disabled={isActionLoading}
                     size="sm"
-                    className="rounded-lg gap-1.5 font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-9 px-3.5"
+                    className="rounded-lg gap-1.5 font-semibold text-xs bg-brand-primary text-white hover:bg-brand-hover shadow-xs cursor-pointer h-9 px-3.5"
                   >
                     {isActionLoading ? (
                       <Loader2 className="size-3.5 animate-spin" />
@@ -422,7 +456,7 @@ export function RoomDeckDock(props: RoomDeckDockProps = {}) {
                     onClick={onNewRound}
                     disabled={isActionLoading}
                     size="sm"
-                    className="rounded-lg gap-1.5 font-semibold text-xs bg-[#E31C79] text-white hover:bg-[#CC196C] shadow-xs cursor-pointer h-9 px-3.5"
+                    className="rounded-lg gap-1.5 font-semibold text-xs bg-brand-primary text-white hover:bg-brand-hover shadow-xs cursor-pointer h-9 px-3.5"
                   >
                     {isActionLoading ? (
                       <Loader2 className="size-3.5 animate-spin" />

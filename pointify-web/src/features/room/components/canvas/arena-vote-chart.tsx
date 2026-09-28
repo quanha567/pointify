@@ -33,8 +33,8 @@ export default function ArenaVoteChart({
   // Strict ONE Design Guideline Color Palette (100% SVG Presentation Attribute Compatible)
   const palette = useMemo(
     () => ({
-      primary: '#E31C79', // ONE Cherry Blossom Magenta (Pantone 213 C)
-      consensus: '#059669', // Emerald 600 (High consensus)
+      primary: 'var(--color-brand-primary)', // ONE Cherry Blossom Magenta
+      consensus: 'var(--color-semantic-success)', // Emerald 600 (High consensus)
       neutralBar: isDark ? '#475569' : '#CBD5E1', // Slate 600 (dark) / Slate 300 (light)
       track: isDark ? '#1E293B' : '#E2E8F0', // Slate 800 (dark) / Slate 200 (light border.subtle)
       textPrimary: isDark ? '#F8FAFC' : '#0F172A', // Slate 50 / Slate 900

@@ -2,7 +2,13 @@ import { createContext, useContext, useRef, useEffect, type ReactNode } from 're
 import { createStore, useStore, type StoreApi } from 'zustand';
 import type { SocketConnectionStatus } from '../api/use-socket-instance';
 import type { CardValue, DeckType, StickyNoteColor } from '../types/room.types';
-import type { StoredParticipant } from '../utils/participant-session';
+import {
+  type StoredParticipant,
+  getStoredParticipant,
+  setStoredParticipant,
+} from '../utils/participant-session';
+import { useAuthStore } from '@/store/useAuthStore';
+import { RoomSocketBridge } from './room-socket-bridge';
 
 export interface RoomSocketActions {
   joinRoom: (newParticipant: StoredParticipant) => void;
@@ -66,9 +72,24 @@ export function createRoomStore(initialProps: {
   participant: StoredParticipant | null;
   actions?: Partial<RoomSocketActions>;
 }): RoomStore {
+  let initialParticipant = initialProps.participant || getStoredParticipant(initialProps.roomId);
+  if (!initialParticipant) {
+    const user = useAuthStore.getState().user;
+    if (user?.uid) {
+      initialParticipant = {
+        id: user.uid,
+        displayName: user.displayName || 'Tài khoản',
+        photoURL: user.photoURL || null,
+        isGuest: false,
+        isSpectator: false,
+      };
+      setStoredParticipant(initialProps.roomId, initialParticipant);
+    }
+  }
+
   return createStore<RoomStoreState>((set) => ({
     roomId: initialProps.roomId,
-    participant: initialProps.participant,
+    participant: initialParticipant,
     connectionStatus: 'connecting',
     isConnected: false,
     isActionLoading: false,
@@ -123,7 +144,9 @@ export function RoomProvider({ roomId, participant, actions, children }: RoomPro
 
   // Keep participant & actions in sync if props change
   useEffect(() => {
-    storeRef.current?.getState().setParticipant(participant);
+    if (participant) {
+      storeRef.current?.getState().setParticipant(participant);
+    }
   }, [participant]);
 
   useEffect(() => {
@@ -132,7 +155,12 @@ export function RoomProvider({ roomId, participant, actions, children }: RoomPro
     }
   }, [actions]);
 
-  return <RoomStoreContext.Provider value={storeRef.current}>{children}</RoomStoreContext.Provider>;
+  return (
+    <RoomStoreContext value={storeRef.current}>
+      <RoomSocketBridge roomId={roomId} />
+      {children}
+    </RoomStoreContext>
+  );
 }
 
 export function useRoomStore<T>(selector: (state: RoomStoreState) => T): T {

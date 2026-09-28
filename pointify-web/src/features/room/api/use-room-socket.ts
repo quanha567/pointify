@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -24,14 +24,21 @@ export function useRoomSocket({ roomId, participant, onParticipantJoined }: UseR
   const queryClient = useQueryClient();
   const { t } = useTranslation(['room', 'common']);
 
-  // Keep participant ref in sync without triggering socket teardown
   const participantRef = useRef(participant);
-  useEffect(() => {
-    participantRef.current = participant;
-  }, [participant]);
 
   // 1. Socket lifecycle
   const { getSocket, connectionStatus } = useSocketInstance(roomId, participantRef);
+
+  // Keep participant ref in sync and ensure room:join is emitted when participant becomes available
+  useEffect(() => {
+    participantRef.current = participant;
+    if (participant && connectionStatus === 'connected') {
+      getSocket().emit('room:join', {
+        roomId,
+        participant,
+      });
+    }
+  }, [participant, connectionStatus, getSocket, roomId]);
 
   // 2. Presence tracking
   const { processPresenceUpdate, cleanup: cleanupPresence } = useRoomPresence(participant?.id);
@@ -107,33 +114,62 @@ export function useRoomSocket({ roomId, participant, onParticipantJoined }: UseR
     stickyNotes.leaveRoom(participant.id);
   }, [participant, stickyNotes]);
 
-  // Return identical shape as original — zero breaking changes for consumers
-  return {
-    connectionStatus,
-    isConnected: connectionStatus === 'connected',
-    isActionLoading: facilitator.isActionLoading,
-    isSwitchingRole: estimator.isSwitchingRole,
-    joinRoom,
-    submitEstimate: estimator.submitEstimate,
-    revealCards: facilitator.revealCards,
-    nextRound: facilitator.nextRound,
-    resetRound: facilitator.resetRound,
-    claimFacilitator: facilitator.claimFacilitator,
-    switchRole: estimator.switchRole,
-    updateRoomConfig: facilitator.updateRoomConfig,
-    startTimer: timer.startTimer,
-    pauseTimer: timer.pauseTimer,
-    resumeTimer: timer.resumeTimer,
-    stopTimer: timer.stopTimer,
-    addTimerSeconds: timer.addTimerSeconds,
-    createStickyNote: stickyNotes.createStickyNote,
-    moveStickyNote: stickyNotes.moveStickyNote,
-    editStickyNote: stickyNotes.editStickyNote,
-    togglePinStickyNote: stickyNotes.togglePinStickyNote,
-    deleteStickyNote: stickyNotes.deleteStickyNote,
-    startEditingStickyNote: stickyNotes.startEditingStickyNote,
-    stopEditingStickyNote: stickyNotes.stopEditingStickyNote,
-    syncJiraPoints: facilitator.syncJiraPoints,
-    leaveRoom,
-  };
+  // Return identical shape as original — memoized to prevent re-render cascades
+  return useMemo(
+    () => ({
+      connectionStatus,
+      isConnected: connectionStatus === 'connected',
+      isActionLoading: facilitator.isActionLoading,
+      isSwitchingRole: estimator.isSwitchingRole,
+      joinRoom,
+      submitEstimate: estimator.submitEstimate,
+      revealCards: facilitator.revealCards,
+      nextRound: facilitator.nextRound,
+      resetRound: facilitator.resetRound,
+      claimFacilitator: facilitator.claimFacilitator,
+      switchRole: estimator.switchRole,
+      updateRoomConfig: facilitator.updateRoomConfig,
+      startTimer: timer.startTimer,
+      pauseTimer: timer.pauseTimer,
+      resumeTimer: timer.resumeTimer,
+      stopTimer: timer.stopTimer,
+      addTimerSeconds: timer.addTimerSeconds,
+      createStickyNote: stickyNotes.createStickyNote,
+      moveStickyNote: stickyNotes.moveStickyNote,
+      editStickyNote: stickyNotes.editStickyNote,
+      togglePinStickyNote: stickyNotes.togglePinStickyNote,
+      deleteStickyNote: stickyNotes.deleteStickyNote,
+      startEditingStickyNote: stickyNotes.startEditingStickyNote,
+      stopEditingStickyNote: stickyNotes.stopEditingStickyNote,
+      syncJiraPoints: facilitator.syncJiraPoints,
+      leaveRoom,
+    }),
+    [
+      connectionStatus,
+      facilitator.isActionLoading,
+      facilitator.revealCards,
+      facilitator.nextRound,
+      facilitator.resetRound,
+      facilitator.claimFacilitator,
+      facilitator.updateRoomConfig,
+      facilitator.syncJiraPoints,
+      estimator.isSwitchingRole,
+      estimator.submitEstimate,
+      estimator.switchRole,
+      timer.startTimer,
+      timer.pauseTimer,
+      timer.resumeTimer,
+      timer.stopTimer,
+      timer.addTimerSeconds,
+      stickyNotes.createStickyNote,
+      stickyNotes.moveStickyNote,
+      stickyNotes.editStickyNote,
+      stickyNotes.togglePinStickyNote,
+      stickyNotes.deleteStickyNote,
+      stickyNotes.startEditingStickyNote,
+      stickyNotes.stopEditingStickyNote,
+      joinRoom,
+      leaveRoom,
+    ],
+  );
 }

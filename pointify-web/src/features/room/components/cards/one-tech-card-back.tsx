@@ -13,7 +13,7 @@ export const OneTechCardBack = memo(function OneTechCardBack({
   return (
     <div
       className={cn(
-        'relative w-full h-full rounded-xl overflow-hidden select-none bg-[#E31C79] shadow-sm border border-[#E31C79]/40',
+        'relative w-full h-full rounded-xl overflow-hidden select-none bg-brand-primary shadow-sm border border-brand-primary/40',
         className,
       )}
     >

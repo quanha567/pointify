@@ -35,11 +35,13 @@ export const PokerStoryCardFront = memo(function PokerStoryCardFront({
   const cardContent = (
     <div
       className={cn(
-        'relative w-full h-full rounded-xl overflow-hidden select-none transition-all duration-150',
+        'relative w-full h-full rounded-xl overflow-hidden select-none transition-all duration-200',
         selected
-          ? 'border-2 border-[#E31C79] shadow-md shadow-[#E31C79]/20 ring-1 ring-inset ring-[#E31C79]/30'
-          : 'border border-border/70 shadow-sm',
-        isSpecialMagenta ? 'bg-[#E31C79] text-white' : 'bg-white text-[#0B1B3D]',
+          ? isSpecialMagenta
+            ? 'border-2 border-white shadow-xl shadow-black/40'
+            : 'border-2 border-brand-primary shadow-xl shadow-brand-primary/25'
+          : 'border border-border/70 shadow-sm hover:border-slate-400 dark:hover:border-slate-500',
+        isSpecialMagenta ? 'bg-brand-primary text-white' : 'bg-white text-brand-navy',
         className,
       )}
     >
@@ -52,13 +54,18 @@ export const PokerStoryCardFront = memo(function PokerStoryCardFront({
         loading="lazy"
       />
 
-      {/* Selected Indicator Badge (Anchored cleanly inside the top-right corner to avoid overflow clipping) */}
+      {/* Selected Indicator Badge (Anchored cleanly inside the top-right corner) */}
       {selected && (
         <div
           aria-label="Selected"
-          className="absolute top-2 right-2 z-20 flex size-5 items-center justify-center rounded-full bg-[#E31C79] text-white shadow-md ring-2 ring-white/95 pointer-events-none animate-in fade-in zoom-in-75 duration-150"
+          className={cn(
+            'absolute top-2.5 right-2.5 z-20 flex size-5.5 items-center justify-center rounded-full shadow-md pointer-events-none animate-in fade-in zoom-in-75 duration-150',
+            isSpecialMagenta
+              ? 'bg-white text-brand-primary'
+              : 'bg-brand-primary text-white ring-2 ring-white',
+          )}
         >
-          <Check className="size-3 stroke-[3]" />
+          <Check className="size-3.5 stroke-[3]" />
         </div>
       )}
 
@@ -66,13 +73,11 @@ export const PokerStoryCardFront = memo(function PokerStoryCardFront({
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 pb-2 sm:pb-3">
         <span
           className={cn(
-            'font-black tracking-tight leading-none select-none drop-shadow-xs',
-            isSpecialMagenta ? 'text-white' : 'text-[#0B1B3D]',
+            'font-sans font-black tracking-tight leading-none select-none drop-shadow-xs transition-transform duration-150',
+            selected && 'scale-105',
+            isSpecialMagenta ? 'text-white' : 'text-brand-navy',
             isLg ? 'text-5xl sm:text-6xl' : isSm ? 'text-xl sm:text-2xl' : 'text-3xl sm:text-4xl',
           )}
-          style={{
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          }}
         >
           {displayVal}
         </span>
